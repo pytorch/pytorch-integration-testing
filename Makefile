@@ -1,6 +1,8 @@
-DOCKER_BUILD=cat Dockerfile | docker build --target $@ -t pytorch/integration-testing:$@ -
-DOCKER_RUN=docker run --rm -it --gpus all -v "$(PWD)/output:/output" pytorch/integration-testing:$@
-CHOWN_TO_USER=docker run --rm -v "$(PWD)":/v -w /v alpine chown -R "$(shell id -u):$(shell id -g)" .
+PYTORCH_DOWNLOAD_LINK ?= https://download.pytorch.org/whl/test/cu101/torch_test.html
+DOCKER_BUILD           = cat Dockerfile | docker build --target $@ --build-arg "PYTORCH_DOWNLOAD_LINK=$(PYTORCH_DOWNLOAD_LINK)" -t pytorch/integration-testing:$@ -
+DOCKER_RUN             = docker run --rm -it --gpus all --shm-size 8G -v "$(PWD)/output:/output" pytorch/integration-testing:$@
+CHOWN_TO_USER          = docker run --rm -v "$(PWD)":/v -w /v alpine chown -R "$(shell id -u):$(shell id -g)" .
+
 
 .PHONY: all
 all:
@@ -26,7 +28,12 @@ detectron2: logs/
 	$(DOCKER_BUILD)
 	$(DOCKER_RUN) \
 		sh -c 'pip install -U -e /detectron2 && pytest -v --color=no --junitxml=/output/$@_results.xml /detectron2/tests' 2>/dev/null \
-			| tee logs/@.log
+			| tee logs/$@.log
+
+.PHONY: transformers
+transformers: logs/
+	$(DOCKER_BUILD)
+	$(DOCKER_RUN) pytest -n auto --dist=loadfile --color=no --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
 
 .PHONY: clean
 clean:
