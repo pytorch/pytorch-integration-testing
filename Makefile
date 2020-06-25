@@ -26,6 +26,7 @@ pyro: logs/
 .PHONY: detectron2
 detectron2: logs/
 	$(DOCKER_BUILD)
+	# We have to install detectron2 here since it won't actually do the cuda build unless it has direct access to the GPU, :shrug:
 	$(DOCKER_RUN) \
 		sh -c 'pip install -U -e /detectron2 && pytest -v --color=no --junitxml=/output/$@_results.xml /detectron2/tests' 2>/dev/null \
 			| tee logs/$@.log
