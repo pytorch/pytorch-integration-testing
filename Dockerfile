@@ -40,3 +40,9 @@ FROM base as transformers
 RUN git clone --branch v2.11.0 https://github.com/huggingface/transformers.git /transformers
 WORKDIR /transformers
 RUN pip install -e ".[testing]"
+
+FROM base as fairseq
+RUN git clone --branch master https://github.com/pytorch/fairseq.git /fairseq
+WORKDIR /fairseq
+RUN pip install pytest pyyaml
+RUN pip install -e .

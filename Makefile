@@ -36,6 +36,11 @@ transformers: logs/
 	$(DOCKER_BUILD)
 	$(DOCKER_RUN) pytest -n auto --dist=loadfile --color=no --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
 
+.PHONY: fairseq
+fairseq: logs/
+	$(DOCKER_BUILD)
+	$(DOCKER_RUN) pytest --color=no --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
+
 .PHONY: clean
 clean:
 	$(RM) -r output/
