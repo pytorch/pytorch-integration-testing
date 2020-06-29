@@ -1,0 +1,42 @@
+version: 2.1
+
+jobs:
+    run_test:
+        parameters:
+            target:
+                type: string
+                default: "clean"
+            resource_class:
+                type: string
+                default: gpu.medium
+            image:
+                type: string
+                default: ubuntu-1604-cuda-10.1:201909-23
+        machine:
+            image: "<< parameters.image >>"
+            resource_class: "<< parameters.resource_class >>"
+        environment:
+            - DOCKER_BUILDKIT=1
+            - BUILD_PROGRESS=--progress=plain
+        steps:
+            - checkout
+            - run:
+                name: Running target
+                command: make "<< parameters.target >>"
+            - store_test_results:
+                path: output/
+            - store_artifacts:
+                path: logs/
+
+workflows:
+    run:
+        jobs:
+            # These are potentially expensive to run so let's require manual approval to run
+            - hold:
+                type: approval
+            - run_test:
+                matrix:
+                    parameters:
+                        target: ["fastai", "pyro", "detectron2", "transformers", "fairseq"]
+                requires:
+                    - hold
