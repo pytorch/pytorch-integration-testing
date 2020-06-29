@@ -24,6 +24,21 @@ WORKDIR /fastai
 RUN tools/run-after-git-clone && pip install ".[dev]" && pip install pytest pytest-runner
 
 FROM base as pyro
+# Needed to build pillow from source
+RUN apt-get install -y \
+        libfreetype6-dev \
+        libfribidi-dev \
+        libharfbuzz-dev \
+        libjpeg8-dev \
+        liblcms2-dev \
+        libopenjp2-7-dev \
+        libtiff5-dev \
+        libwebp-dev \
+        libxcb1-dev \
+        python3-tk \
+        tcl8.6-dev \
+        tk8.6-dev \
+        zlib1g-dev
 RUN git clone --branch master https://github.com/pyro-ppl/pyro.git /pyro
 WORKDIR /pyro
 RUN pip install ".[dev]"
