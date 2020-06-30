@@ -18,3 +18,7 @@ Facebook has adopted a Code of Conduct that we expect project participants to ad
 ### License
 
 pytorch-integration-testing is [MIT licensed](./LICENSE).
+
+### [Terms of Use](https://opensource.facebook.com/legal/terms)
+
+### [Privacy Policy](https://opensource.facebook.com/legal/privacy)
