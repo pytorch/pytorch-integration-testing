@@ -63,7 +63,7 @@ jobs:
                 name: Running target
                 command: make -C compat-tests "<< parameters.target >>"
             - store_test_results:
-                path: compat-tests/test-reports
+                path: test-reports
 
 workflows:
     run:
