@@ -6,6 +6,9 @@ jobs:
             target:
                 type: string
                 default: "clean"
+            pytorch_download_link:
+                type: string
+                default: https://download.pytorch.org/whl/test/cu101/torch_test.html
             resource_class:
                 type: string
                 default: gpu.medium
@@ -18,6 +21,7 @@ jobs:
         environment:
             - DOCKER_BUILDKIT=1
             - BUILD_PROGRESS=--progress=plain
+            - PYTORCH_DOWNLOAD_LINK=<< parameters.pytorch_download_link >>
         steps:
             - checkout
             - run:
@@ -27,6 +31,39 @@ jobs:
                 path: output/
             - store_artifacts:
                 path: logs/
+
+    run_compat_test:
+        parameters:
+            target:
+                type: string
+                default: "clean"
+            pytorch_channel:
+                type: string
+                default: pytorch-test
+            pytorch_ref:
+                type: string
+                default: master
+            resource_class:
+                type: string
+                default: xlarge
+            image:
+                type: string
+                default: ubuntu-1604:201903-01
+        machine:
+            image: "<< parameters.image >>"
+            resource_class: "<< parameters.resource_class >>"
+        environment:
+            - DOCKER_BUILDKIT=1
+            - BUILD_PROGRESS=--progress=plain
+            - PYTORCH_CHANNEL=<< parameters.pytorch_channel >>
+            - PYTORCH_REF=<< parameters.pytorch_ref >>
+        steps:
+            - checkout
+            - run:
+                name: Running target
+                command: make -C compat-tests "<< parameters.target >>"
+            - store_test_results:
+                path: compat-tests/test-reports
 
 workflows:
     run:
@@ -38,5 +75,13 @@ workflows:
                 matrix:
                     parameters:
                         target: ["fastai", "pyro", "detectron2", "transformers", "fairseq"]
+                requires:
+                    - hold
+            - run_compat_test:
+                matrix:
+                    parameters:
+                        target: ["ubuntu-16.04", "ubuntu-18.04", "centos-7", "archlinux"]
+                        # Switch out to the latest RC version
+                        pytorch_ref: ["v1.6.0-rc2"]
                 requires:
                     - hold
