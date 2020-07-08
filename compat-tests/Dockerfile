@@ -38,6 +38,7 @@ RUN conda install -c pytorch-test \
         pillow \
         pytorch \
         pyyaml \
+        psutil \
         six
 RUN conda install -c conda-forge unittest-xml-reporting
 COPY entrypoint.sh /entrypoint.sh
