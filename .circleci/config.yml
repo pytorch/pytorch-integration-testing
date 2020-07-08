@@ -68,20 +68,10 @@ jobs:
 workflows:
     run:
         jobs:
-            # These are potentially expensive to run so let's require manual approval to run
-            - hold:
-                type: approval
-            - run_test:
-                matrix:
-                    parameters:
-                        target: ["fastai", "pyro", "detectron2", "transformers", "fairseq"]
-                requires:
-                    - hold
             - run_compat_test:
                 matrix:
                     parameters:
-                        target: ["ubuntu-16.04", "ubuntu-18.04", "centos-7", "archlinux"]
+                        target: ["ubuntu-16.04"]
+                        resource_class: ["xlarge", "large"]
                         # Switch out to the latest RC version
                         pytorch_ref: ["v1.6.0-rc2"]
-                requires:
-                    - hold
