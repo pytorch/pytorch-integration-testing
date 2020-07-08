@@ -4,10 +4,12 @@ BASE_IMAGE      ?= ubuntu:14.04
 BASE            ?= ubuntu-base
 PYTORCH_REF     ?= master
 PYTORCH_CHANNEL ?= pytorch-test
+BUILD_PROGRESS  ?=
 
 # We designate IN_CIRCLECI=1 to have the runner generate xml reports
 DOCKER_BUILD = docker build \
 	-t compat-test:$@ \
+	$(BUILD_PROGRESS) \
 	--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 	--build-arg BASE=$(BASE) \
 	--build-arg PYTORCH_REF=$(PYTORCH_REF) \
