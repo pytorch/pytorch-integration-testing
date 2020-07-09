@@ -7,7 +7,6 @@ CPP_EXTENSION_TESTS="test_cpp_extensions_aot_no_ninja test_cpp_extensions_aot_ni
     set -x
     python -u run_test.py -v -x ${CPP_EXTENSION_TESTS}
     python -u run_test.py -v -i ${CPP_EXTENSION_TESTS}
-    python -u parse
 )
 
 (
