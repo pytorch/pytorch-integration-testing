@@ -1,6 +1,6 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-
 #!/usr/bin/env bash
+
+# Copyright (c) Facebook, Inc. and its affiliates.
 
 set -eou pipefail
 
