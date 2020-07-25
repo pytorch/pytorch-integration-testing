@@ -82,6 +82,6 @@ workflows:
                     parameters:
                         target: ["ubuntu-16.04", "ubuntu-18.04", "centos-7", "archlinux"]
                         # Switch out to the latest RC version
-                        pytorch_ref: ["v1.6.0-rc3"]
+                        pytorch_ref: ["v1.6.0-rc7"]
                 requires:
                     - hold
