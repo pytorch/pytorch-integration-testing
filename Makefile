@@ -50,6 +50,12 @@ fairseq: logs/
 	$(DOCKER_RUN) pip list > logs/$@_metadata.log
 	$(DOCKER_RUN) pytest --color=no --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
 
+.PHONY: pytorch-lightning
+pytorch-lightning: logs/
+	$(DOCKER_BUILD)
+	$(DOCKER_RUN) pip list > logs/$@_metadata.log
+	$(DOCKER_RUN) pytest --color=no --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
+
 .PHONY: chown-to-user
 chown-to-user:
 	$(CHOWN_TO_USER)

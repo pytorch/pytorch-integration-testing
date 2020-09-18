@@ -56,3 +56,8 @@ RUN git clone --branch master https://github.com/pytorch/fairseq.git /fairseq
 WORKDIR /fairseq
 RUN pip install pytest pyyaml
 RUN pip install -e .
+
+FROM base as pytorch-lightning
+RUN git clone --branch 0.9.0 https://github.com/PyTorchLightning/pytorch-lightning /pytorch-lightning
+WORKDIR /pytorch-lightning
+RUN pip install pytest pyyaml wandb onnxruntime cloudpickle tensorboard omegaconf test_tube scikit-image nltk sklearn
