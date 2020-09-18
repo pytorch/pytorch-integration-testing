@@ -18,11 +18,6 @@ RUN pip install \
         torchtext \
         -f ${PYTORCH_DOWNLOAD_LINK}
 
-FROM base as fastai
-RUN git clone --branch 1.0.61 https://github.com/fastai/fastai.git /fastai
-WORKDIR /fastai
-RUN tools/run-after-git-clone && pip install ".[dev]" && pip install pytest pytest-runner
-
 FROM base as pyro
 # Needed to build pillow from source
 RUN apt-get install -y \

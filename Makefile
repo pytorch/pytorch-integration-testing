@@ -15,12 +15,6 @@ all:
 logs/:
 	mkdir -p logs/
 
-.PHONY: fastai
-fastai: logs/
-	$(DOCKER_BUILD)
-	$(DOCKER_RUN) pip list > logs/$@_metadata.log
-	$(DOCKER_RUN) py.test -v --color=no --junitxml=/output/$@_results.xml tests | tee logs/$@.log
-
 .PHONY: pyro
 pyro: logs/
 	$(DOCKER_BUILD)
