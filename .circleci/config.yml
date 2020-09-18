@@ -74,7 +74,7 @@ workflows:
             - run_test:
                 matrix:
                     parameters:
-                        target: ["fastai", "pyro", "detectron2", "transformers", "fairseq"]
+                        target: ["pyro", "detectron2", "transformers", "fairseq"]
                 requires:
                     - hold
             - run_compat_test:
