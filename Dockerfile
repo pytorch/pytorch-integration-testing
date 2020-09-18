@@ -60,4 +60,5 @@ RUN pip install -e .
 FROM base as pytorch-lightning
 RUN git clone --branch 0.9.0 https://github.com/PyTorchLightning/pytorch-lightning /pytorch-lightning
 WORKDIR /pytorch-lightning
-RUN pip install pytest pyyaml wandb onnxruntime cloudpickle tensorboard omegaconf test_tube scikit-image nltk sklearn
+RUN pip install cmake && pip install --requirement requirements/base.txt --find-links https://download.pytorch.org/whl/cpu/torch_stable.html --quiet --upgrade
+RUN sh -c 'HOROVOD_BUILD_ARCH_FLAGS="-mfma" pip install --requirement ./requirements/devel.txt --quiet --upgrade'
