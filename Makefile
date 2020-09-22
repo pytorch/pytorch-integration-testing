@@ -54,7 +54,7 @@ fairseq: logs/
 pytorch-lightning: logs/
 	$(DOCKER_BUILD)
 	$(DOCKER_RUN) pip list > logs/$@_metadata.log
-	$(DOCKER_RUN) coverage run --source pytorch_lightning -m pytest pytorch_lightning tests -v --durations=0 --junitxml=/output/$@_results.xml -s -v ./tests/ 2>/dev/null | tee logs/$@.log
+	$(DOCKER_RUN) pytest pytorch_lightning tests -v --durations=0 --ignore=tests/loggers/test_all.py --junitxml=/output/$@_results.xml 2>/dev/null | tee logs/$@.log
 
 .PHONY: chown-to-user
 chown-to-user:
