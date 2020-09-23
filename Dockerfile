@@ -60,6 +60,6 @@ RUN pip install -e .
 FROM base as pytorch-lightning
 RUN git clone --branch 0.9.0 https://github.com/PyTorchLightning/pytorch-lightning /pytorch-lightning
 WORKDIR /pytorch-lightning
-RUN pip install --requirement ./requirements/base.txt --upgrade
+RUN pip install --requirement ./requirements/base.txt --upgrade && pip install cmake
 ENV LC_ALL=C.UTF-8
 RUN sh -c 'apt-get install -y libblas-dev liblapack-dev gfortran && HOROVOD_BUILD_ARCH_FLAGS="-mfma" pip install -e ".[dev]" --global-option="--quiet" --upgrade'
