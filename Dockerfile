@@ -40,14 +40,14 @@ RUN pip install ".[dev]"
 RUN pip install ".[test]"
 
 FROM base as detectron2
-RUN git clone --branch v0.1.3 https://github.com/facebookresearch/detectron2.git /detectron2
+RUN git clone --branch v0.2.1 https://github.com/facebookresearch/detectron2.git /detectron2
 RUN apt-get update && apt-get install -y \
         python3-opencv
 # install dependencies
 RUN pip install tensorboard cython onnx pytest 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
 
 FROM base as transformers
-RUN git clone --branch v2.11.0 https://github.com/huggingface/transformers.git /transformers
+RUN git clone --branch v3.3.1 https://github.com/huggingface/transformers.git /transformers
 WORKDIR /transformers
 RUN pip install -e ".[testing]"
 
@@ -58,7 +58,7 @@ RUN pip install pytest pyyaml
 RUN pip install -e .
 
 FROM base as pytorch-lightning
-RUN git clone --branch 0.9.0 https://github.com/PyTorchLightning/pytorch-lightning /pytorch-lightning
+RUN git clone --branch 1.0.2 https://github.com/PyTorchLightning/pytorch-lightning /pytorch-lightning
 WORKDIR /pytorch-lightning
 RUN pip install --requirement ./requirements/base.txt --upgrade && pip install cmake
 ENV LC_ALL=C.UTF-8
