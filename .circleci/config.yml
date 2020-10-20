@@ -45,7 +45,7 @@ jobs:
                 default: master
             resource_class:
                 type: string
-                default: large
+                default: 2xlarge
             image:
                 type: string
                 default: ubuntu-1604:201903-01
