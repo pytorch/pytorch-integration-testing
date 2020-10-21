@@ -87,7 +87,7 @@ jobs:
                 command: |
                     conda install -c pytorch-test cpuonly future hypothesis ninja numpy openmp pillow pytorch pyyaml psutil protobuf six
                     conda install -c conda-forge unittest-xml-reporting
-           - run:
+            - run:
                 name: Running MacOS compatibility tests
                 command: make -C compat-tests macos-compat
             - store_test_results:
