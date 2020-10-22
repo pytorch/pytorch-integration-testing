@@ -47,4 +47,4 @@ archlinux:
 
 .PHONY: macos-compat
 macos-compat:
-	./entrypoint.sh
+	cd ../pytorch/test && ../../compat-tests/entrypoint.sh

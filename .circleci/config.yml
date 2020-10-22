@@ -75,13 +75,14 @@ jobs:
             - run:
                 name: Checkout PyTorch
                 command: |
-                    git clone https://github.com/pytorch/pytorch.git /pytorch
-                    git -C /pytorch checkout ${PYTORCH_REF} && git -C /pytorch submodule update --init --recursive
+                    git clone https://github.com/pytorch/pytorch.git pytorch
+                    git -C pytorch checkout ${PYTORCH_REF} && git -C pytorch submodule update --init --recursive
             - run:
                 name: Install Miniconda
                 command: |
                     curl --retry 3 -o install_conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-                    sh install_conda.sh -b -p /home/circleci/project/miniconda
+                    sh install_conda.sh -b -p $HOME/miniconda
+                    export PATH=$PATH:$HOME/miniconda
             - run:
                 name: Install Dependencies and pytorch-test
                 command: |
