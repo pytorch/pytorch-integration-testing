@@ -44,3 +44,7 @@ archlinux: BASE       := arch-base
 archlinux:
 	$(DOCKER_BUILD)
 	$(DOCKER_RUN) | tee $@.log
+
+.PHONY: macos-compat
+macos-compat:
+	cd ../pytorch/test && ../../compat-tests/entrypoint.sh

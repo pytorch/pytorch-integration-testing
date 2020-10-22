@@ -65,6 +65,41 @@ jobs:
             - store_test_results:
                 path: test-reports
 
+    macos_compat_build:
+        macos:
+            xcode: 12.0
+        parameters:
+            pytorch_channel:
+                type: string
+                default: pytorch-test
+            pytorch_ref:
+                type: string
+                default: master
+        environment:
+            - PYTORCH_CHANNEL=<< parameters.pytorch_channel >>
+            - PYTORCH_REF=<< parameters.pytorch_ref >>
+        steps:
+            - checkout
+            - run:
+                name: Checkout PyTorch
+                command: |
+                    git clone https://github.com/pytorch/pytorch.git pytorch
+                    git -C pytorch checkout ${PYTORCH_REF} && git -C pytorch submodule update --init --recursive
+            - run:
+                name: Install Miniconda
+                command: |
+                    curl --retry 3 -o install_conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+                    sh install_conda.sh -b -p $HOME/miniconda
+            - run:
+                name: Install Dependencies and Run MacOS Compatibility Tests
+                command: |
+                    export PATH=$HOME/miniconda/bin:$PATH
+                    conda install -y -c ${PYTORCH_CHANNEL} cpuonly future hypothesis ninja numpy pillow pytorch pyyaml psutil protobuf six
+                    conda install -y -c conda-forge openmp unittest-xml-reporting
+                    IN_CIRCLECI=1 make -C compat-tests macos-compat
+            - store_test_results:
+                path: pytorch/test/test-reports
+
 workflows:
     run:
         jobs:
@@ -83,5 +118,11 @@ workflows:
                         target: ["ubuntu-16.04", "ubuntu-18.04", "centos-7", "archlinux"]
                         # Switch out to the latest RC version
                         pytorch_ref: ["v1.7.0-rc3"]
+                requires:
+                    - hold
+            - macos_compat_build:
+                matrix:
+                    parameters:
+                        pytorch_ref: ["v1.7.0-rc2"]
                 requires:
                     - hold
