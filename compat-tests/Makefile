@@ -15,7 +15,7 @@ DOCKER_BUILD = docker build \
 	--build-arg PYTORCH_REF=$(PYTORCH_REF) \
 	--build-arg PYTORCH_CHANNEL=$(PYTORCH_CHANNEL) \
 	.
-DOCKER_RUN   = set -o pipefail; docker run --rm -it -e IN_CIRCLECI=1  -w /pytorch/test -v "$(PWD)/test-reports:/pytorch/test/test-reports" compat-test:$@
+DOCKER_RUN   = set -o pipefail; docker run --rm -it -e IN_CIRCLECI=1 IN_CI=1 -w /pytorch/test -v "$(PWD)/test-reports:/pytorch/test/test-reports" compat-test:$@
 
 .PHONY: ubuntu-16.04
 ubuntu-16.04: BASE_IMAGE := ubuntu:16.04
