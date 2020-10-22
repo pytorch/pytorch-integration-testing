@@ -68,8 +68,16 @@ jobs:
     macos_compat_build:
         macos:
             xcode: 12.0
+        parameters:
+            pytorch_channel:
+                type: string
+                default: pytorch-test
+            pytorch_ref:
+                type: string
+                default: master
         environment:
-            - PYTORCH_REF=master
+            - PYTORCH_CHANNEL=<< parameters.pytorch_channel >>
+            - PYTORCH_REF=<< parameters.pytorch_ref >>
         steps:
             - checkout
             - run:
@@ -86,7 +94,7 @@ jobs:
                 name: Install Dependencies and Run MacOS Compatibility Tests
                 command: |
                     export PATH=$HOME/miniconda/bin:$PATH
-                    conda install -y -c pytorch-test cpuonly future hypothesis ninja numpy pillow pytorch pyyaml psutil protobuf six
+                    conda install -y -c ${PYTORCH_CHANNEL} cpuonly future hypothesis ninja numpy pillow pytorch pyyaml psutil protobuf six
                     conda install -y -c conda-forge openmp unittest-xml-reporting
                     make -C compat-tests macos-compat
             - store_test_results:
@@ -113,5 +121,8 @@ workflows:
                 requires:
                     - hold
             - macos_compat_build:
+                matrix:
+                    parameters:
+                        pytorch_ref: ["v1.7.0-rc2"]
                 requires:
                     - hold
