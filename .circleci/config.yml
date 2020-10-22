@@ -82,16 +82,15 @@ jobs:
                 command: |
                     curl --retry 3 -o install_conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
                     sh install_conda.sh -b -p $HOME/miniconda
-                    export PATH=$PATH:$HOME/miniconda/bin
-                    alias python=python3
             - run:
                 name: Install Dependencies and pytorch-test
                 command: |
+                    export PATH=$PATH:$HOME/miniconda/bin
                     conda install -y -c pytorch-test cpuonly future hypothesis ninja numpy pillow pytorch pyyaml psutil protobuf six
                     conda install -y -c conda-forge openmp unittest-xml-reporting
             - run:
                 name: Running MacOS compatibility tests
-                command: make -C compat-tests macos-compat
+                command: alias python=python3 && make -C compat-tests macos-compat
             - store_test_results:
                 path: pytorch/test/test-reports
 
