@@ -114,3 +114,6 @@ workflows:
                         pytorch_ref: ["v1.7.0-rc2"]
                 requires:
                     - hold
+            - macos_compat_build:
+                requires:
+                    - hold
