@@ -7,7 +7,7 @@ PYTORCH_CHANNEL ?= pytorch-test
 BUILD_PROGRESS  ?=
 
 # We designate IN_CI=1 to have the runner generate xml reports
-DOCKER_BUILD = docker build \
+DOCKER_BUILD = DOCKER_BUILDKIT=1 docker build \
 	-t compat-test:$@ \
 	$(BUILD_PROGRESS) \
 	--build-arg BASE_IMAGE=$(BASE_IMAGE) \
