@@ -1,0 +1,33 @@
+name: Test Conda Installations
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/test_conda_installs.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+       include:
+         - gpuarch_pkg: cpuonly
+           gpuarch_identifier: cpu
+         - gpuarch_pkg: cudatoolkit=11.3
+           gpuarch_identifier: 'cu.*11\?.3'
+    container: continuumio/miniconda3
+    env:
+      GPUARCH_PKG: ${{ matrix.gpuarch_pkg }}
+      GPUARCH_IDENTIFIER: ${{ matrix.gpuarch_identifier }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Populate test versions into env
+        run:
+          cat TEST_VERSIONS >> "${GITHUB_ENV}"
+      - name: Test
+        run: |
+          .github/scripts/test_conda_install.sh
+      - name: Test with conda-forge
+        run: |
+          EXTRA_CONDA_CHANNEL_FLAGS="-c conda-forge" .github/scripts/test_conda_install.sh
