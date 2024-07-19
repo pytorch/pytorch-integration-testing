@@ -5,8 +5,8 @@ name: Triton / Inductor Test
 
 on:
   pull_request:
-    branches:
-      - main
+    paths:
+      - '**.yml'
   workflow_dispatch:
     inputs:
       triton_commit:
