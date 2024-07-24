@@ -34,7 +34,6 @@ jobs:
 
       - name: Build
         uses: pytorch/pytorch/.github/actions/linux-build@gh/PaliC/263/head
-        working-directory: pytorch
         with:
           build-environment: linux-jammy-py3.8-gcc11-build
           docker-image-name: pytorch-linux-jammy-py3.8-gcc11-inductor-benchmarks
