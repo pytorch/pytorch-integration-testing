@@ -29,43 +29,14 @@ jobs:
         with:
           path: pytorch-integration-testing
 
-      - name: Checkout PyTorch repository
-        uses: actions/checkout@v2
-        with:
-          repository: pytorch/pytorch
-          path: pytorch
-          ref: {{inputs.pytorch_commit}}
       - name: rocm6.1-py3.8-inductor
-        uses: pytorch/pytorch/.github/workflows/_linux-build.yml@main
-        working-directory: pytorch
+        runs-on: "linux.rocm.gpu.2"
+        uses: pytorch/pytorch/.github/actions/linux-build@gh/PaliC/263/head
         with:
           build-environment: linux-focal-rocm6.1-py3.8
           docker-image-name: pytorch-linux-focal-rocm-n-py3
           test-matrix: |
             { include: [
-              { config: "inductor", shard: 1, num_shards: 2, runner: "linux.rocm.gpu.2" },
-              { config: "inductor", shard: 2, num_shards: 2, runner: "linux.rocm.gpu.2" },
+              { config: "inductor", shard: 1, num_shards: 2},
+              { config: "inductor", shard: 2, num_shards: 2},
             ]}
-  linux-focal-rocm6_1-py3_8-inductor-test:
-    permissions:
-      id-token: write
-      contents: read
-    needs: linux-focal-rocm6_1-py3_8-inductor-build
-    steps: 
-      - name: Checkout pytorch-integration-testing
-        uses: actions/checkout@v2
-        with:
-          path: pytorch-integration-testing
-
-      - name: Checkout PyTorch repository
-        uses: actions/checkout@v2
-        with:
-          repository: pytorch/pytorch
-          path: pytorch
-          ref: {{inputs.pytorch_commit}}
-      - name: rocm6.1-py3.8-inductor
-        uses: pytorch/pytorch/.github/workflows/_rocm-test.yml@main
-        with:
-          build-environment: linux-focal-rocm6.1-py3.8
-          docker-image: ${{ needs.linux-focal-rocm6_1-py3_8-inductor-build.outputs.docker-image }}
-          test-matrix:  ${{ needs.linux-focal-rocm6_1-py3_8-inductor-build.outputs.test-matrix }}
