@@ -26,16 +26,16 @@ jobs:
     runs-on: "linux.12xlarge" 
     steps:
       - name: Build
-    uses: pytorch/pytorch/.github/actions/linux-build@gh/PaliC/263/head
-    with:
-      build-environment: linux-jammy-py3.8-gcc11-build
-      docker-image-name: pytorch-linux-jammy-py3.8-gcc11-inductor-benchmarks
-      test-matrix: |
-        { include: [
-          { config: "cpu_inductor_huggingface", shard: 1, num_shards: 1 },
-          { config: "cpu_inductor_timm", shard: 1, num_shards: 2 },
-          { config: "cpu_inductor_timm", shard: 2, num_shards: 2 },
-          { config: "cpu_inductor_torchbench", shard: 1, num_shards: 2 },
-        ]}
-    secrets:
-      HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
+        uses: pytorch/pytorch/.github/actions/linux-build@gh/PaliC/263/head
+        with:
+          build-environment: linux-jammy-py3.8-gcc11-build
+          docker-image-name: pytorch-linux-jammy-py3.8-gcc11-inductor-benchmarks
+          test-matrix: |
+            { include: [
+              { config: "cpu_inductor_huggingface", shard: 1, num_shards: 1 },
+              { config: "cpu_inductor_timm", shard: 1, num_shards: 2 },
+              { config: "cpu_inductor_timm", shard: 2, num_shards: 2 },
+              { config: "cpu_inductor_torchbench", shard: 1, num_shards: 2 },
+            ]}
+        secrets:
+          HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
