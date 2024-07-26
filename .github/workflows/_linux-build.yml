@@ -28,6 +28,12 @@ on:
         required: false
         type: string
         default: "gha-artifacts"
+      runner:
+        required: false
+        type: string
+        default: "linux.2xlarge"
+        description: |
+          Label of the runner this job should run on.
 
     secrets:
       HUGGING_FACE_HUB_TOKEN:
