@@ -1,13 +1,22 @@
 name: inductor
 
 on:
-  push:
-    branches:
-      - main
-      - release/*
-    tags:
-      - ciflow/inductor/*
+  pull_request:
+    paths:
+      - '**.yml'
   workflow_dispatch:
+    inputs:
+      triton_commit:
+        description: 'Commit SHA to test Triton at'
+        required: true
+        default: 'main'
+      pytorch_commit:
+        description: 'Commit SHA to test PyTorch at'
+        required: true
+        default: 'main'
+  schedule:
+    # run nightly at 00:00 PST + random noise
+    - cron: '15 7 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref_name }}-${{ github.ref_type == 'branch' && github.sha }}-${{ github.event_name == 'workflow_dispatch' }}
