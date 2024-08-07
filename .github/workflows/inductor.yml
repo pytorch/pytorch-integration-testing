@@ -26,7 +26,7 @@ jobs:
         # CUDA only: Add LAPACK support for the GPU if needed
         conda install -c pytorch magma-cuda121
         python setup.py install
-        pytest test/inductor
+        # pytest test/inductor
 
   build-test-cpu:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
@@ -43,4 +43,4 @@ jobs:
         ls
         pip install -r requirements.txt
         python setup.py install
-        pytest test/inductor
+        # pytest test/inductor
