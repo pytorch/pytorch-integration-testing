@@ -9,7 +9,7 @@ jobs:
     with:
       runner: linux.4xlarge.nvidia.gpu
       gpu-arch-type: cuda
-      gpu-arch-version: "11.6"
+      gpu-arch-version: "12.1"
       script: |
         pushd ..
         # install triton
