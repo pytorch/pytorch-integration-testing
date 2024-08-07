@@ -27,4 +27,11 @@ jobs:
         conda install -c pytorch magma-cuda121
         python setup.py install
         pytest test/inductor
-        
+
+  build-test-cpu:
+    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+    with:
+      script: |
+        pip install -r requirements.txt
+        python setup.py develop
+        make test
