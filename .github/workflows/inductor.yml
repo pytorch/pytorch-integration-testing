@@ -32,6 +32,15 @@ jobs:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
       script: |
+        pushd ..
+        # install triton
+        git clone git@github.com:pytorch/pytorch.git
+        ls
+        pushd pytorch
+        ls
+        git submodule sync
+        git submodule update --init --recursive
+        ls
         pip install -r requirements.txt
-        python setup.py develop
-        make test
+        python setup.py install
+        pytest test/inductor
