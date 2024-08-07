@@ -1,0 +1,30 @@
+name: Test build/test linux gpu
+
+on:
+  pull_request:
+
+jobs:
+  build-test:
+    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+    with:
+      runner: linux.4xlarge.nvidia.gpu
+      gpu-arch-type: cuda
+      gpu-arch-version: "11.6"
+      script: |
+        pushd ..
+        # install triton
+        git clone git@github.com:triton-lang/triton.git
+        pushd triton
+        pip install ninja cmake wheel; # build-time dependencies
+        pip install -e python
+        git clone git@github.com:pytorch/pytorch.git
+        pushd pytorch
+        git submodule sync
+        git submodule update --init --recursive
+        pip install -r requirements.txt
+        pip install mkl-static mkl-include
+        # CUDA only: Add LAPACK support for the GPU if needed
+        conda install -c pytorch magma-cuda121
+        python setup.py install
+        pytest test/inductor
+        
