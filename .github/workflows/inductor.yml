@@ -33,14 +33,20 @@ jobs:
     with:
       script: |
         pushd ..
+        echo "Installing triton..." "hello"
         # install triton
         git clone git@github.com:pytorch/pytorch.git
+        echo "Checking directory..." "hello"
         ls
         pushd pytorch
+        echo "Checking submodule..." "hello"
         ls
         git submodule sync
+        echo "Updating submodule..." "hello"
+        ls
         git submodule update --init --recursive
+        echo "Installing requirements..." "hello"
         ls
         pip install -r requirements.txt
-        python setup.py install
+        # python setup.py install
         # pytest test/inductor
