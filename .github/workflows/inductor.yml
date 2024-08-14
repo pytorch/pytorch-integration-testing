@@ -29,7 +29,6 @@ jobs:
         python setup.py install
         pytest test/inductor
 
-
   build-test-cpu:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
