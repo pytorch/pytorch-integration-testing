@@ -29,10 +29,11 @@ jobs:
         python setup.py install
         pytest test/inductor
 
+
   build-test-cpu:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
-    timeout: 240
     with:
+    timeout: 240
       script: |
         pushd ..
         echo "Installing triton..." "hello"
