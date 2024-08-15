@@ -12,13 +12,14 @@ jobs:
       gpu-arch-version: "12.1"
       timeout: 240
       script: |
+        set -x
         pushd ..
         # install triton
-        git clone git@github.com:triton-lang/triton.git
+        git clone https://github.com:triton-lang/triton.git
         pushd triton
         pip install ninja cmake wheel; # build-time dependencies
         pip install -e python
-        git clone git@github.com:pytorch/pytorch.git
+        git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
         git submodule sync
         git submodule update --init --recursive
@@ -34,10 +35,11 @@ jobs:
     with:
       timeout: 240
       script: |
+        set -x
         pushd ..
         echo "Installing triton..." "hello"
         # install triton
-        git clone git@github.com:pytorch/pytorch.git
+        git clone https://github.com/pytorch/pytorch.git
         echo "Checking directory..." "hello"
         ls
         pushd pytorch
