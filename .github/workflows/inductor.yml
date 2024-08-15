@@ -32,7 +32,7 @@ jobs:
   build-test-cpu:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
-    timeout: 240
+      timeout: 240
       script: |
         pushd ..
         echo "Installing triton..." "hello"
