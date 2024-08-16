@@ -15,7 +15,7 @@ jobs:
         set -x
         pushd ..
         # install triton
-        git clone https://github.com:triton-lang/triton.git
+        git clone https://github.com/triton-lang/triton.git
         pushd triton
         pip install ninja cmake wheel; # build-time dependencies
         pip install -e python
@@ -53,4 +53,4 @@ jobs:
         ls
         pip install -r requirements.txt
         python setup.py install
-        # pytest test/inductor
+        pytest test/inductor
