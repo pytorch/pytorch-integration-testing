@@ -17,14 +17,15 @@ jobs:
         # install triton
         git clone https://github.com/triton-lang/triton.git
         pushd triton
-        pip install ninja cmake wheel; # build-time dependencies
+        pip install ninja cmake wheel # build-time dependencies
+        sleep 1000
         pip install -e python
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
         git submodule sync
         git submodule update --init --recursive
         pip install -r requirements.txt
-        pip install mkl-static mkl-include
+        pip install mkl-static mkl-include pytest
         # CUDA only: Add LAPACK support for the GPU if needed
         conda install -c pytorch magma-cuda121
         python setup.py install
@@ -52,5 +53,6 @@ jobs:
         echo "Installing requirements..." "hello"
         ls
         pip install -r requirements.txt
+        pip install pytest
         python setup.py install
         pytest test/inductor
