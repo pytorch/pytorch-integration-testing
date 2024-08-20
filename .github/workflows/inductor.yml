@@ -50,14 +50,6 @@ jobs:
       script: |
         set -x
         pushd ..
-        echo "Installing triton..." "hello"
-        # install triton
-        git clone https://github.com/triton-lang/triton.git
-        pushd triton
-        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-        pip install ninja cmake wheel
-        sleep 1000
-        pip install -e python
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
         git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
