@@ -2,6 +2,16 @@ name: Test build/test linux gpu
 
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      triton_pin:
+        description: 'Triton branch or commit to pin'
+        default: 'main'
+        required: false
+      pytorch_pin:
+        description: 'PyTorch branch or commit to pin'
+        default: 'main'
+        required: false
 
 jobs:
   build-test:
@@ -17,11 +27,13 @@ jobs:
         # install triton
         git clone https://github.com/triton-lang/triton.git
         pushd triton
+        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
         pip install ninja cmake wheel # build-time dependencies
         sleep 1000
         pip install -e python
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
+        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
         git submodule sync
         git submodule update --init --recursive
         pip install -r requirements.txt
@@ -40,18 +52,17 @@ jobs:
         pushd ..
         echo "Installing triton..." "hello"
         # install triton
+        git clone https://github.com/triton-lang/triton.git
+        pushd triton
+        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
+        pip install ninja cmake wheel
+        sleep 1000
+        pip install -e python
         git clone https://github.com/pytorch/pytorch.git
-        echo "Checking directory..." "hello"
-        ls
         pushd pytorch
-        echo "Checking submodule..." "hello"
-        ls
+        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
         git submodule sync
-        echo "Updating submodule..." "hello"
-        ls
         git submodule update --init --recursive
-        echo "Installing requirements..." "hello"
-        ls
         pip install -r requirements.txt
         pip install pytest
         python setup.py install
