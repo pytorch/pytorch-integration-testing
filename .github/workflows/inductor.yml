@@ -29,7 +29,6 @@ jobs:
         pushd triton
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
         pip install ninja cmake wheel # build-time dependencies
-        sleep 1000
         pip install -e python
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
