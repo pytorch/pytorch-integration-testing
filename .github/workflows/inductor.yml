@@ -21,7 +21,7 @@ jobs:
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
       timeout: 240
-      docker-image: pytorch/manylinux-cuda124
+      docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
       script: |
         set -x
         pushd ..
