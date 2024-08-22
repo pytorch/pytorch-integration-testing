@@ -21,6 +21,7 @@ jobs:
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
       timeout: 240
+      docker-image: pytorch/manylinux-cuda124
       script: |
         set -x
         pushd ..
@@ -29,7 +30,7 @@ jobs:
         pushd triton
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
         pip install ninja cmake wheel # build-time dependencies
-        sleep 10000
+        # sleep 10000
         pip install -e python
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
