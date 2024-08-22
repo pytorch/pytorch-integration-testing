@@ -29,7 +29,7 @@ jobs:
         git clone https://github.com/triton-lang/triton.git
         pushd triton
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-        # sleep 10000
+        sleep 10000
         pip install ninja cmake wheel # build-time dependencies
         pip install -e python
         git clone https://github.com/pytorch/pytorch.git
