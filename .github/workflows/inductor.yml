@@ -17,7 +17,7 @@ jobs:
   build-test:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
-      runner: linux.4xlarge.nvidia.gpu
+      runner: linux.8xlarge.nvidia.gpu
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
       timeout: 240
@@ -29,9 +29,24 @@ jobs:
         git clone https://github.com/triton-lang/triton.git
         pushd triton
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-        sleep 10000
-        pip install ninja cmake wheel # build-time dependencies
+        sudo yum install zlib-devel
+        pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0 # build-time dependencies
+        llvm_hash=$(cat cmake/llvm-hash.txt)
+        pushd ..
+        https://github.com/llvm/llvm-project.git
+        pushd llvm-project
+        git checkout "$llvm_hash"
+        mkdir build
+        pushd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
+        ninja
+        LLVM_BUILD_DIR=$(pwd)
+        popd
+        popd
+        popd
+        LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
         pip install -e python
+        popd
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
         git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
