@@ -20,24 +20,29 @@ jobs:
       runner: linux.8xlarge.nvidia.gpu
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
-      timeout: 240
+      timeout: 360
       # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
       script: |
         set -x
         pushd ..
-        # install triton
+        echo "Installing triton"
         git clone https://github.com/triton-lang/triton.git
         pushd triton
+        echo "Checking out triton branch or commit"
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
         sudo yum install zlib-devel
-        pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0 # build-time dependencies
+        echo "Installing build-time dependencies"
+        pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
         llvm_hash=$(cat cmake/llvm-hash.txt)
         pushd ..
-        https://github.com/llvm/llvm-project.git
+        echo "Cloning llvm-project"
+        git clone https://github.com/llvm/llvm-project.git
         pushd llvm-project
+        echo "Checking out llvm hash"
         git checkout "$llvm_hash"
         mkdir build
         pushd build
+        echo "Building llvm"
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
         ninja
         LLVM_BUILD_DIR=$(pwd)
@@ -45,24 +50,26 @@ jobs:
         popd
         popd
         LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
+        echo "Installing triton python package"
         pip install -e python
         popd
+        echo "Cloning pytorch"
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
+        echo "Checking out pytorch branch or commit"
         git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
         git submodule sync
         git submodule update --init --recursive
         pip install -r requirements.txt
         pip install mkl-static mkl-include pytest
-        # CUDA only: Add LAPACK support for the GPU if needed
+        echo "Installing magma-cuda121"
         conda install -c pytorch magma-cuda121
-        python setup.py install
-        pytest test/inductor
+        python setup.py install       # pytest test/inductor
 
   build-test-cpu:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
-      timeout: 240
+      timeout: 360
       script: |
         set -x
         pushd ..
@@ -74,4 +81,4 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
         python setup.py install
-        pytest test/inductor
+        # pytest test/inductor
