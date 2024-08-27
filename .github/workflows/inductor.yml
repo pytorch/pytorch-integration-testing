@@ -30,10 +30,11 @@ jobs:
         pushd triton
         echo "Checking out triton branch or commit"
         git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-        sudo yum install zlib-devel
+        sudo yum install -y zlib-devel
         echo "Installing build-time dependencies"
         pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
-        llvm_hash=$(cat cmake/llvm-hash.txt)
+        export llvm_hash=$(cat cmake/llvm-hash.txt)
+        echo "llvm_hash: $llvm_hash"
         pushd ..
         echo "Cloning llvm-project"
         git clone https://github.com/llvm/llvm-project.git
@@ -45,7 +46,7 @@ jobs:
         echo "Building llvm"
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
         ninja
-        LLVM_BUILD_DIR=$(pwd)
+        export LLVM_BUILD_DIR=$(pwd)
         popd
         popd
         popd
@@ -61,24 +62,26 @@ jobs:
         git submodule sync
         git submodule update --init --recursive
         pip install -r requirements.txt
-        pip install mkl-static mkl-include pytest
+        pip install mkl-static mkl-include pytest pytest-xdist
         echo "Installing magma-cuda121"
-        conda install -c pytorch magma-cuda121
-        python setup.py install       # pytest test/inductor
-
-  build-test-cpu:
-    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
-    with:
-      timeout: 360
-      script: |
-        set -x
-        pushd ..
-        git clone https://github.com/pytorch/pytorch.git
-        pushd pytorch
-        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
-        git submodule sync
-        git submodule update --init --recursive
-        pip install -r requirements.txt
-        pip install pytest
+        conda install -y -c pytorch magma-cuda121
         python setup.py install
-        # pytest test/inductor
+        pytest -n 2 test/inductor/test_torchinductor.py
+
+
+  # build-test-cpu:
+  #   uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+  #   with:
+  #     timeout: 360
+  #     script: |
+  #       set -x
+  #       pushd ..
+  #       git clone https://github.com/pytorch/pytorch.git
+  #       pushd pytorch
+  #       git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
+  #       git submodule sync
+  #       git submodule update --init --recursive
+  #       pip install -r requirements.txt
+  #       pip install pytest
+  #       python setup.py install
+  #       # pytest test/inductor
