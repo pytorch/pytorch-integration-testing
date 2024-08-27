@@ -52,7 +52,6 @@ jobs:
         popd
         LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
         echo "Installing triton python package"
-        pip install -e python
         popd
         echo "Cloning pytorch"
         git clone https://github.com/pytorch/pytorch.git
@@ -67,21 +66,3 @@ jobs:
         conda install -y -c pytorch magma-cuda121
         python setup.py install
         pytest -n 2 test/inductor/test_torchinductor.py
-
-
-  # build-test-cpu:
-  #   uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
-  #   with:
-  #     timeout: 360
-  #     script: |
-  #       set -x
-  #       pushd ..
-  #       git clone https://github.com/pytorch/pytorch.git
-  #       pushd pytorch
-  #       git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
-  #       git submodule sync
-  #       git submodule update --init --recursive
-  #       pip install -r requirements.txt
-  #       pip install pytest
-  #       python setup.py install
-  #       # pytest test/inductor
