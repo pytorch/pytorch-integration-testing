@@ -1,0 +1,68 @@
+name: Test build/test linux gpu
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      triton_pin:
+        description: 'Triton branch or commit to pin'
+        default: 'main'
+        required: false
+      pytorch_pin:
+        description: 'PyTorch branch or commit to pin'
+        default: 'main'
+        required: false
+
+jobs:
+  build-test:
+    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+    with:
+      runner: linux.g5.48xlarge.nvidia.gpu
+      gpu-arch-type: cuda
+      gpu-arch-version: "12.1"
+      timeout: 360
+      # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+      script: |
+        set -x
+        pushd ..
+        echo "Installing triton"
+        git clone https://github.com/triton-lang/triton.git
+        pushd triton
+        echo "Checking out triton branch or commit"
+        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
+        sudo yum install -y zlib-devel
+        echo "Installing build-time dependencies"
+        pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
+        export llvm_hash=$(cat cmake/llvm-hash.txt)
+        echo "llvm_hash: $llvm_hash"
+        pushd ..
+        echo "Cloning llvm-project"
+        git clone https://github.com/llvm/llvm-project.git
+        pushd llvm-project
+        echo "Checking out llvm hash"
+        git checkout "$llvm_hash"
+        mkdir build
+        pushd build
+        echo "Building llvm"
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
+        ninja
+        export LLVM_BUILD_DIR=$(pwd)
+        popd
+        popd
+        popd
+        LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
+        echo "Installing triton python package"
+        popd
+        echo "Cloning pytorch"
+        git clone https://github.com/pytorch/pytorch.git
+        pushd pytorch
+        echo "Checking out pytorch branch or commit"
+        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
+        git submodule sync
+        git submodule update --init --recursive
+        pip install -r requirements.txt
+        pip install mkl-static mkl-include pytest pytest-xdist
+        echo "Installing magma-cuda121"
+        conda install -y -c pytorch magma-cuda121
+        python setup.py install
+        pytest -n 1 test/inductor/test_torchinductor.py
