@@ -17,7 +17,7 @@ jobs:
   build-test:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
-      runner: linux.8xlarge.nvidia.gpu
+      runner: linux.g5.4xlarge.nvidia.gpu
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
       timeout: 360
