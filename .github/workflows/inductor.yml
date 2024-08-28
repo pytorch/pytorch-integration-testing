@@ -65,4 +65,4 @@ jobs:
         echo "Installing magma-cuda121"
         conda install -y -c pytorch magma-cuda121
         python setup.py install
-        pytest -n 2 test/inductor/test_torchinductor.py
+        pytest -n 1 test/inductor/test_torchinductor.py
