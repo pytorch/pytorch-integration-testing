@@ -88,13 +88,20 @@ jobs:
           if [ -d triton ]; then
             echo "triton removed"
             rm -r triton
+          else
+            echo "triton not removed"
           fi
           if [ -d pytorch ]; then
             echo "pytorch removed"
             rm -r pytorch
+          else
+            echo "pytorch not removed"
           fi
           if [ -d llvm-project ]; then
             echo "llvm-project removed"
             rm -r llvm-project
+          else
+            echo "llvm not removed"
           fi
           pwd
+          ls
