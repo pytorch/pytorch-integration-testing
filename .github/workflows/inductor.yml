@@ -16,9 +16,9 @@ on:
 
 jobs:
   build-test:
-    continue-on-error: true
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
+      continue-on-error: true
       runner: linux.g5.48xlarge.nvidia.gpu
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
