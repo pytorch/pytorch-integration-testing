@@ -70,8 +70,7 @@ jobs:
           echo "Installing magma-cuda121"
           conda install -y -c pytorch magma-cuda121
           python setup.py install
-      - name: "tests"
-        uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+      - uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
         with:
           gpu-arch-type: cuda
           gpu-arch-version: "12.1"
