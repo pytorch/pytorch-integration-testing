@@ -25,9 +25,6 @@ jobs:
           set -x
           pushd ..
           echo "Installing triton"
-          if [ -d triton ]; then
-            rm -r triton
-          fi
           git clone https://github.com/triton-lang/triton.git
           pushd triton
           echo "Checking out triton branch or commit"
@@ -80,3 +77,19 @@ jobs:
           # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
         run: |
           pytest -n 1 test/inductor/test_torchinductor.py
+  clean-test:
+    needs: build-test
+    runs-on: linux.g5.48xlarge.nvidia.gpu
+    timeout-minutes: 30
+    steps:
+      - name: "cleanup"
+      - run: |
+          if [ -d triton ]; then
+            rm -r triton
+          fi
+          if [ -d pytorch ]; then
+            rm -r pytorch
+          fi
+          if [ -d llvm-project ]; then
+            rm -r llvm-project
+          fi
