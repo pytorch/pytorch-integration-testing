@@ -27,24 +27,24 @@ jobs:
       steps:
         - name: "Checkout"
           run: |
-          set -x
-          pushd ..
-          echo "Installing triton"
-          git clone https://github.com/triton-lang/triton.git
-          pushd triton
-          echo "Checking out triton branch or commit"
-          git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-          export llvm_hash=$(cat cmake/llvm-hash.txt)
-          echo "llvm_hash: $llvm_hash"
-          pushd ..
-          echo "Cloning llvm-project"
-          git clone https://github.com/llvm/llvm-project.git
-          pushd llvm-project
-          echo "Checking out llvm hash"
-          git checkout "$llvm_hash"
-          mkdir build
-          pushd build
-          echo "Building llvm"
+            set -x
+            pushd ..
+            echo "Installing triton"
+            git clone https://github.com/triton-lang/triton.git
+            pushd triton
+            echo "Checking out triton branch or commit"
+            git checkout ${{ github.event.inputs.triton_pin || 'main' }}
+            export llvm_hash=$(cat cmake/llvm-hash.txt)
+            echo "llvm_hash: $llvm_hash"
+            pushd ..
+            echo "Cloning llvm-project"
+            git clone https://github.com/llvm/llvm-project.git
+            pushd llvm-project
+            echo "Checking out llvm hash"
+            git checkout "$llvm_hash"
+            mkdir build
+            pushd build
+            echo "Building llvm"
         - name: "installs"
           run: |
             sudo yum install -y zlib-devel
