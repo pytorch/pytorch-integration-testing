@@ -1,8 +1,8 @@
 name: Test build/test linux gpu
 
 on:
-  pull_request:
-    branches: [ main, "*"] #will remove this once we see everything is working fine
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       triton_pin:
@@ -18,7 +18,6 @@ jobs:
   build-test:
     uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
     with:
-      continue-on-error: true
       runner: linux.g5.48xlarge.nvidia.gpu
       gpu-arch-type: cuda
       gpu-arch-version: "12.1"
@@ -37,10 +36,24 @@ jobs:
         pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
         export llvm_hash=$(cat cmake/llvm-hash.txt)
         echo "llvm_hash: $llvm_hash"
-        pushd python
-        pip install .
         pushd ..
-        pushd ..
+        echo "Cloning llvm-project"
+        git clone https://github.com/llvm/llvm-project.git
+        pushd llvm-project
+        echo "Checking out llvm hash"
+        git checkout "$llvm_hash"
+        mkdir build
+        pushd build
+        echo "Building llvm"
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
+        ninja
+        export LLVM_BUILD_DIR=$(pwd)
+        popd
+        popd
+        popd
+        LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
+        echo "Installing triton python package"
+        popd
         echo "Cloning pytorch"
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
@@ -53,5 +66,4 @@ jobs:
         echo "Installing magma-cuda121"
         conda install -y -c pytorch magma-cuda121
         python setup.py install
-        pip freeze
         pytest -n 1 test/inductor/test_torchinductor.py
