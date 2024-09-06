@@ -86,11 +86,14 @@ jobs:
       - name: "cleanup"
         run: |
           if [ -d triton ]; then
+            echo "triton removed"
             rm -r triton
           fi
           if [ -d pytorch ]; then
+            echo "pytorch removed"
             rm -r pytorch
           fi
           if [ -d llvm-project ]; then
+            echo "llvm-project removed"
             rm -r llvm-project
           fi
