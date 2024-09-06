@@ -37,7 +37,9 @@ jobs:
         pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
         export llvm_hash=$(cat cmake/llvm-hash.txt)
         echo "llvm_hash: $llvm_hash"
-        pip install -e python
+        pushd python
+        pip install .
+        pushd ..
         pushd ..
         echo "Cloning pytorch"
         git clone https://github.com/pytorch/pytorch.git
