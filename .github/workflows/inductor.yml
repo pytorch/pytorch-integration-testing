@@ -71,7 +71,7 @@ jobs:
           conda install -y -c pytorch magma-cuda121
           python setup.py install
       - name: test
-        with:
+        env:
           gpu-arch-type: cuda
           gpu-arch-version: "12.1"
           # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
