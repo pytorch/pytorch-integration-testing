@@ -1,7 +1,8 @@
 name: Test build/test linux gpu
 
 on:
-  pull_request:
+  push:
+    branches: [ master, main ]
   workflow_dispatch:
     inputs:
       triton_pin:
