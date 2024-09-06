@@ -97,4 +97,4 @@ jobs:
             echo "llvm-project removed"
             rm -r llvm-project
           fi
-          ls -l
+          pwd
