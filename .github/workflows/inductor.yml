@@ -17,124 +17,39 @@ on:
 jobs:
   build-test:
     continue-on-error: true
-    runs-on: linux.g5.48xlarge.nvidia.gpu
-    timeout-minutes: 30
-    steps:
-      - name: "conda setup"
-        run: |
-          set -x
-          pushd ..
-          export base_dir=$(pwd)
-          echo $base_dir
-          # conda installation + setting up dependencies
-          # Miniconda3 script expects to be run from a filename ending in .sh
-          export mc3_dir="${base_dir}/miniconda3"
-          export mc3_setup_script=$(mktemp -t mc3XXXXX.sh)
-          wget -q -O${mc3_setup_script} \
-              https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-          chmod u+x ${mc3_setup_script}
-
-          export mc3_setup_opts="-b -p ${mc3_dir}"
-          # Miniconda setup does not handle existing installations well.
-          # Backup existing installation before a clean new install.
-          if [ -d "$mc3_dir" ]; then
-              bkup_mc3_dir=$(mktemp -u -p $(dirname "$mc3_dir") miniconda3.bkup.XXXX)
-              echo "Backing up existing Miniconda3 installation to: ${bkup_mc3_dir}"
-              mv $mc3_dir $bkup_mc3_dir
-          fi
-
-          sh ${mc3_setup_script} ${mc3_setup_opts}
-          ${mc3_dir}/bin/conda config --set default_python 3.11
-          export PATH=${mc3_dir}/bin:$PATH
-
-          # Pass shell name to conda init
-          ${mc3_dir}/bin/conda init $(basename ${SHELL})
-          ${mc3_dir}/bin/conda config --set solver classic
-          ${mc3_dir}/bin/conda install -y ninja cmake wheel
-          sudo dnf groupinstall -y "Development Tools"
-          sudo yum install -y zlib-devel
-          # zlib-devel to resolve libz.so cannot be found error
-          # https://fburl.com/workplace/o8gp4ock
-          sudo dnf install zlib-devel libzstd-devel
-          ${mc3_dir}/bin/conda config --set solver libmamba
-          pushd $base_dir
-      - name: "Checkout"
-        run: |
-          echo "Installing triton"
-          git clone https://github.com/triton-lang/triton.git
-          pushd triton
-          echo "Checking out triton branch or commit"
-          git checkout ${{ github.event.inputs.triton_pin || 'main' }}
-          export llvm_hash=$(cat cmake/llvm-hash.txt)
-          echo "llvm_hash: $llvm_hash"
-          pushd ..
-          echo "Cloning llvm-project"
-          git clone https://github.com/llvm/llvm-project.git
-          pushd llvm-project
-          echo "Checking out llvm hash"
-          git checkout "$llvm_hash"
-          mkdir build
-          pushd build
-          echo "Building llvm"
-      - name: "installs"
-        run: |
-          echo "Installing build-time dependencies"
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
-          ninja
-          export LLVM_BUILD_DIR=$(pwd)
-          popd
-          popd
-          popd
-          LLVM_INCLUDE_DIRS=$LLVM_BUILD_DIR/include LLVM_LIBRARY_DIR=$LLVM_BUILD_DIR/lib LLVM_SYSPATH=$LLVM_BUILD_DIR pip install -e python
-          echo "Installing triton python package"
-          popd
-      - name: "pytorch download"
-        run: |
-          echo "Cloning pytorch"
-          git clone https://github.com/pytorch/pytorch.git
-          pushd pytorch
-          echo "Checking out pytorch branch or commit"
-          git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
-          git submodule sync
-          git submodule update --init --recursive
-      - name: "post pytorch installs"
-        run: |
-          pip install -r requirements.txt
-          pip install mkl-static mkl-include pytest pytest-xdist
-          echo "Installing magma-cuda121"
-          conda install -y -c pytorch magma-cuda121
-          python setup.py install
-      - name: test
-        env:
-          gpu-arch-type: cuda
-          gpu-arch-version: "12.1"
-          # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-        run: |
-          pytest -n 1 test/inductor/test_torchinductor.py
-      - name: "cleanup"
-        if: always()
-        run: |
-          pwd
-          pushd ..
-          pwd
-          ls
-          if [ -d triton ]; then
-            echo "triton removed"
-            rm -r triton
-          else
-            echo "triton not removed"
-          fi
-          if [ -d pytorch ]; then
-            echo "pytorch removed"
-            rm -r pytorch
-          else
-            echo "pytorch not removed"
-          fi
-          if [ -d llvm-project ]; then
-            echo "llvm-project removed"
-            rm -r llvm-project
-          else
-            echo "llvm not removed"
-          fi
-          pwd
-          ls
+    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
+    with:
+      runner: linux.g5.48xlarge.nvidia.gpu
+      gpu-arch-type: cuda
+      gpu-arch-version: "12.1"
+      timeout: 360
+      # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+      script: |
+        set -x
+        pushd ..
+        echo "Installing triton"
+        git clone https://github.com/triton-lang/triton.git
+        pushd triton
+        echo "Checking out triton branch or commit"
+        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
+        sudo yum install -y zlib-devel
+        echo "Installing build-time dependencies"
+        pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
+        export llvm_hash=$(cat cmake/llvm-hash.txt)
+        echo "llvm_hash: $llvm_hash"
+        pip install -e python
+        pushd ..
+        echo "Cloning pytorch"
+        git clone https://github.com/pytorch/pytorch.git
+        pushd pytorch
+        echo "Checking out pytorch branch or commit"
+        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
+        git submodule sync
+        git submodule update --init --recursive
+        pip install -r requirements.txt
+        pip install mkl-static mkl-include pytest pytest-xdist
+        echo "Installing magma-cuda121"
+        conda install -y -c pytorch magma-cuda121
+        python setup.py install
+        pip freeze
+        pytest -n 1 test/inductor/test_torchinductor.py
