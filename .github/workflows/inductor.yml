@@ -50,7 +50,7 @@ jobs:
           # Pass shell name to conda init
           ${mc3_dir}/bin/conda init $(basename ${SHELL})
           ${mc3_dir}/bin/conda config --set solver classic
-          ${mc3_dir}/bin/conda install -y ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
+          ${mc3_dir}/bin/conda install -y ninja cmake wheel
           sudo dnf groupinstall -y "Development Tools"
           sudo yum install -y zlib-devel
           # zlib-devel to resolve libz.so cannot be found error
