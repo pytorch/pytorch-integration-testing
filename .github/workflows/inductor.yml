@@ -77,5 +77,29 @@ jobs:
           # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
         run: |
           pytest -n 1 test/inductor/test_torchinductor.py
-      - uses: TooMuch4U/runner-post-cleanup@v2.1
+      - name: "cleanup"
         if: always()
+        run: |
+        pwd
+        ls
+
+          if [ -d triton ]; then
+            echo "triton removed"
+            rm -r triton
+          else
+            echo "triton not removed"
+          fi
+          if [ -d pytorch ]; then
+            echo "pytorch removed"
+            rm -r pytorch
+          else
+            echo "pytorch not removed"
+          fi
+          if [ -d llvm-project ]; then
+            echo "llvm-project removed"
+            rm -r llvm-project
+          else
+            echo "llvm not removed"
+          fi
+          pwd
+          ls
