@@ -44,7 +44,7 @@ jobs:
         run: |
           sudo yum install -y zlib-devel
           echo "Installing build-time dependencies"
-          pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
+          conda install -y ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
           ninja
           export LLVM_BUILD_DIR=$(pwd)
