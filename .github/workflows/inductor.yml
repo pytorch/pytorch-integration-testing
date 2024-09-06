@@ -24,7 +24,7 @@ jobs:
         run: |
           set -x
           pushd ..
-          base_dir = "$pwd"
+          base_dir = "pwd"
           echo $base_dir
           # conda installation + setting up dependencies
           # Miniconda3 script expects to be run from a filename ending in .sh
