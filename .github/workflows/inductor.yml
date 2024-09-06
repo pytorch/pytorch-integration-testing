@@ -24,17 +24,17 @@ jobs:
         run: |
           set -x
           pushd ..
-          base_dir = "pwd"
+          export base_dir=$(pwd)
           echo $base_dir
           # conda installation + setting up dependencies
           # Miniconda3 script expects to be run from a filename ending in .sh
-          mc3_dir="${base_dir}/miniconda3"
-          mc3_setup_script=$(mktemp -t mc3XXXXX.sh)
+          export mc3_dir="${base_dir}/miniconda3"
+          export mc3_setup_script=$(mktemp -t mc3XXXXX.sh)
           wget -q -O${mc3_setup_script} \
               https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
           chmod u+x ${mc3_setup_script}
 
-          mc3_setup_opts="-b -p ${mc3_dir}"
+          export mc3_setup_opts="-b -p ${mc3_dir}"
           # Miniconda setup does not handle existing installations well.
           # Backup existing installation before a clean new install.
           if [ -d "$mc3_dir" ]; then
