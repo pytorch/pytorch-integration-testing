@@ -15,22 +15,52 @@ on:
         required: false
 
 jobs:
-  small-setup:
-    uses: pytorch/test-infra/.github/workflows/linux_job.yml@main
-    with:
-      runner: linux.g5.48xlarge.nvidia.gpu
-      gpu-arch-type: cuda
-      gpu-arch-version: "12.1"
   build-test:
     continue-on-error: true
     needs: small-setup
     runs-on: linux.g5.48xlarge.nvidia.gpu
     timeout-minutes: 30
     steps:
-      - name: "Checkout"
+      - name: "conda setup"
         run: |
           set -x
           pushd ..
+          base_dir = "$pwd"
+          echo $base_dir
+          # conda installation + setting up dependencies
+          # Miniconda3 script expects to be run from a filename ending in .sh
+          mc3_dir="${base_dir}/miniconda3"
+          mc3_setup_script=$(mktemp -t mc3XXXXX.sh)
+          wget -q -O${mc3_setup_script} \
+              https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+          chmod u+x ${mc3_setup_script}
+
+          mc3_setup_opts="-b -p ${mc3_dir}"
+          # Miniconda setup does not handle existing installations well.
+          # Backup existing installation before a clean new install.
+          if [ -d "$mc3_dir" ]; then
+              bkup_mc3_dir=$(mktemp -u -p $(dirname "$mc3_dir") miniconda3.bkup.XXXX)
+              echo "Backing up existing Miniconda3 installation to: ${bkup_mc3_dir}"
+              mv $mc3_dir $bkup_mc3_dir
+          fi
+
+          sh ${mc3_setup_script} ${mc3_setup_opts}
+          ${mc3_dir}/bin/conda config --set default_python 3.11
+          export PATH=${mc3_dir}/bin:$PATH
+
+          # Pass shell name to conda init
+          ${mc3_dir}/bin/conda init $(basename ${SHELL})
+          ${mc3_dir}/bin/conda config --set solver classic
+          ${mc3_dir}/bin/conda install -y ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
+          sudo dnf groupinstall -y "Development Tools"
+          sudo yum install -y zlib-devel
+          # zlib-devel to resolve libz.so cannot be found error
+          # https://fburl.com/workplace/o8gp4ock
+          sudo dnf install zlib-devel libzstd-devel
+          ${mc3_dir}/bin/conda config --set solver libmamba
+          pushd $base_dir
+      - name: "Checkout"
+        run: |
           echo "Installing triton"
           git clone https://github.com/triton-lang/triton.git
           pushd triton
@@ -49,9 +79,7 @@ jobs:
           echo "Building llvm"
       - name: "installs"
         run: |
-          sudo yum install -y zlib-devel
           echo "Installing build-time dependencies"
-          conda install -y ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DLLVM_ENABLE_PROJECTS="mlir;llvm" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"
           ninja
           export LLVM_BUILD_DIR=$(pwd)
