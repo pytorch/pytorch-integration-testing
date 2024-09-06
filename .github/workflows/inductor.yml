@@ -75,5 +75,5 @@ jobs:
           gpu-arch-type: cuda
           gpu-arch-version: "12.1"
           # docker-image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-          script: |
-            pytest -n 1 test/inductor/test_torchinductor.py
+        run: |
+          pytest -n 1 test/inductor/test_torchinductor.py
