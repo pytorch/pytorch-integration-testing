@@ -3,16 +3,14 @@ name: Test build/test linux gpu
 on:
   push:
     branches: [ master, main ]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       triton_pin:
         description: 'Triton branch or commit to pin'
-        type: string
         default: 'main'
         required: false
       pytorch_pin:
         description: 'PyTorch branch or commit to pin'
-        type: string
         default: 'main'
         required: false
 
