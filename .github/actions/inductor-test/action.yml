@@ -30,7 +30,7 @@ jobs:
         git clone https://github.com/triton-lang/triton.git
         pushd triton
         echo "Checking out triton branch or commit"
-        git checkout ${{ github.event.inputs.triton_pin || 'main' }}
+        git checkout ${{ inputs.triton_pin || 'main' }}
         sudo yum install -y zlib-devel
         echo "Installing build-time dependencies"
         pip install ninja==1.11.1.1 cmake==3.30.2 wheel==0.44.0
@@ -58,7 +58,7 @@ jobs:
         git clone https://github.com/pytorch/pytorch.git
         pushd pytorch
         echo "Checking out pytorch branch or commit"
-        git checkout ${{ github.event.inputs.pytorch_pin || 'main' }}
+        git checkout ${{ inputs.pytorch_pin || 'main' }}
         git submodule sync
         git submodule update --init --recursive
         pip install -r requirements.txt
