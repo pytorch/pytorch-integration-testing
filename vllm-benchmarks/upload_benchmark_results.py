@@ -91,7 +91,10 @@ def get_benchmark_metadata(head_branch: str, head_sha: str) -> Dict[str, Any]:
 
 def get_runner_info() -> Dict[str, Any]:
     return {
-        "name": socket.gethostname(),
+        # TODO (huydhn): Figure out a better way to set the name here without
+        # hard coding it to cuda
+        "name": "cuda",
+        "type": torch.cuda.get_device_name(),
         "cpu_info": platform.processor(),
         "cpu_count": psutil.cpu_count(),
         "avail_mem_in_gb": int(psutil.virtual_memory().total / (1024 * 1024 * 1024)),
@@ -100,6 +103,9 @@ def get_runner_info() -> Dict[str, Any]:
         "avail_gpu_mem_in_gb": int(
             torch.cuda.get_device_properties(0).total_memory / (1024 * 1024 * 1024)
         ),
+        "extra_info": {
+            "hostname": socket.gethostname(),
+        },
     }
 
 
