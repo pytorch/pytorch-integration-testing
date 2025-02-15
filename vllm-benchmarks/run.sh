@@ -3,6 +3,10 @@
 set -eux
 
 VLLM_COMMIT=$1
+if [[ -z "${VLLM_COMMIT:-}" ]]; then
+  echo "Usage: ./run.sh VLLM_BRANCH_OR_COMMIT"
+  exit 1
+fi
 
 setup_vllm() {
   # I'm doing the checkout step here so that this script can be run without GHA
@@ -27,7 +31,7 @@ setup_vllm() {
 run_benchmark() {
   pushd vllm
   # Is there a better way to know if we are running on devvm?
-  if [[ "${CI}" != "true" ]]; then
+  if [[ "${CI:-}" != "true" ]]; then
     export http_proxy=http://fwdproxy:8080
     export https_proxy=http://fwdproxy:8080
     export no_proxy=".fbcdn.net,.facebook.com,.thefacebook.com,.tfbnw.net,.fb.com,.fb,localhost,127.0.0.1"
@@ -38,7 +42,7 @@ run_benchmark() {
   popd
 }
 
-if [[ -z "${HF_TOKEN}" ]]; then
+if [[ -z "${HF_TOKEN:-}" ]]; then
   echo "Please set HF_TOKEN and accept all the benchmark models"
   exit 1
 fi
