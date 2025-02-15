@@ -6,6 +6,9 @@ of all the test models in
 [vLLM](https://github.com/vllm-project/vllm/tree/main/.buildkite/nightly-benchmarks/tests),
 otherwise, the model will be skipped.
 
+It's recommended to have ccache or sccache setup as building vLLM could
+take sometimes.
+
 ### vLLM benchmark on PyTorch infra
 
 * Run the benchmark on the latest commit in a branch, i.e. `main`

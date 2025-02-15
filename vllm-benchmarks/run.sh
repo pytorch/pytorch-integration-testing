@@ -51,6 +51,10 @@ pip install -r requirements.txt
 setup_vllm
 run_benchmark
 
-if [[ -n "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
-  echo "TODO"
+if [[ "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
+  python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
+fi
+
+if [[ "${CLEANUP_BENCHMARK_RESULTS:-1}" == "1" ]]; then
+  rm -rf vllm/benchmarks/results
 fi
