@@ -8,6 +8,12 @@ if [[ -z "${VLLM_COMMIT:-}" ]]; then
   exit 1
 fi
 
+cleanup() {
+  if [[ "${CLEANUP_BENCHMARK_RESULTS:-1}" == "1" ]]; then
+    rm -rf vllm/benchmarks/results
+  fi
+}
+
 setup_vllm() {
   # I'm doing the checkout step here so that this script can be run without GHA
   if [[ ! -d "vllm" ]]; then
@@ -48,13 +54,12 @@ if [[ -z "${HF_TOKEN:-}" ]]; then
 fi
 
 pip install -r requirements.txt
+
+cleanup
 setup_vllm
 run_benchmark
 
 if [[ "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
   python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
 fi
-
-if [[ "${CLEANUP_BENCHMARK_RESULTS:-1}" == "1" ]]; then
-  rm -rf vllm/benchmarks/results
-fi
+cleanup
