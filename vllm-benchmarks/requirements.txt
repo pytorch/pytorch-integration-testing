@@ -3,3 +3,4 @@ datasets==3.3.0
 psutil==7.0.0
 pynvml==12.0.0
 boto3==1.36.21
+awscli==1.37.21

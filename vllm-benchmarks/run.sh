@@ -43,9 +43,37 @@ run_benchmark() {
     export no_proxy=".fbcdn.net,.facebook.com,.thefacebook.com,.tfbnw.net,.fb.com,.fb,localhost,127.0.0.1"
   fi
 
-  ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
-    bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+  HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  HEAD_SHA=$(git rev-parse --verify HEAD)
+  S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
+  aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+  if [[ ${NOT_EXIST:-0} == "1" || "${OVERWRITE_BENCHMARK_RESULTS:-0}" == "1" ]]; then
+    ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
+      bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks/results/benchmarks.log 2>&1
+  fi
   popd
+}
+
+upload_results() {
+  if [[ "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
+    # Upload the benchmark results
+    python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
+
+    HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    HEAD_SHA=$(git rev-parse --verify HEAD)
+    if [[ -f vllm/benchmarks/results/benchmark_results.md ]]; then
+      # Upload the markdown file
+      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.md"
+      aws s3 cp vllm/benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
+    fi
+
+    if [[ -f vllm/benchmarks/results/benchmarks.log ]]; then
+      # Upload the logs
+      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmarks.log"
+      aws s3 cp vllm/benchmarks/results/benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
+    fi
+  fi
 }
 
 if [[ -z "${HF_TOKEN:-}" ]]; then
@@ -58,8 +86,5 @@ pip install -r requirements.txt
 cleanup
 setup_vllm
 run_benchmark
-
-if [[ "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
-  python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
-fi
+upload_results
 cleanup
