@@ -14,18 +14,30 @@ take sometimes.
 * Run the benchmark on the latest commit in a branch, i.e. `main`
 
 ```
-./run.sh main
+HF_TOKEN=<REDACTED> ./run.sh main
 ```
 
 * Run the benchmark on a specific commit on [vLLM](https://github.com/vllm-project/vllm)
 
 ```
-./run.sh <COMMIT_SHA>
+HF_TOKEN=<REDACTED> ./run.sh <COMMIT_SHA>
 ```
 
 * Run the benchmark, but don't upload the results to PyTorch OSS
   benchmark database
 
 ```
-UPLOAD_BENCHMARK_RESULTS=0 ./run.sh main
+HF_TOKEN=<REDACTED> UPLOAD_BENCHMARK_RESULTS=0 ./run.sh main
 ```
+
+* Run the benchmark on the commit even if it has already been run before
+
+```
+HF_TOKEN=<REDACTED> OVERWRITE_BENCHMARK_RESULTS=1 ./run.sh main
+```
+
+The results and other artifacts will be available at:
+
+* Benchmark results in JSON: `https://ossci-benchmarks.s3.us-east-1.amazonaws.com/v3/vllm-project/vllm/<BRANCH>/<COMMIT>/benchmark_results.json`
+* Benchmark results in markdown: `https://ossci-benchmarks.s3.us-east-1.amazonaws.com/v3/vllm-project/vllm/<BRANCH>/<COMMIT>/benchmark_results.md`
+* Benchmark logs: `https://ossci-benchmarks.s3.us-east-1.amazonaws.com/v3/vllm-project/vllm/<BRANCH>/<COMMIT>/benchmarks.log`
