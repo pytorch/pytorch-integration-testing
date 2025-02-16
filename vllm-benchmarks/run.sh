@@ -95,7 +95,7 @@ export "${HEAD_SHA}"
 S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
 aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
-if [[ ${NOT_EXIST:-0} != "1" && "${OVERWRITE_BENCHMARK_RESULTS:-0}" == "1" ]]; then
+if [[ ${NOT_EXIST:-0} == "0" && "${OVERWRITE_BENCHMARK_RESULTS:-0}" != "1" ]]; then
   echo "Skip ${HEAD_SHA} because its benchmark results already exist at s3://ossci-benchmarks/${S3_PATH}"
   exit 0
 fi
