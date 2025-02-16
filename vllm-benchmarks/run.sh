@@ -32,7 +32,7 @@ setup_vllm() {
 build_vllm() {
   pushd vllm
   # TODO (huydhn) I'll setup remote cache for this later
-  SCCACHE_CACHE_SIZE=100 sccache --start-server || true
+  SCCACHE_CACHE_SIZE=100G sccache --start-server || true
   # Build and install vLLM
   pip install -r requirements-build.txt
   pip install --editable .
