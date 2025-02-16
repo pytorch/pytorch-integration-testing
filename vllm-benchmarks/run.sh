@@ -64,13 +64,15 @@ upload_results() {
     if [[ -f benchmarks/results/benchmark_results.md ]]; then
       # Upload the markdown file
       S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.md"
-      aws s3 cp benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
+      aws s3 cp --acl public-read \
+        benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
     fi
 
     if [[ -f benchmarks.log ]]; then
       # Upload the logs
       S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmarks.log"
-      aws s3 cp benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
+      aws s3 cp --acl public-read \
+        benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
     fi
     popd
   fi

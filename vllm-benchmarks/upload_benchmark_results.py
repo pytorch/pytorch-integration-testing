@@ -162,6 +162,7 @@ def upload_to_s3(
             f"{s3_bucket}",
             f"{s3_path}",
         ).put(
+            ACL="public-read",
             Body=gzip.compress(data.encode()),
             ContentEncoding="gzip",
             ContentType="application/json",
