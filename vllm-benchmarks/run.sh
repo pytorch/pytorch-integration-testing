@@ -26,7 +26,11 @@ setup_vllm() {
   # TODO (huydhn): As this script is run periodically, we needs to add a feature
   # to run benchmark on all commits since the last run
   git checkout "${VLLM_COMMIT}"
+  popd
+}
 
+build_vllm() {
+  pushd vllm
   # TODO (huydhn) I'll setup remote cache for this later
   SCCACHE_CACHE_SIZE=100 sccache --start-server || true
   # Build and install vLLM
@@ -44,16 +48,8 @@ run_benchmark() {
     export no_proxy=".fbcdn.net,.facebook.com,.thefacebook.com,.tfbnw.net,.fb.com,.fb,localhost,127.0.0.1"
   fi
 
-  S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
-  aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
-
-  if [[ ${NOT_EXIST:-0} == "1" || "${OVERWRITE_BENCHMARK_RESULTS:-0}" == "1" ]]; then
-    ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
-      bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks.log 2>&1
-  else
-    echo "Skip ${HEAD_SHA} because its benchmark results already exist at s3://ossci-benchmarks/${S3_PATH}"
-    exit 0
-  fi
+  ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
+    bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks.log 2>&1
   popd
 }
 
@@ -95,8 +91,17 @@ HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 export "${HEAD_BRANCH}"
 HEAD_SHA=$(git rev-parse --verify HEAD)
 export "${HEAD_SHA}"
+
+S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
+aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+if [[ ${NOT_EXIST:-1} != "1" && "${OVERWRITE_BENCHMARK_RESULTS:-0}" != "1" ]]; then
+  echo "Skip ${HEAD_SHA} because its benchmark results already exist at s3://ossci-benchmarks/${S3_PATH}"
+  exit 0
+fi
 popd
 
+build_vllm
 run_benchmark
 upload_results
 cleanup
