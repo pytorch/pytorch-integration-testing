@@ -21,7 +21,6 @@ setup_vllm() {
   fi
 
   pushd vllm
-
   git checkout main
   git fetch origin && git pull origin main
   # TODO (huydhn): As this script is run periodically, we needs to add a feature
@@ -48,7 +47,7 @@ run_benchmark() {
 
   if [[ ${NOT_EXIST:-0} == "1" || "${OVERWRITE_BENCHMARK_RESULTS:-0}" == "1" ]]; then
     ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
-      bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks/results/benchmarks.log 2>&1
+      bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks.log 2>&1
   else
     echo "Skip ${HEAD_SHA} because its benchmark results already exist at s3://ossci-benchmarks/${S3_PATH}"
     exit 0
@@ -68,10 +67,10 @@ upload_results() {
       aws s3 cp benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
     fi
 
-    if [[ -f benchmarks/results/benchmarks.log ]]; then
+    if [[ -f benchmarks.log ]]; then
       # Upload the logs
       S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmarks.log"
-      aws s3 cp benchmarks/results/benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
+      aws s3 cp benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
     fi
     popd
   fi
