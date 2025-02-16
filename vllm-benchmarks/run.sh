@@ -60,19 +60,21 @@ upload_results() {
     # Upload the benchmark results
     python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
 
+    pushd vllm
     HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     HEAD_SHA=$(git rev-parse --verify HEAD)
-    if [[ -f vllm/benchmarks/results/benchmark_results.md ]]; then
+    if [[ -f benchmarks/results/benchmark_results.md ]]; then
       # Upload the markdown file
       S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.md"
-      aws s3 cp vllm/benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
+      aws s3 cp benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
     fi
 
-    if [[ -f vllm/benchmarks/results/benchmarks.log ]]; then
+    if [[ -f benchmarks/results/benchmarks.log ]]; then
       # Upload the logs
       S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmarks.log"
-      aws s3 cp vllm/benchmarks/results/benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
+      aws s3 cp benchmarks/results/benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
     fi
+    popd
   fi
 }
 
