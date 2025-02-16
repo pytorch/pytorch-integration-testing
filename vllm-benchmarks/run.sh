@@ -27,8 +27,6 @@ setup_vllm() {
   # to run benchmark on all commits since the last run
   git checkout "${VLLM_COMMIT}"
 
-  # TODO (huydhn) I'll setup remote cache for this later
-  SCCACHE_CACHE_SIZE=100 sccache --start-server
   # Build and install vLLM
   pip install -r requirements-build.txt
   pip install --editable .
