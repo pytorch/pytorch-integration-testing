@@ -87,10 +87,8 @@ cleanup
 setup_vllm
 
 pushd vllm
-HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-export "${HEAD_BRANCH}"
-HEAD_SHA=$(git rev-parse --verify HEAD)
-export "${HEAD_SHA}"
+export HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+export HEAD_SHA=$(git rev-parse --verify HEAD)
 
 S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
 aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
