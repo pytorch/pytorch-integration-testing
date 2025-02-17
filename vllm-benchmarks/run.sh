@@ -12,6 +12,9 @@ cleanup() {
   if [[ "${CLEANUP_BENCHMARK_RESULTS:-1}" == "1" ]]; then
     rm -rf vllm/benchmarks/results
   fi
+
+  # https://github.com/vllm-project/vllm/issues/13392
+  rm -rf ~/.cache/vllm/torch_compile_cache
 }
 
 setup_vllm() {
