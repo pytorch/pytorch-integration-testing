@@ -24,12 +24,19 @@ setup_vllm() {
   fi
 
   pushd vllm
+
+  # Clean up any local changes to the benchmark suite
+  git checkout .buildkite/nightly-benchmarks/
+
   git checkout main
   git fetch origin && git pull origin main
   # TODO (huydhn): As this script is run periodically, we needs to add a feature
   # to run benchmark on all commits since the last run
   git checkout "${VLLM_COMMIT}"
   popd
+
+  # Set the list of benchmarks we want to cover in PyTorch infra
+  cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
 }
 
 build_vllm() {
