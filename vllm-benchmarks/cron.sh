@@ -45,7 +45,7 @@ run_benchmarks() {
   export HEAD_SHA=$(git rev-parse --verify HEAD)
   popd
 
-  rm commit
+  rm commit || true
   # Get the last green commit from S3
   S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/commit"
   aws s3 cp "s3://ossci-benchmarks/${S3_PATH}" .
