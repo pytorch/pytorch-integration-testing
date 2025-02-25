@@ -11,6 +11,12 @@ take sometimes.
 
 ### vLLM benchmark on PyTorch infra
 
+* Run the benchmark on all vLLM main commits continuously
+
+```
+HF_TOKEN=<REDACTED> ./cron.sh
+```
+
 * Run the benchmark on the latest commit in a branch, i.e. `main`
 
 ```
