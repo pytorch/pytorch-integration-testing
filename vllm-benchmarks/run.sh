@@ -24,7 +24,6 @@ setup_vllm() {
   fi
 
   pushd vllm
-
   # Clean up any local changes to the benchmark suite
   git checkout .buildkite/nightly-benchmarks/
 
