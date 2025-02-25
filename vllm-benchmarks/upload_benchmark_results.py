@@ -71,7 +71,11 @@ def parse_args() -> Any:
 
 def get_git_metadata(vllm_dir: str) -> Tuple[str, str]:
     repo = Repo(vllm_dir)
-    return repo.active_branch.name, repo.head.object.hexsha
+    try:
+        return repo.active_branch.name, repo.head.object.hexsha
+    except TypeError:
+        # This is a detached HEAD, default the branch to main
+        return "main", repo.head.object.hexsha
 
 
 def get_benchmark_metadata(head_branch: str, head_sha: str) -> Dict[str, Any]:
