@@ -41,8 +41,8 @@ run() {
 
 run_benchmarks() {
   pushd vllm
-  export HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  export HEAD_SHA=$(git rev-parse --verify HEAD)
+  HEAD_BRANCH=main
+  HEAD_SHA=$(git rev-parse --verify HEAD)
   popd
 
   rm commit || true

@@ -96,7 +96,7 @@ cleanup
 setup_vllm
 
 pushd vllm
-export HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+export HEAD_BRANCH=main
 export HEAD_SHA=$(git rev-parse --verify HEAD)
 
 S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
