@@ -27,14 +27,14 @@ run() {
 
   NOT_EXIST=0
 
-  S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${COMMIT}/benchmark_results.json"
+  S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${COMMIT}/${GPU_DEVICE}/benchmark_results.json"
   aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
   if [[ ${NOT_EXIST:-0} == "0" ]]; then
     echo "${COMMIT}" > commit
     echo "Mark ${COMMIT} as the latest commit that has been benchmarked on main"
 
-    S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/commit"
+    S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/${GPU_DEVICE}/commit"
     aws s3 cp commit "s3://ossci-benchmarks/${S3_PATH}"
   fi
 }
@@ -47,17 +47,29 @@ run_benchmarks() {
 
   rm commit || true
   # Get the last green commit from S3
-  S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/commit"
-  aws s3 cp "s3://ossci-benchmarks/${S3_PATH}" .
-  LAST_GREEN_COMMIT=$(cat commit)
+  S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/${GPU_DEVICE}/commit"
+  aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
-  if [[ "${LAST_GREEN_COMMIT}" == "${HEAD_SHA}" ]]; then
-    echo "Skip ${HEAD_BRANCH}/${HEAD_SHA} because all older commits have already been benchmarked"
+  if [[ ${NOT_EXIST:-0} == "0" ]]; then
+    aws s3 cp "s3://ossci-benchmarks/${S3_PATH}" .
+    LAST_GREEN_COMMIT=$(cat commit)
+
+    if [[ "${LAST_GREEN_COMMIT}" == "${HEAD_SHA}" ]]; then
+      echo "Skip ${HEAD_BRANCH}/${HEAD_SHA} because all older commits have already been benchmarked"
+    else
+      COMMITS=$(python get_commits.py --repo vllm --from-commit ${LAST_GREEN_COMMIT})
+      echo "${COMMITS}" | while IFS= read -r COMMIT ; do run ${COMMIT} ; done
+    fi
   else
-    COMMITS=$(python get_commits.py --repo vllm --from-commit ${LAST_GREEN_COMMIT})
-    echo "${COMMITS}" | while IFS= read -r COMMIT ; do run ${COMMIT} ; done
+    run "${HEAD_SHA}"
   fi
 }
+
+if command -v nvidia-smi; then
+  declare -g GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+elif command -v amd-smi; then
+  declare -g GPU_DEVICE=$(amd-smi static -g 0 -a | grep 'MARKET_NAME' | awk '{print $2}')
+fi
 
 while :
 do
