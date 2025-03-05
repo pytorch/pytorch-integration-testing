@@ -12,9 +12,6 @@ cleanup() {
   if [[ "${CLEANUP_BENCHMARK_RESULTS:-1}" == "1" ]]; then
     rm -rf vllm/benchmarks/results
   fi
-
-  # https://github.com/vllm-project/vllm/issues/13392
-  rm -rf ~/.cache/vllm/torch_compile_cache
 }
 
 setup_vllm() {
@@ -43,8 +40,15 @@ build_vllm() {
   # TODO (huydhn) I'll setup remote cache for this later
   SCCACHE_CACHE_SIZE=100G sccache --start-server || true
   # Build and install vLLM
-  pip install -r requirements-build.txt
-  pip install --editable .
+  if command -v nvidia-smi; then
+    pip install -r requirements-build.txt
+    pip install --editable .
+  elif command -v amd-smi; then
+    pip install -r requirements-rocm.txt
+    pip install -r requirements-rocm-build.txt
+    # https://docs.vllm.ai/en/latest/getting_started/installation/gpu/index.html?device=rocm
+    PYTORCH_ROCM_ARCH="gfx90a;gfx942" python setup.py develop
+  fi
   popd
 }
 
@@ -70,14 +74,14 @@ upload_results() {
     pushd vllm
     if [[ -f benchmarks/results/benchmark_results.md ]]; then
       # Upload the markdown file
-      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.md"
+      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.md"
       aws s3 cp --acl public-read \
         benchmarks/results/benchmark_results.md "s3://ossci-benchmarks/${S3_PATH}"
     fi
 
     if [[ -f benchmarks.log ]]; then
       # Upload the logs
-      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmarks.log"
+      S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmarks.log"
       aws s3 cp --acl public-read \
         benchmarks.log "s3://ossci-benchmarks/${S3_PATH}"
     fi
@@ -99,7 +103,13 @@ pushd vllm
 export HEAD_BRANCH=main
 export HEAD_SHA=$(git rev-parse --verify HEAD)
 
-S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/benchmark_results.json"
+if command -v nvidia-smi; then
+  declare -g GPU_DEVICE=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk '{print $2}')
+elif command -v amd-smi; then
+  declare -g GPU_DEVICE=$(amd-smi static -g 0 -a | grep 'MARKET_NAME' | awk '{print $2}')
+fi
+
+S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
 aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
 if [[ ${NOT_EXIST:-0} == "0" && "${OVERWRITE_BENCHMARK_RESULTS:-0}" != "1" ]]; then
