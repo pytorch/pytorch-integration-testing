@@ -61,7 +61,7 @@ run_benchmarks() {
       echo "${COMMITS}" | while IFS= read -r COMMIT ; do run ${COMMIT} ; done
     fi
   else
-    run main
+    run "${HEAD_SHA}"
   fi
 }
 
