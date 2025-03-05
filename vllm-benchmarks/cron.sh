@@ -48,14 +48,20 @@ run_benchmarks() {
   rm commit || true
   # Get the last green commit from S3
   S3_PATH="last-green-commits/vllm-project/vllm/${HEAD_BRANCH}/${GPU_DEVICE}/commit"
-  aws s3 cp "s3://ossci-benchmarks/${S3_PATH}" .
-  LAST_GREEN_COMMIT=$(cat commit)
+  aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
-  if [[ "${LAST_GREEN_COMMIT}" == "${HEAD_SHA}" ]]; then
-    echo "Skip ${HEAD_BRANCH}/${HEAD_SHA} because all older commits have already been benchmarked"
+  if [[ ${NOT_EXIST:-0} == "0" ]]; then
+    aws s3 cp "s3://ossci-benchmarks/${S3_PATH}" .
+    LAST_GREEN_COMMIT=$(cat commit)
+
+    if [[ "${LAST_GREEN_COMMIT}" == "${HEAD_SHA}" ]]; then
+      echo "Skip ${HEAD_BRANCH}/${HEAD_SHA} because all older commits have already been benchmarked"
+    else
+      COMMITS=$(python get_commits.py --repo vllm --from-commit ${LAST_GREEN_COMMIT})
+      echo "${COMMITS}" | while IFS= read -r COMMIT ; do run ${COMMIT} ; done
+    fi
   else
-    COMMITS=$(python get_commits.py --repo vllm --from-commit ${LAST_GREEN_COMMIT})
-    echo "${COMMITS}" | while IFS= read -r COMMIT ; do run ${COMMIT} ; done
+    run main
   fi
 }
 
