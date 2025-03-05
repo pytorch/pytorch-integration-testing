@@ -69,7 +69,10 @@ run_benchmark() {
 upload_results() {
   if [[ "${UPLOAD_BENCHMARK_RESULTS:-1}" == "1" ]]; then
     # Upload the benchmark results
-    python upload_benchmark_results.py --vllm vllm --benchmark-results vllm/benchmarks/results
+    python upload_benchmark_results.py \
+      --vllm vllm \
+      --benchmark-results vllm/benchmarks/results \
+      --device "${GPU_DEVICE}"
 
     pushd vllm
     if [[ -f benchmarks/results/benchmark_results.md ]]; then

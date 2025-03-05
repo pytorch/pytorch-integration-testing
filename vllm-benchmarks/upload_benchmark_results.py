@@ -62,6 +62,12 @@ def parse_args() -> Any:
         help="the S3 bucket to upload the benchmark results",
     )
     parser.add_argument(
+        "--device",
+        type=str,
+        required=True,
+        help="the name of the GPU device coming from nvidia-smi or amd-smi",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
     )
@@ -155,9 +161,10 @@ def upload_to_s3(
     head_branch: str,
     head_sha: str,
     aggregated_results: List[Dict[str, Any]],
+    device: str,
     dry_run: bool = True,
 ) -> None:
-    s3_path = f"v3/{REPO}/{head_branch}/{head_sha}/benchmark_results.json"
+    s3_path = f"v3/{REPO}/{head_branch}/{head_sha}/{device}/benchmark_results.json"
     info(f"Upload benchmark results to s3://{s3_bucket}/{s3_path}")
     if not dry_run:
         # Write in JSONEachRow format
@@ -184,7 +191,12 @@ def main() -> None:
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
     upload_to_s3(
-        args.s3_bucket, head_branch, head_sha, aggregated_results, args.dry_run
+        args.s3_bucket,
+        head_branch,
+        head_sha,
+        aggregated_results,
+        args.device,
+        args.dry_run,
     )
 
 
