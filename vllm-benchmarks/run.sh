@@ -107,7 +107,7 @@ export HEAD_BRANCH=main
 export HEAD_SHA=$(git rev-parse --verify HEAD)
 
 if command -v nvidia-smi; then
-  declare -g GPU_DEVICE=$(nvidia-smi --query-gpu=name --format=csv,noheader | awk '{print $2}')
+  declare -g GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}' | head -n1)
 elif command -v amd-smi; then
   declare -g GPU_DEVICE=$(amd-smi static -g 0 -a | grep 'MARKET_NAME' | awk '{print $2}')
 fi
