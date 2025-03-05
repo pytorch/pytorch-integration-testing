@@ -100,10 +100,13 @@ def get_benchmark_metadata(head_branch: str, head_sha: str) -> Dict[str, Any]:
 
 
 def get_runner_info() -> Dict[str, Any]:
+    if torch.cuda.is_available() and torch.version.hip:
+        name = "rocm"
+    elif torch.cuda.is_available() and torch.version.cuda:
+        name = "cuda"
+
     return {
-        # TODO (huydhn): Figure out a better way to set the name here without
-        # hard coding it to cuda
-        "name": "cuda",
+        "name": name,
         "type": torch.cuda.get_device_name(),
         "cpu_info": platform.processor(),
         "cpu_count": psutil.cpu_count(),
