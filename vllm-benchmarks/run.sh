@@ -41,11 +41,11 @@ build_vllm() {
   SCCACHE_CACHE_SIZE=100G sccache --start-server || true
   # Build and install vLLM
   if command -v nvidia-smi; then
-    pip install -r requirements-build.txt
+    pip install -r requirements/build.txt
     pip install --editable .
   elif command -v amd-smi; then
-    pip install -r requirements-rocm.txt
-    pip install -r requirements-rocm-build.txt
+    pip install -r requirements/rocm.txt
+    pip install -r requirements/rocm-build.txt
     # https://docs.vllm.ai/en/latest/getting_started/installation/gpu/index.html?device=rocm
     PYTORCH_ROCM_ARCH="gfx90a;gfx942" python setup.py develop
   fi
