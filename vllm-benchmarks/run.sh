@@ -42,7 +42,8 @@ build_vllm() {
   # Build and install vLLM
   if command -v nvidia-smi; then
     pip install -r requirements/build.txt
-    pip install --editable .
+    # TODO (huydhn): https://github.com/vllm-project/vllm/issues/15435
+    TORCH_CUDA_ARCH_LIST=8.0 pip install --editable .
   elif command -v amd-smi; then
     pip install -r requirements/rocm.txt
     pip install -r requirements/rocm-build.txt
@@ -61,7 +62,7 @@ run_benchmark() {
     export no_proxy=".fbcdn.net,.facebook.com,.thefacebook.com,.tfbnw.net,.fb.com,.fb,localhost,127.0.0.1"
   fi
 
-  ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 \
+  ENGINE_VERSION=v1 SAVE_TO_PYTORCH_BENCHMARK_FORMAT=1 CUDA_VISIBLE_DEVICES=4,5,6,7 \
     bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh > benchmarks.log 2>&1
   popd
 }
