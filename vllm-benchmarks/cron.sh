@@ -73,6 +73,7 @@ fi
 
 while :
 do
+  /usr/local/bin/fixmyserver || true
   pull_vllm
   run_benchmarks
   sleep 300
