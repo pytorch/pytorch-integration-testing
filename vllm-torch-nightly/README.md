@@ -1,119 +1,133 @@
 # VLLM against nightly pytorch build (CUDA)
 Dockerfile used to build vllm with nightly pytorch
 
-## EC2 instance Set up recommendation
-To run this docker in ec2, we recommand:
-- AMI: Deep Learning Oss Nvidia Driver GPU AMI
-- Instance type: must be GPU instance that has sm_80+ (tested on g5.24xlarget):
-    - p4d / p4de	A100 (40 GB)   sm_80
-    - p5	        H100 (80 GB)   sm_90
-    - g5	        A10G	       sm_86
-- CPU: recommend has vCpu more than 32 (tested on g5.24xlarget), otherwise it will be very slow
-- Storage:  512 GiB with mp3
+## EC2 Instance Setup Recommendations
 
+To run this Docker container in EC2, we recommend:
 
-## Build
+- **AMI**: Deep Learning OSS NVIDIA Driver GPU AMI
+- **Instance Type**: Must be a GPU instance with SM_80 or higher architecture (tested on g5.24xlarge):
+    - p4d/p4de: A100 (40 GB) - SM_80
+    - p5: H100 (80 GB) - SM_90
+    - g5: A10G - SM_86
+- **CPU**: Recommend 32+ vCPUs (tested on g5.24xlarge), otherwise build process will be very slow
+- **Storage**: 512 GiB with mp3
 
-ssh to your ec2 instance with the pem file from ec2 setup:
+## Build Instructions
+
+1. SSH to your EC2 instance using your private key:
+```bash
+ssh -i ~/secrets/gpu-test-yang.pem ec2-user@${ec2_instance_ip}
 ```
-ssh -i ~/path/to/your/ec2.pem ec2-user@${ec2_instance_ip}
-```
 
-clone vllm repo:
-```
+2. Clone the VLLM repository:
+```bash
 mkdir test-vllm
 cd test-vllm
 git clone https://github.com/vllm-project/vllm.git
 cd vllm
 ```
 
-you can use scp to copy the docker file to your ec2 instance, or git clone the repo. To scp from your local machine to ec2 instance,
-run (this will override the Dockerfile.nightly in vllm if any):
-
-```
-scp -i ~/path/to/your/ec2.pem  path/to/repo/pytorch-integration-testing/vllm-torch-nightly/Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
+3. Copy the Dockerfile to your EC2 instance. You can either use `scp` or clone this repository. To use `scp` from your local machine:
+```bash
+scp -i ~/path/to/your/ec2.pem path/to/repo/pytorch-integration-testing/vllm-torch-nightly/Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
 ```
 
-Build & install the docker image with bst-wheel (this can take a while).
+4. Build and install the Docker image:
 
-use default max_jobs(64) and nvcc_threads:
-```
-BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base  --progress plain .
-```
-
-you can set the max-jobs and nvcc_threads based on your ec2 instance hardware.The max-jobs is recommended to be set based on the number of vcpu in your instance but less,
-you can also set nvcc_threads but recommand value between 2-4. Otherwise, it will cause the ec2 instance crash during the build process.
-
-If your ec2 crashes, tune those parameters and monitoring the cpu usage and memory usage during the build process.
-
-Build with max-jobs and nvcc_threads:
-```
-BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base  --build-arg max-jobs={$MAX_JOBS} --build-arg nvcc_threads={$NVCC_THREADS}  --progress plain .
+Using default max_jobs (64) and nvcc_threads:
+```bash
+BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base --progress plain .
 ```
 
-## Run vllm docker container
-### Prerequisite
-you need huggingface account and have the model access.
-
-### steps
-
-#### start the docker container
-confirm the docker image exists:
+Alternatively, specify max_jobs and nvcc_threads based on your instance hardware:
+```bash
+BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base --build-arg max-jobs=${MAX_JOBS} --build-arg nvcc_threads=${NVCC_THREADS} --progress plain .
 ```
+
+Note: Set max_jobs based on your instance's vCPU count (but lower to prevent crashes). Recommended nvcc_threads value is between 2-4. Monitor CPU and memory usage during the build process to avoid instance crashes.
+
+## Running the VLLM Docker Container
+
+### Prerequisites
+- HuggingFace account with model access permissions
+
+### Steps
+
+1. Start the Docker container:
+```bash
+# Verify the image exists
 docker images
-```
 
-start the docker container
-```
+# Start the container
 docker run --gpus all -i test-vllm:vllm-base bash
 ```
 
-#### test the vllm setup
-double check the torch version and vllm:
-```
+2. Verify the installation:
+```bash
 python3 -c "import torch; print('PyTorch version:', torch.__version__)"
 python3 -c "import torchvision; print('TorchVision version:', torchvision.__version__)"
 python3 -c "import torchaudio; print('TorchAudio version:', torchaudio.__version__)"
-python3 -c "import vllm; print(vllm.__version__)
+python3 -c "import vllm; print(vllm.__version__)"
 ```
 
-download a hugging face model to test the service:
-```
+3. Download a HuggingFace model:
+```bash
 huggingface-cli login
 huggingface-cli download TinyLlama/TinyLlama-1.1B-Chat-v1.0
 ```
+The model will be downloaded to `~/.cache/huggingface/hub/`.
 
-In the end, you will see a folder named TinyLlama-1.1B-Chat-v1.0 in your ~/.cache/huggingface/hub/ folder.
-
-start the vllm server with the model you just downloaded:
-```
+4. Start the VLLM server:
+```bash
 vllm serve ~/.cache/huggingface/hub/TinyLlama-1.1B-Chat-v1.0/snapshots/${MODEL_VERSION}
 ```
 
-If success, you can see:
+Upon successful start, you should see:
 ```
 INFO:     Started server process [46]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-In another terminal, ssh to yor ec2 instance and access to the docker container:
-grab the container id:
-```
+5. Test the service:
+
+In a new terminal, access the Docker container:
+```bash
+# Get the container ID
 docker ps
-```
-Access to the docker container
-```
+
+# Access the container
 docker exec -it ${CONTAINER_ID} bash
 ```
 
-test the vllm service with curl:
+Send a test request:
+```bash
+curl http://localhost:8000/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{ "prompt": "tell me a joke", "max_tokens": 20, "temperature": 0 }'
 ```
-curl http://localhost:8000/v1/completions -H "Content-Type: application/json" -d '{ "prompt": "tell me a joke", "max_tokens": 20, "temperature": 0 }'
-```
-Make sure the response is readable and make sense.
-For instance the resposen can be something like:
 
+You should receive a response similar to:
 ```json
-{"id":"cg","object":"text_completion","created":1744908741,"model":"/root/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6/","choices":[{"index":0,"text":"?\n\nJOKE: (laughs) \"What do you call a pig","logprobs":null,"finish_reason":"length","stop_reason":null,"prompt_logprobs":null}],"usage":{"prompt_tokens":6,"total_tokens":26,"completion_tokens":20,"prompt_tokens_details":null}}root@d74fba02bd21:/vllm-workspace#
+{
+  "id": "cg",
+  "object": "text_completion",
+  "created": 1744908741,
+  "model": "/root/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6/",
+  "choices": [{
+    "index": 0,
+    "text": "?\n\nJOKE: (laughs) \"What do you call a pig",
+    "logprobs": null,
+    "finish_reason": "length",
+    "stop_reason": null,
+    "prompt_logprobs": null
+  }],
+  "usage": {
+    "prompt_tokens": 6,
+    "total_tokens": 26,
+    "completion_tokens": 20,
+    "prompt_tokens_details": null
+  }
+}
 ```
