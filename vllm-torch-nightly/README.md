@@ -87,9 +87,15 @@ start the vllm server:
 vllm serve ~/.cache/huggingface/hub/TinyLlama-1.1B-Chat-v1.0/snapshots/${MODEL_VERSION}
 ```
 
-In another terminal, ssh to yor ec2 instance and access to the docker container:
+If success, you can see:
+```
+INFO:     Started server process [46]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+```
 
-grab the container id
+In another terminal, ssh to yor ec2 instance and access to the docker container:
+grab the container id:
 ```
 docker ps
 ```
@@ -103,3 +109,8 @@ test the vllm service with curl:
 curl http://localhost:8000/v1/completions -H "Content-Type: application/json" -d '{ "prompt": "tell me a joke", "max_tokens": 20, "temperature": 0 }'
 ```
 Make sure the response is readable and make sense.
+For instance the resposen can be something like:
+
+```json
+{"id":"cg","object":"text_completion","created":1744908741,"model":"/root/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6/","choices":[{"index":0,"text":"?\n\nJOKE: (laughs) \"What do you call a pig","logprobs":null,"finish_reason":"length","stop_reason":null,"prompt_logprobs":null}],"usage":{"prompt_tokens":6,"total_tokens":26,"completion_tokens":20,"prompt_tokens_details":null}}root@d74fba02bd21:/vllm-workspace#
+```
