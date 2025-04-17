@@ -7,9 +7,9 @@ To run this Docker container in EC2, we recommend:
 
 - **AMI**: Deep Learning OSS NVIDIA Driver GPU AMI
 - **Instance Type**: Must be a GPU instance with SM_80 or higher architecture (tested on g5.24xlarge):
-    - p4d/p4de: A100 (40 GB) - SM_80
-    - p5: H100 (80 GB) - SM_90
-    - g5: A10G - SM_86
+    - p4d/p4de: A100 - SM_80
+    - g5: A10G  - SM_86
+    - p5: H100  - SM_90
 - **CPU**: Recommend 32+ vCPUs (tested on g5.24xlarge), otherwise build process will be very slow
 - **Storage**: 512 GiB with mp3
 
