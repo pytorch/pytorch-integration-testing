@@ -45,7 +45,7 @@ Alternatively, specify max_jobs and nvcc_threads based on your instance hardware
 BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base --build-arg max-jobs=${MAX_JOBS} --build-arg nvcc_threads=${NVCC_THREADS} --progress plain .
 ```
 
-Note: Set max_jobs based on your instance's vCPU count (but lower to prevent crashes). Recommended nvcc_threads value is between 2-4. Monitor CPU and memory usage during the build process to avoid instance crashes.
+Note: Set max_jobs based on your instance's vCPU count (but lower to prevent crashes). Recommended nvcc_threads value is between 2-4. Monitor CPU and memory usage during the build process to avoid instance crashes. If you encounter issues, such as ec2 instance crashes, try to tune these values down.
 
 ## Running the VLLM Docker Container
 
