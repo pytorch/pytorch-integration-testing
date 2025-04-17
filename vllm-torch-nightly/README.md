@@ -13,49 +13,43 @@ To run this docker in ec2, we recommand:
 
 
 ## Build
-ssh to your ec2 instance with the pem file from ec2 setup
+
+ssh to your ec2 instance with the pem file from ec2 setup:
 ```
 ssh -i ~/secrets/gpu-test-yang.pem ec2-user@${ec2_instance_ip}
-``
+```
 
-clone vllm repo
+clone vllm repo:
 ```
 mkdir test-vllm
 cd test-vllm
 git clone https://github.com/vllm-project/vllm.git
 cd vllm
 ```
-you can use scp to copy the docker file to your ec2 instance, or git clone the repo
 
-to scp from your local machine to ec2 instance, this will override the Dockerfile.nightly in vllm if any:
+you can use scp to copy the docker file to your ec2 instance, or git clone the repo.
+to scp from your local machine to ec2 instance,run (this will override the Dockerfile.nightly in vllm if any):
 ```
 scp -i ~/path/to/your/ec2.pem  path/to/repo/pytorch-integration-testing/vllm-torch-nightly/Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
 ```
 
 Build the docker image with bst-wheel and install (this can take a while)
-
 use default max_jobs(64) and nvcc_threads:
 
 ```
-BUILDKIT=1 docker build -t test-vllm:vllm-base --build-arg  -f Dockerfile.nightly --target vllm-base  --progress plain .
+BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base  --progress plain .
 ```
-you can set the max-jobs and nvcc_threads based on your ec2 instance hardware.
-The max-jobs is recommand to set based on the number of vcpu in your instance but less, you can also set nvcc_threads but recommand value between 2-4,
-otherwise, it will cause the ec2 instance crash during the build process. If your ec2 crashes, tune those parameters and monitoring the cpu usage and memory usage during the build process.
 
-pass in max-jobs and nvcc_threads:
+you can set the max-jobs and nvcc_threads based on your ec2 instance hardware.The max-jobs is recommended to be set based on the number of vcpu in your instance but less,
+you can also set nvcc_threads but recommand value between 2-4. Otherwise, it will cause the ec2 instance crash during the build process. If your ec2 crashes, tune those
+parameters and monitoring the cpu usage and memory usage during the build process.
+
+build with max-jobs and nvcc_threads:
 ```
 BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base  --build-arg max-jobs={$MAX_JOBS} --build-arg nvcc_threads={$NVCC_THREADS}  --progress plain .
 ```
 
-build the docker image with pip install
-```
-BUILDKIT=1 docker build -t test-vllm:pip-build -f Dockerfile.nightly --target pip-build  --progress plain .
-```
-
-
-## Run vllm
-
+## Run vllm docker container
 ### Prerequisite
 you need huggingface account and have the model access.
 
