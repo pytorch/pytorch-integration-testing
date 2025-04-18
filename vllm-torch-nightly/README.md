@@ -28,12 +28,14 @@ git clone https://github.com/vllm-project/vllm.git
 cd vllm
 ```
 
-3. Copy the Dockerfile to your EC2 instance. You can either use `scp` or clone this repository. To use `scp` from your local machine:
+3. Copy the Dockerfile, nightly_torch_test.txt and vllm_test.sh to your EC2 instance. You can either use `scp` or clone this repository. To use `scp` from your local machine:
 ```bash
-scp -i ~/path/to/your/ec2.pem path/to/repo/pytorch-integration-testing/vllm-torch-nightly/Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
+cd path/to/repo/pytorch-integration-testing/vllm-torch-nightly
+
+scp -i ~/path/to/your/ec2.pem Dockerfile.nightly nightly_torch_test.txt vllm_test.sh ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
 ```
 
-4. Build and install the Docker image:
+5. Build and install the Docker image:
 
 Using default max_jobs (64) and nvcc_threads:
 ```bash
