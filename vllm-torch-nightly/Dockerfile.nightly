@@ -261,6 +261,7 @@ RUN --mount=type=bind,from=build,src=/workspace/dist,target=/vllm-workspace/dist
     --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system dist/*.whl --verbose
 
+# Double check the torch version and vllm version.
 RUN python3 -c "import torch; print('PyTorch version:', torch.__version__)"
 RUN python3 -c "import torchvision; print('TorchVision version:', torchvision.__version__)"
 RUN python3 -c "import torchaudio; print('TorchAudio version:', torchaudio.__version__)"
@@ -273,7 +274,7 @@ FROM vllm-base as test
 
 COPY tests/ tests/
 COPY use_existing_torch.py use_existing_torch.py
-COPY nightly_torch_test.txt nightly_torch_test.txt
+COPY requirements/nightly_torch_test.txt requirements/nightly_torch_test.txt
 COPY pyproject.toml pyproject.toml
 COPY examples examples
 COPY benchmarks benchmarks

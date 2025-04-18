@@ -31,20 +31,31 @@ cd vllm
 3. Copy the Dockerfile, nightly_torch_test.txt and vllm_test.sh to your EC2 instance. You can either use `scp` or clone this repository. To use `scp` from your local machine:
 ```bash
 cd path/to/repo/pytorch-integration-testing/vllm-torch-nightly
-
-scp -i ~/path/to/your/ec2.pem Dockerfile.nightly nightly_torch_test.txt vllm_test.sh ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm
+scp -i Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm/docker && \
+scp -i nightly_torch_test.txt ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm/vllm/requirements && \
+scp -i vllm_test.sh ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm
 ```
 
 5. Build and install the Docker image:
 
 Using default max_jobs (64) and nvcc_threads:
 ```bash
-BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base --progress plain .
+BUILDKIT=1 docker build -t test-vllm:vllm-base -f docker/Dockerfile.nightly --target vllm-base --progress plain .
 ```
 
 Alternatively, specify max_jobs and nvcc_threads based on your instance hardware:
 ```bash
 BUILDKIT=1 docker build -t test-vllm:vllm-base -f Dockerfile.nightly --target vllm-base --build-arg max-jobs=${MAX_JOBS} --build-arg nvcc_threads=${NVCC_THREADS} --progress plain .
+```
+
+If you changing dockerfile frequently during the development, you can put it in test-vllm/,
+```bash
+  scp -i Dockerfile.nightly ec2-user@${ec2_instance_ip}:/home/ec2-user/test-vllm
+```
+then
+```bash
+  cd vllm/
+  BUILDKIT=1 docker build -t test-vllm:vllm-base -f ../Dockerfile.nightly --target vllm-base --progress plain .
 ```
 
 Note: Set max_jobs based on your instance's vCPU count (but lower to prevent crashes). Recommended nvcc_threads value is between 2-4. Monitor CPU and memory usage during the build process to avoid instance crashes. If you encounter issues, such as ec2 instance crashes, try to tune these values down.
