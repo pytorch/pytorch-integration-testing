@@ -131,3 +131,6 @@ You should receive a response similar to:
   }
 }
 ```
+
+# Additional packages
+Notice if no FlashInfer installed, the test will faill back to PyTorch-native implementation of top-p & top-k sampling. This is slower than FlashInfer, but stable.
