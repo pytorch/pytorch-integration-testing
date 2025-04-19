@@ -125,7 +125,7 @@ ARG GIT_REPO_CHECK=0
 RUN --mount=type=bind,source=.git,target=.git \
     if [ "$GIT_REPO_CHECK" != "0" ]; then bash tools/check_repo.sh ; fi
 
-# max jobs used by Ninja to build extensions
+# Max jobs used by Ninja to build extensions
 ARG max_jobs=64
 ENV MAX_JOBS=${max_jobs}
 ARG nvcc_threads=2
