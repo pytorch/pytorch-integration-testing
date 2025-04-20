@@ -35,3 +35,5 @@ runai-model-streamer-s3==0.11.0
 tensorizer>=2.9.0
 lm-eval==0.4.8
 buildkite-test-collector==0.1.9
+
+lm-eval[api]==0.4.8 # required for model evaluation test
