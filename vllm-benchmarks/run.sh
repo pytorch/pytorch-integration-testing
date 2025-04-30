@@ -41,9 +41,8 @@ build_vllm() {
   SCCACHE_CACHE_SIZE=100G sccache --start-server || true
   # Build and install vLLM
   if command -v nvidia-smi; then
-    pip install -r requirements/build.txt
-    # TODO (huydhn): https://github.com/vllm-project/vllm/issues/15435
-    TORCH_CUDA_ARCH_LIST=8.0 pip install --editable .
+    pip install -r requirements/build.txt --extra-index-url https://download.pytorch.org/whl/cu128
+    pip install --editable .
   elif command -v amd-smi; then
     pip install -r requirements/rocm.txt
     pip install -r requirements/rocm-build.txt
