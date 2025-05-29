@@ -62,12 +62,13 @@ jobs:
           SCCACHE_REGION: us-east-1
           HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
           DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
+          NVIDIA_DRIVER_CAPABILITIES: all
         run:
           set -x
 
           docker run \
             --gpus all \
-            -e NVIDIA_DRIVER_CAPABILITIES=all \
+            -e NVIDIA_DRIVER_CAPABILITIES \
             "${DOCKER_IMAGE}" \
             bash -xc ls -la
 
