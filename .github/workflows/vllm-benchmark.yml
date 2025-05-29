@@ -82,8 +82,7 @@ jobs:
         run:
           set -x
 
-          docker run \
-            ${GPU_FLAG:-} \
+          docker run --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all
             "${DOCKER_IMAGE}" \
             "ls -la"
 
