@@ -2,9 +2,9 @@ name: vLLM Benchmark
 
 on:
   schedule:
-    # Run every 6 hours (4 times a day)
-    - cron: '0 */6 * * *'
-  workflow_dispatch:  # Allow manual triggering
+    # Run every 2 hours
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -95,4 +95,4 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "ls -la"
+            bash -xc "cd vllm-benchmarks/vllm; ls -lah; ls -lah .buildkite/nightly-benchmarks/tests; git diff"
