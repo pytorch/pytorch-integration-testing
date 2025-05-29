@@ -65,20 +65,5 @@ jobs:
         run:
           set -x
 
-          docker run --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all "${DOCKER_IMAGE}" bash -xc "ls -la"
-
-
-#            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
-#            -e SCCACHE_BUCKET \
-#            -e SCCACHE_REGION \
-#            -e GPU_DEVICE \
-#            -e HUGGING_FACE_HUB_TOKEN \
-#            --security-opt seccomp=unconfined \
-#            --cap-add=SYS_PTRACE \
-#            --ipc=host \
-#            --tty \
-#            --detach \
-#            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-#            -w /tmp/workspace \
-#            "${DOCKER_IMAGE}" \
-#            "ls -la"
+          # TODO(huydhn): I don't know why backlash doesn't work here
+          docker run ${GPU_FLAG:-} ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} -e SCCACHE_BUCKET -e SCCACHE_REGION -e GPU_DEVICE -e HUGGING_FACE_HUB_TOKEN --ipc=host --tty --security-opt seccomp=unconfined -v "${GITHUB_WORKSPACE}:/tmp/workspace" -w /tmp/workspace "${DOCKER_IMAGE}" bash -xc "ls -la"
