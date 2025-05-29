@@ -82,7 +82,7 @@ jobs:
         run:
           set -x
 
-          container_name=$(docker run \
+          docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
             -e SCCACHE_BUCKET \
@@ -96,10 +96,7 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            ""
-          )
-
-          docker exec -t "${container_name}" sh -c "ls -la"
+            "ls -la"
 
 #      - name: Setup Python
 #        uses: actions/setup-python@v5
