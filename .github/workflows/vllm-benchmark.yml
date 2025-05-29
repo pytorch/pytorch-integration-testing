@@ -55,6 +55,9 @@ jobs:
           #   echo "LAST_GREEN_COMMIT=none" >> $GITHUB_ENV
           # fi
 
+          # DEBUG
+          echo "LAST_GREEN_COMMIT=none" >> $GITHUB_ENV
+
           pushd vllm
           HEAD_SHA=$(git rev-parse --verify HEAD)
           popd
