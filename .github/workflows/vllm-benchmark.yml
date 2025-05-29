@@ -85,6 +85,7 @@ jobs:
           docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
+            -u "${UID}" \
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
             -e GPU_DEVICE \
