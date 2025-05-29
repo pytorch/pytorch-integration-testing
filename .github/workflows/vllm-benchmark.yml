@@ -79,6 +79,9 @@ jobs:
           SCCACHE_REGION: us-east-1
           HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
           DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
+          # vLLM-related environment variables
+          ENGINE_VERSION: v1
+          SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -x
 
@@ -96,4 +99,4 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "id; cd vllm-benchmarks/vllm; ls -lah; ls -lah .git; ls -lah .buildkite/nightly-benchmarks/tests; git diff"
+            bash -xc "cd vllm-benchmarks/vllm && .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh && ls -lah benchmarks/results"
