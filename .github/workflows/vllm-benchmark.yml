@@ -42,6 +42,8 @@ jobs:
           HEAD_BRANCH: main
           DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
         run: |
+          set -eux
+
           pip install awscli
 
           pushd vllm
@@ -63,7 +65,7 @@ jobs:
             aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
             if [[ ${NOT_EXIST} == "1" ]]; then
-              echo "Found vLLM commit ${HEAD_SHA} hasn't been benchmarked yet"
+              echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
               break
             fi
           done
