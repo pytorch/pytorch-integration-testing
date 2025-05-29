@@ -3,7 +3,7 @@ name: vLLM Benchmark
 on:
   schedule:
     # Run every 2 hours
-    - cron: '0 */1 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch:
   pull_request:
     paths:
