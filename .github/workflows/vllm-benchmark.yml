@@ -81,7 +81,7 @@ jobs:
           HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
           DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
         run:
-          set -eux
+          set -x
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
@@ -96,7 +96,8 @@ jobs:
             --detach \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
-            "${DOCKER_IMAGE}"
+            "${DOCKER_IMAGE}" \
+            ""
           )
 
           docker exec -t "${container_name}" sh -c "ls -la"
