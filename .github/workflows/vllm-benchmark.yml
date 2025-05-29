@@ -99,4 +99,4 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm && .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh && ls -lah benchmarks/results"
+            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh && ls -lah benchmarks/results"
