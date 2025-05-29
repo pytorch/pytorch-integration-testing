@@ -95,4 +95,4 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm; ls -lah; ls -lah .buildkite/nightly-benchmarks/tests; git diff"
+            bash -xc "id; cd vllm-benchmarks/vllm; ls -lah; ls -lah .git; ls -lah .buildkite/nightly-benchmarks/tests; git diff"
