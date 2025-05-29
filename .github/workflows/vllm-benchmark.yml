@@ -82,21 +82,22 @@ jobs:
         run:
           set -x
 
-          docker run \
-            ${GPU_FLAG:-} \
-            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
-            -e SCCACHE_BUCKET \
-            -e SCCACHE_REGION \
-            -e HUGGING_FACE_HUB_TOKEN \
-            --security-opt seccomp=unconfined \
-            --cap-add=SYS_PTRACE \
-            --ipc=host \
-            --tty \
-            --detach \
-            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-            -w /tmp/workspace \
-            "${DOCKER_IMAGE}" \
-            "ls -la"
+          docker ps -a
+#          docker run \
+#            ${GPU_FLAG:-} \
+#            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
+#            -e SCCACHE_BUCKET \
+#            -e SCCACHE_REGION \
+#            -e HUGGING_FACE_HUB_TOKEN \
+#            --security-opt seccomp=unconfined \
+#            --cap-add=SYS_PTRACE \
+#            --ipc=host \
+#            --tty \
+#            --detach \
+#            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+#            -w /tmp/workspace \
+#            "${DOCKER_IMAGE}" \
+#            "ls -la"
 
 #      - name: Setup Python
 #        uses: actions/setup-python@v5
