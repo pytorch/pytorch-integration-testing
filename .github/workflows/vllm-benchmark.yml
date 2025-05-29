@@ -65,10 +65,7 @@ jobs:
         run:
           set -x
 
-          docker run --gpus all \
-            -e NVIDIA_DRIVER_CAPABILITIES=all \
-            "${DOCKER_IMAGE}" \
-            bash -xc ls -la
+          docker run --gpus all -e NVIDIA_DRIVER_CAPABILITIES=all "${DOCKER_IMAGE}" bash -xc "ls -la"
 
 
 #            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
