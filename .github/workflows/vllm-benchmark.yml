@@ -50,14 +50,14 @@ jobs:
           HEAD_BRANCH=main
 
           pushd vllm
-          for i in {0..9}
+          # Looking back the latest 100 commits is probably enough
+          for i in {0..99}
           do
             # Check if image already exists, if it does then check an older one
             HEAD_SHA=$(git rev-parse --verify HEAD~${i})
             DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
 
             if docker manifest inspect "${DOCKER_IMAGE}"; then
-              echo "${DOCKER_IMAGE} doesn't exist, this usually means that the commit has just been landed in vLLM and the image hasn't finished building yet"
               break
             fi
           done
