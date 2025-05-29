@@ -17,7 +17,7 @@ jobs:
   benchmark-h100:
     name: Run vLLM benchmarks
     runs-on: linux.aws.h100.4
-    environment: ${{ github.ref == 'refs/heads/main' && 'pytorch-x-vllm' || 'pytorch-x-vllm' }}
+    environment: pytorch-x-vllm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
-          HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGING_FACE_HUB_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
@@ -92,7 +92,7 @@ jobs:
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
             -e GPU_DEVICE \
-            -e HUGGING_FACE_HUB_TOKEN \
+            -e HF_TOKEN \
             --ipc=host \
             --tty \
             --security-opt seccomp=unconfined \
