@@ -92,14 +92,19 @@ def parse_args() -> Any:
 def get_git_metadata(vllm_dir: str) -> Tuple[str, str]:
     repo = Repo(vllm_dir)
     try:
-        return repo.active_branch.name, repo.head.object.hexsha
+        return (
+            repo.active_branch.name,
+            repo.head.object.hexsha,
+            repo.head.object.committed_date,
+        )
     except TypeError:
         # This is a detached HEAD, default the branch to main
-        return "main", repo.head.object.hexsha
+        return "main", repo.head.object.hexsha, repo.head.object.committed_date
 
 
-def get_benchmark_metadata(head_branch: str, head_sha: str) -> Dict[str, Any]:
-    timestamp = int(time.time())
+def get_benchmark_metadata(
+    head_branch: str, head_sha: str, timestamp: int
+) -> Dict[str, Any]:
     return {
         "timestamp": timestamp,
         "schema_version": "v3",
@@ -201,12 +206,16 @@ def main() -> None:
     args = parse_args()
 
     if args.vllm:
-        head_branch, head_sha = get_git_metadata(args.vllm)
+        head_branch, head_sha, timestamp = get_git_metadata(args.vllm)
     else:
-        head_branch, head_sha = args.head_branch, args.head_sha
+        head_branch, head_sha, timestamp = (
+            args.head_branch,
+            args.head_sha,
+            int(time.time()),
+        )
 
     # Gather some information about the benchmark
-    metadata = get_benchmark_metadata(head_branch, head_sha)
+    metadata = get_benchmark_metadata(head_branch, head_sha, timestamp)
     runner = get_runner_info()
 
     # Extract and aggregate the benchmark results

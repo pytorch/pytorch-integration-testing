@@ -36,6 +36,12 @@ jobs:
           export GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
 
+      - name: Install dependencies
+        working-directory: vllm-benchmarks
+        run: |
+          set -eux
+          pip install -r requirements.txt
+
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
         env:
@@ -43,8 +49,6 @@ jobs:
           DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
         run: |
           set -eux
-
-          pip install awscli
 
           pushd vllm
           # Looking back the latest 100 commits is enough
