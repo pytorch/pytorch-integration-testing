@@ -50,13 +50,15 @@ jobs:
           HEAD_BRANCH=main
 
           pushd vllm
-          # Looking back the latest 100 commits is probably enough
+          # Looking back the latest 100 commits is enough
           for i in {0..99}
           do
-            # Check if image already exists, if it does then check an older one
+            # Check if the image is there, if it doesn't then check an older one
+            # because the commit is too recent
             HEAD_SHA=$(git rev-parse --verify HEAD~${i})
             DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
 
+            # TODO: SKIP COMMIT THAT HAS ALREADY BEEN RUN
             if docker manifest inspect "${DOCKER_IMAGE}"; then
               break
             fi
@@ -88,7 +90,6 @@ jobs:
           docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
-            -u "${UID}" \
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
             -e GPU_DEVICE \
@@ -99,4 +100,12 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh && ls -lah benchmarks/results"
+            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+
+      - name: Upload the benchmark results
+        working-directory: vllm-benchmarks
+        run: |
+          set -eux
+
+          sudo chown ${UID} vllm/benchmarks/results
+          ls -lah vllm/benchmarks/results
