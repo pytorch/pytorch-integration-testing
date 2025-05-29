@@ -69,7 +69,7 @@ jobs:
             --gpus all \
             -e NVIDIA_DRIVER_CAPABILITIES=all \
             "${DOCKER_IMAGE}" \
-            bash -xc "ls -la"
+            bash -xc ls -la
 
 
 #            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
