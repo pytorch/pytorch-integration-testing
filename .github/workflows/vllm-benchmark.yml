@@ -1,4 +1,4 @@
-name: VLLM Benchmark
+name: vLLM Benchmark
 
 on:
   schedule:
@@ -82,9 +82,12 @@ jobs:
         run:
           set -x
 
-          docker ps -a
-#          docker run \
-#            ${GPU_FLAG:-} \
+          docker run \
+            ${GPU_FLAG:-} \
+            "${DOCKER_IMAGE}" \
+            "ls -la"
+
+
 #            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
 #            -e SCCACHE_BUCKET \
 #            -e SCCACHE_REGION \
