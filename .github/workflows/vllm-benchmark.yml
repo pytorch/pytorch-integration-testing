@@ -13,7 +13,7 @@ jobs:
   benchmark-h100:
     name: Run vLLM benchmarks
     runs-on: linux.aws.h100.4
-    secrets: inherit
+    environment: ${{ github.ref == 'refs/heads/main' && 'pytorch-x-vllm' || 'pytorch-x-vllm' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
