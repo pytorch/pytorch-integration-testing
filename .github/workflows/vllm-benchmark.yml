@@ -74,7 +74,6 @@ jobs:
 
       - name: Run vLLM benchmark
         if: env.LAST_GREEN_COMMIT == 'none'
-        shell: bash
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
