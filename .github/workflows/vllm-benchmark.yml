@@ -3,7 +3,7 @@ name: vLLM Benchmark
 on:
   schedule:
     # Run every 2 hours
-    - cron: '0 */2 * * *'
+    - cron: '0 */1 * * *'
   workflow_dispatch:
   pull_request:
     paths:
@@ -30,12 +30,6 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Setup benchmark tests
-        working-directory: vllm-benchmarks
-        run: |
-          # Set the list of benchmarks we want to cover in PyTorch infra
-          cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
-
       - name: Set GPU device name
         working-directory: vllm-benchmarks
         run: |
@@ -45,9 +39,10 @@ jobs:
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
         env:
+          HEAD_BRANCH: main
           DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
         run: |
-          HEAD_BRANCH=main
+          pip install awscli
 
           pushd vllm
           # Looking back the latest 100 commits is enough
@@ -58,8 +53,17 @@ jobs:
             HEAD_SHA=$(git rev-parse --verify HEAD~${i})
             DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
 
-            # TODO: SKIP COMMIT THAT HAS ALREADY BEEN RUN
-            if docker manifest inspect "${DOCKER_IMAGE}"; then
+            # No Docker image available yet because the commit is too recent
+            if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+              continue
+            fi
+
+            NOT_EXIST=0
+            S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
+            aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+            if [[ ${NOT_EXIST} == "1" ]]; then
+              echo "Found vLLM commit ${HEAD_SHA} hasn't been benchmarked yet"
               break
             fi
           done
@@ -74,6 +78,16 @@ jobs:
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
           echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
+
+      - name: Setup benchmark tests
+        working-directory: vllm-benchmarks
+        run: |
+          pushd vllm
+          git checkout "${HEAD_SHA}"
+          popd
+
+          # Set the list of benchmarks we want to cover in PyTorch infra
+          cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
 
       - name: Run vLLM benchmark
         env:
@@ -104,8 +118,16 @@ jobs:
 
       - name: Upload the benchmark results
         working-directory: vllm-benchmarks
+        env:
+          BENCHMARK_RESULTS: vllm/benchmarks/results
+          HEAD_BRANCH: main
         run: |
           set -eux
 
-          sudo chown ${UID} vllm/benchmarks/results
-          ls -lah vllm/benchmarks/results
+          sudo chown ${UID} "${BENCHMARK_RESULTS}"
+          ls -lah "${BENCHMARK_RESULTS}"
+
+          python upload_benchmark_results.py \
+            --vllm vllm \
+            --benchmark-results "${BENCHMARK_RESULTS}" \
+            --device "${GPU_DEVICE}"

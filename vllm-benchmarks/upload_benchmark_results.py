@@ -40,12 +40,26 @@ class ValidateDir(Action):
 
 def parse_args() -> Any:
     parser = ArgumentParser("Upload vLLM benchmarks results to S3")
-    parser.add_argument(
+    vllm_metadata = parser.add_mutually_exclusive_group(required=True)
+    vllm_metadata.add_argument(
         "--vllm",
         type=str,
         required=True,
         action=ValidateDir,
         help="the directory that vllm repo is checked out",
+    )
+    branch_commit = vllm_metadata.add_argument_group("vLLM branch and commit metadata")
+    branch_commit.add_argument(
+        "--head-branch",
+        type=str,
+        default="main",
+        help="the name of the vLLM branch the benchmark runs on",
+    )
+    branch_commit.add_argument(
+        "--head-sha",
+        type=str,
+        required=True,
+        help="the commit SHA the benchmark runs on",
     )
     parser.add_argument(
         "--benchmark-results",
@@ -186,7 +200,11 @@ def upload_to_s3(
 def main() -> None:
     args = parse_args()
 
-    head_branch, head_sha = get_git_metadata(args.vllm)
+    if args.vllm:
+        head_branch, head_sha = get_git_metadata(args.vllm)
+    else:
+        head_branch, head_sha = args.head_branch, args.head_sha
+
     # Gather some information about the benchmark
     metadata = get_benchmark_metadata(head_branch, head_sha)
     runner = get_runner_info()
