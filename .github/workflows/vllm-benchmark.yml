@@ -89,14 +89,13 @@ jobs:
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
             -e HUGGING_FACE_HUB_TOKEN \
-            --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --security-opt seccomp=unconfined \
             --cap-add=SYS_PTRACE \
             --ipc=host \
             --tty \
             --detach \
-            -v "${GITHUB_WORKSPACE}:/var/lib/jenkins/workspace" \
-            -w /var/lib/jenkins/workspace \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
 
