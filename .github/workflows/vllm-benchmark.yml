@@ -66,4 +66,4 @@ jobs:
           set -x
 
           # TODO(huydhn): I don't know why backlash doesn't work here
-          docker run ${GPU_FLAG:-} ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} -e SCCACHE_BUCKET -e SCCACHE_REGION -e GPU_DEVICE -e HUGGING_FACE_HUB_TOKEN --ipc=host --tty --security-opt seccomp=unconfined -v "${GITHUB_WORKSPACE}:/tmp/workspace" -w /tmp/workspace "${DOCKER_IMAGE}" bash -xc "ls -la"
+          docker run ${GPU_FLAG:-} ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} -e SCCACHE_BUCKET -e SCCACHE_REGION -e GPU_DEVICE -e HUGGING_FACE_HUB_TOKEN --ipc=host --tty -v "${GITHUB_WORKSPACE}:/tmp/workspace" -w /tmp/workspace "${DOCKER_IMAGE}" bash -xc "ls -la"
