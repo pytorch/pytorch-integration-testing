@@ -142,3 +142,5 @@ jobs:
             --vllm vllm \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}"
+
+          sleep 3600
