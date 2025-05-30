@@ -5,6 +5,14 @@ on:
     # Run every 2 hours
     - cron: '0 */2 * * *'
   workflow_dispatch:
+    inputs:
+      vllm_branch:
+        required: true
+        type: string
+        default: main
+      vllm_commit:
+        required: false
+        type: string
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -27,7 +35,7 @@ jobs:
         with:
           repository: vllm-project/vllm
           path: vllm-benchmarks/vllm
-          ref: main
+          ref: ${{ inputs.vllm_branch || 'main' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -50,35 +58,38 @@ jobs:
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
         env:
-          HEAD_BRANCH: main
+          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
+          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
           DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
         run: |
           set -eux
 
-          pushd vllm
-          # Looking back the latest 100 commits is enough
-          for i in {0..99}
-          do
-            # Check if the image is there, if it doesn't then check an older one
-            # because the commit is too recent
-            HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-            DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+          if [[ -z "${HEAD_SHA}" ]]; then
+            pushd vllm
+            # Looking back the latest 100 commits is enough
+            for i in {0..99}
+            do
+              # Check if the image is there, if it doesn't then check an older one
+              # because the commit is too recent
+              HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
 
-            # No Docker image available yet because the commit is too recent
-            if ! docker manifest inspect "${DOCKER_IMAGE}"; then
-              continue
-            fi
+              # No Docker image available yet because the commit is too recent
+              if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+                continue
+              fi
 
-            NOT_EXIST=0
-            S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
-            aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+              NOT_EXIST=0
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
+              aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
-            if [[ ${NOT_EXIST} == "1" ]]; then
-              echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
-              break
-            fi
-          done
-          popd
+              if [[ ${NOT_EXIST} == "1" ]]; then
+                echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
+                break
+              fi
+            done
+            popd
+          fi
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
@@ -133,7 +144,6 @@ jobs:
         working-directory: vllm-benchmarks
         env:
           BENCHMARK_RESULTS: vllm/benchmarks/results
-          HEAD_BRANCH: main
         run: |
           set -eux
 
