@@ -135,7 +135,7 @@ jobs:
         run: |
           set -eux
 
-          sudo chown ${UID} "${BENCHMARK_RESULTS}"
+          sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
           python upload_benchmark_results.py \
