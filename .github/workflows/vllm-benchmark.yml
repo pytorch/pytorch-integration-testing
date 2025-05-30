@@ -119,6 +119,8 @@ jobs:
             -e SCCACHE_REGION \
             -e GPU_DEVICE \
             -e HF_TOKEN \
+            -e ENGINE_VERSION \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             --ipc=host \
             --tty \
             --security-opt seccomp=unconfined \
@@ -142,5 +144,3 @@ jobs:
             --vllm vllm \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}"
-
-          sleep 3600
