@@ -44,7 +44,6 @@ def parse_args() -> Any:
     vllm_metadata.add_argument(
         "--vllm",
         type=str,
-        required=True,
         action=ValidateDir,
         help="the directory that vllm repo is checked out",
     )
@@ -58,7 +57,6 @@ def parse_args() -> Any:
     branch_commit.add_argument(
         "--head-sha",
         type=str,
-        required=True,
         help="the commit SHA the benchmark runs on",
     )
     parser.add_argument(
@@ -123,6 +121,8 @@ def get_runner_info() -> Dict[str, Any]:
         name = "rocm"
     elif torch.cuda.is_available() and torch.version.cuda:
         name = "cuda"
+    else:
+        name = "unknown"
 
     return {
         "name": name,
