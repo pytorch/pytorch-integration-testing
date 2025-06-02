@@ -40,12 +40,24 @@ class ValidateDir(Action):
 
 def parse_args() -> Any:
     parser = ArgumentParser("Upload vLLM benchmarks results to S3")
-    parser.add_argument(
+    vllm_metadata = parser.add_mutually_exclusive_group(required=True)
+    vllm_metadata.add_argument(
         "--vllm",
         type=str,
-        required=True,
         action=ValidateDir,
         help="the directory that vllm repo is checked out",
+    )
+    branch_commit = vllm_metadata.add_argument_group("vLLM branch and commit metadata")
+    branch_commit.add_argument(
+        "--head-branch",
+        type=str,
+        default="main",
+        help="the name of the vLLM branch the benchmark runs on",
+    )
+    branch_commit.add_argument(
+        "--head-sha",
+        type=str,
+        help="the commit SHA the benchmark runs on",
     )
     parser.add_argument(
         "--benchmark-results",
@@ -78,14 +90,19 @@ def parse_args() -> Any:
 def get_git_metadata(vllm_dir: str) -> Tuple[str, str]:
     repo = Repo(vllm_dir)
     try:
-        return repo.active_branch.name, repo.head.object.hexsha
+        return (
+            repo.active_branch.name,
+            repo.head.object.hexsha,
+            repo.head.object.committed_date,
+        )
     except TypeError:
         # This is a detached HEAD, default the branch to main
-        return "main", repo.head.object.hexsha
+        return "main", repo.head.object.hexsha, repo.head.object.committed_date
 
 
-def get_benchmark_metadata(head_branch: str, head_sha: str) -> Dict[str, Any]:
-    timestamp = int(time.time())
+def get_benchmark_metadata(
+    head_branch: str, head_sha: str, timestamp: int
+) -> Dict[str, Any]:
     return {
         "timestamp": timestamp,
         "schema_version": "v3",
@@ -104,6 +121,8 @@ def get_runner_info() -> Dict[str, Any]:
         name = "rocm"
     elif torch.cuda.is_available() and torch.version.cuda:
         name = "cuda"
+    else:
+        name = "unknown"
 
     return {
         "name": name,
@@ -176,7 +195,6 @@ def upload_to_s3(
             f"{s3_bucket}",
             f"{s3_path}",
         ).put(
-            ACL="public-read",
             Body=gzip.compress(data.encode()),
             ContentEncoding="gzip",
             ContentType="application/json",
@@ -186,9 +204,17 @@ def upload_to_s3(
 def main() -> None:
     args = parse_args()
 
-    head_branch, head_sha = get_git_metadata(args.vllm)
+    if args.vllm:
+        head_branch, head_sha, timestamp = get_git_metadata(args.vllm)
+    else:
+        head_branch, head_sha, timestamp = (
+            args.head_branch,
+            args.head_sha,
+            int(time.time()),
+        )
+
     # Gather some information about the benchmark
-    metadata = get_benchmark_metadata(head_branch, head_sha)
+    metadata = get_benchmark_metadata(head_branch, head_sha, timestamp)
     runner = get_runner_info()
 
     # Extract and aggregate the benchmark results

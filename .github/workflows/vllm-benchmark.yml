@@ -1,0 +1,156 @@
+name: vLLM Benchmark
+
+on:
+  schedule:
+    # Run every 2 hours
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      vllm_branch:
+        required: true
+        type: string
+        default: main
+      vllm_commit:
+        required: false
+        type: string
+  pull_request:
+    paths:
+      - .github/workflows/vllm-benchmark.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark-h100:
+    name: Run vLLM benchmarks
+    runs-on: linux.aws.h100.4
+    environment: pytorch-x-vllm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout vLLM repository
+        uses: actions/checkout@v4
+        with:
+          repository: vllm-project/vllm
+          path: vllm-benchmarks/vllm
+          ref: ${{ inputs.vllm_branch || 'main' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Set GPU device name
+        working-directory: vllm-benchmarks
+        run: |
+          export GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        working-directory: vllm-benchmarks
+        run: |
+          set -eux
+          pip install -r requirements.txt
+
+      - name: Check for last benchmark commit
+        working-directory: vllm-benchmarks
+        env:
+          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
+          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
+          DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+        run: |
+          set -eux
+
+          if [[ -z "${HEAD_SHA}" ]]; then
+            pushd vllm
+            # Looking back the latest 100 commits is enough
+            for i in {0..99}
+            do
+              # Check if the image is there, if it doesn't then check an older one
+              # because the commit is too recent
+              HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+
+              # No Docker image available yet because the commit is too recent
+              if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+                continue
+              fi
+
+              NOT_EXIST=0
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
+              aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+              if [[ ${NOT_EXIST} == "1" ]]; then
+                echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
+                break
+              fi
+            done
+            popd
+          fi
+
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+
+      - name: Setup GPU_FLAG for docker run
+        run: |
+          echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
+
+      - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
+        run: |
+          echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
+
+      - name: Setup benchmark tests
+        working-directory: vllm-benchmarks
+        run: |
+          pushd vllm
+          git checkout "${HEAD_SHA}"
+          popd
+
+          # Set the list of benchmarks we want to cover in PyTorch infra
+          cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
+
+      - name: Run vLLM benchmark
+        env:
+          SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
+          SCCACHE_REGION: us-east-1
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
+          # vLLM-related environment variables
+          ENGINE_VERSION: v1
+          SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+        run: |
+          set -x
+
+          docker run \
+            ${GPU_FLAG:-} \
+            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
+            -e SCCACHE_BUCKET \
+            -e SCCACHE_REGION \
+            -e GPU_DEVICE \
+            -e HF_TOKEN \
+            -e ENGINE_VERSION \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --ipc=host \
+            --tty \
+            --security-opt seccomp=unconfined \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            "${DOCKER_IMAGE}" \
+            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+
+      - name: Upload the benchmark results
+        working-directory: vllm-benchmarks
+        env:
+          BENCHMARK_RESULTS: vllm/benchmarks/results
+        run: |
+          set -eux
+
+          sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
+          ls -lah "${BENCHMARK_RESULTS}"
+
+          python upload_benchmark_results.py \
+            --vllm vllm \
+            --benchmark-results "${BENCHMARK_RESULTS}" \
+            --device "${GPU_DEVICE}"
