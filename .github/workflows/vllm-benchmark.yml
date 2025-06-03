@@ -107,7 +107,7 @@ jobs:
               fi
 
               NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results_${MODELS}.json"
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results_${MODELS//\//_}.json"
               aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
               if [[ ${NOT_EXIST} == "1" ]]; then
@@ -192,4 +192,4 @@ jobs:
             --vllm vllm \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}" \
-            --model "${MODELS}"
+            --model "${MODELS//\//_}"
