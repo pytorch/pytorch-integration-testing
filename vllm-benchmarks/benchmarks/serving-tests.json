@@ -55,24 +55,5 @@
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200
         }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_sharegpt",
-        "qps_list": [1, 4, 16, "inf"],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy"
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "sharegpt",
-            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200
-        }
     }
 ]
