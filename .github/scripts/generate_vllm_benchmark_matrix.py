@@ -52,12 +52,12 @@ class ValidateDir(Action):
 
 
 def parse_args() -> Any:
-    parser = ArgumentParser("Generate vLLM benchmark configs")
+    parser = ArgumentParser("Generate vLLM benchmark CI matrix")
 
     parser.add_argument(
-        "--vllm-benchmark-configs-dir",
+        "--benchmark-configs-dir",
         type=str,
-        default=".buildkite/nightly-benchmarks/tests",
+        default="vllm-benchmarks/benchmarks",
         action=ValidateDir,
         help="the directory contains vLLM benchmark configs",
         required=True,
@@ -87,16 +87,17 @@ def set_output(name: str, val: Any) -> None:
         env.write(f"{name}={val}\n")
 
 
-def generate_benchmark_matrix(vllm_benchmark_configs_dir: str) -> Dict[str, Any]:
+def generate_benchmark_matrix(benchmark_configs_dir: str) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
     """
+    models = []
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
 
-    for file in glob.glob(f"{vllm_benchmark_configs_dir}/*.json"):
+    for file in glob.glob(f"{benchmark_configs_dir}/*.json"):
         with open(file) as f:
             try:
                 configs = json.load(f)
@@ -108,18 +109,22 @@ def generate_benchmark_matrix(vllm_benchmark_configs_dir: str) -> Dict[str, Any]
             param = list(VLLM_BENCHMARK_CONFIGS_PARAMETER & set(config.keys()))
             assert len(param) == 1
 
-            vllm_benchmark_config = config[param[0]]
-            if "model" not in vllm_benchmark_config:
+            benchmark_config = config[param[0]]
+            if "model" not in benchmark_config:
                 warning(
-                    f"Model name is not set in {vllm_benchmark_config}, skipping..."
+                    f"Model name is not set in {benchmark_config}, skipping..."
                 )
                 continue
-            model = vllm_benchmark_config["model"]
+            model = benchmark_config["model"]
 
-            if "tensor_parallel_size" in vllm_benchmark_config:
-                tp = vllm_benchmark_config["tensor_parallel_size"]
-            elif "tp" in vllm_benchmark_config:
-                tp = vllm_benchmark_config["tp"]
+            # Dedup
+            if model in models:
+                continue
+
+            if "tensor_parallel_size" in benchmark_config:
+                tp = benchmark_config["tensor_parallel_size"]
+            elif "tp" in benchmark_config:
+                tp = benchmark_config["tp"]
             else:
                 tp = 8
             assert tp in RUNNERS_MAPPING
@@ -128,7 +133,9 @@ def generate_benchmark_matrix(vllm_benchmark_configs_dir: str) -> Dict[str, Any]
                 benchmark_matrix["include"].append(
                     {
                         "runner": runner,
-                        "model": model,
+                        # I opt to return a comma-separated list of models here
+                        # so that we could run multiple models on the same runner
+                        "models": model,
                     }
                 )
 
@@ -137,7 +144,7 @@ def generate_benchmark_matrix(vllm_benchmark_configs_dir: str) -> Dict[str, Any]
 
 def main() -> None:
     args = parse_args()
-    benchmark_matrix = generate_benchmark_matrix(args.vllm_benchmark_configs_dir)
+    benchmark_matrix = generate_benchmark_matrix(args.benchmark_configs_dir)
     set_output("benchmark_matrix", benchmark_matrix)
 
 

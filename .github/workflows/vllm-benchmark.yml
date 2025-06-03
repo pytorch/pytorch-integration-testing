@@ -42,7 +42,7 @@ jobs:
 
           # The generated matrix is grouped by model and runner
           python .github/scripts/generate_vllm_benchmark_matrix.py \
-            --vllm-benchmark-configs-dir vllm-benchmarks/benchmarks
+            --benchmark-configs-dir vllm-benchmarks/benchmarks
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -128,17 +128,19 @@ jobs:
           echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
 
       - name: Setup benchmark tests
-        working-directory: vllm-benchmarks
         env:
-          MODEL: ${{ matrix.model }}
+          MODELS: ${{ matrix.models }}
         run: |
-          pushd vllm
+          pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
+          rm vllm/.buildkite/nightly-benchmarks/tests/*.json
           popd
 
-          echo "==== ${MODEL}"
-          # Set the list of benchmarks we want to cover in PyTorch infra
-          cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
+          # Set the list of benchmarks we want to cover in this runner
+          python .github/scripts/setup_vllm_benchmark.py \
+            --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
+            --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
+            --models "${MODELS}"
 
       - name: Run vLLM benchmark
         # TODO: DEBUG
