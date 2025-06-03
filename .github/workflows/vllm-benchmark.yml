@@ -133,7 +133,7 @@ jobs:
         run: |
           pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
-          rm vllm/.buildkite/nightly-benchmarks/tests/*.json
+          rm .buildkite/nightly-benchmarks/tests/*.json
           popd
 
           # Set the list of benchmarks we want to cover in this runner
