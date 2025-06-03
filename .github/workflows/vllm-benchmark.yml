@@ -148,8 +148,6 @@ jobs:
           popd
 
       - name: Run vLLM benchmark
-        # TODO: DEBUG
-        if: false
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
@@ -179,8 +177,6 @@ jobs:
             bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
-        # TODO: DEBUG
-        if: false
         working-directory: vllm-benchmarks
         env:
           BENCHMARK_RESULTS: vllm/benchmarks/results
