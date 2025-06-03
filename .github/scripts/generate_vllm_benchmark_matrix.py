@@ -120,6 +120,7 @@ def generate_benchmark_matrix(benchmark_configs_dir: str) -> Dict[str, Any]:
             # Dedup
             if model in models:
                 continue
+            models.append(model)
 
             if "tensor_parallel_size" in benchmark_config:
                 tp = benchmark_config["tensor_parallel_size"]
