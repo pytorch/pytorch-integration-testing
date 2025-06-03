@@ -22,9 +22,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  benchmark-h100:
+  set-parameters:
+    runs-on: linux.2xlarge
+    outputs:
+      benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'false'
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set parameters
+        id: set-parameters
+        shell: bash
+        run: |
+          set -eux
+
+          # The generated matrix is grouped by model and runner
+          python .ci/scripts/generate_vllm_benchmark_matrix.py
+
+  benchmarks:
     name: Run vLLM benchmarks
-    runs-on: linux.aws.h100.4
+    needs: set-parameters
+    strategy:
+      matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
+      fail-fast: false
+    runs-on: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     steps:
       - name: Checkout repository
@@ -103,15 +129,20 @@ jobs:
 
       - name: Setup benchmark tests
         working-directory: vllm-benchmarks
+        env:
+          MODEL: ${{ matrix.model }}
         run: |
           pushd vllm
           git checkout "${HEAD_SHA}"
           popd
 
+          echo "==== ${MODEL}"
           # Set the list of benchmarks we want to cover in PyTorch infra
           cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
 
       - name: Run vLLM benchmark
+        # TODO: DEBUG
+        if: false
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
@@ -141,6 +172,8 @@ jobs:
             bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
+        # TODO: DEBUG
+        if: false
         working-directory: vllm-benchmarks
         env:
           BENCHMARK_RESULTS: vllm/benchmarks/results
