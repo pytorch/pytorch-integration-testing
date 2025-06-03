@@ -7,10 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       vllm_branch:
+        description: vLLM branch
         required: true
         type: string
         default: main
       vllm_commit:
+        description: vLLM commit
+        required: false
+        type: string
+      models:
+        description: |
+          A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
   pull_request:
@@ -37,12 +44,15 @@ jobs:
       - name: Set parameters
         id: set-parameters
         shell: bash
+        env:
+          MODELS: ${{ inputs.models || '' }}
         run: |
           set -eux
 
           # The generated matrix is grouped by model and runner
           python .github/scripts/generate_vllm_benchmark_matrix.py \
-            --benchmark-configs-dir vllm-benchmarks/benchmarks
+            --benchmark-configs-dir vllm-benchmarks/benchmarks \
+            --models "${MODELS}"
 
   benchmarks:
     name: Run vLLM benchmarks

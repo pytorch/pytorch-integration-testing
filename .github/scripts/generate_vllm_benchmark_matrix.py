@@ -6,7 +6,7 @@ import glob
 import logging
 from logging import warning
 from argparse import Action, ArgumentParser, Namespace
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 
 logging.basicConfig(level=logging.INFO)
@@ -62,6 +62,12 @@ def parse_args() -> Any:
         help="the directory contains vLLM benchmark configs",
         required=True,
     )
+    parser.add_argument(
+        "--models",
+        type=str,
+        default="",
+        help="the comma-separated list of models to benchmark",
+    )
 
     return parser.parse_args()
 
@@ -87,12 +93,14 @@ def set_output(name: str, val: Any) -> None:
         env.write(f"{name}={val}\n")
 
 
-def generate_benchmark_matrix(benchmark_configs_dir: str) -> Dict[str, Any]:
+def generate_benchmark_matrix(
+    benchmark_configs_dir: str, models: List[str]
+) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
     """
-    models = []
+    get_all_models = True if not models else False
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
@@ -111,16 +119,15 @@ def generate_benchmark_matrix(benchmark_configs_dir: str) -> Dict[str, Any]:
 
             benchmark_config = config[param[0]]
             if "model" not in benchmark_config:
-                warning(
-                    f"Model name is not set in {benchmark_config}, skipping..."
-                )
+                warning(f"Model name is not set in {benchmark_config}, skipping...")
                 continue
-            model = benchmark_config["model"]
+            model = benchmark_config["model"].lower()
 
             # Dedup
             if model in models:
                 continue
-            models.append(model)
+            if get_all_models:
+                models.append(model)
 
             if "tensor_parallel_size" in benchmark_config:
                 tp = benchmark_config["tensor_parallel_size"]
@@ -145,7 +152,11 @@ def generate_benchmark_matrix(benchmark_configs_dir: str) -> Dict[str, Any]:
 
 def main() -> None:
     args = parse_args()
-    benchmark_matrix = generate_benchmark_matrix(args.benchmark_configs_dir)
+    models = [m.strip().lower() for m in args.models.split(",") if m.strip()]
+    benchmark_matrix = generate_benchmark_matrix(
+        args.benchmark_configs_dir,
+        models,
+    )
     set_output("benchmark_matrix", benchmark_matrix)
 
 
