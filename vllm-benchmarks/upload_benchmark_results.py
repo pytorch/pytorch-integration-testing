@@ -80,6 +80,11 @@ def parse_args() -> Any:
         help="the name of the GPU device coming from nvidia-smi or amd-smi",
     )
     parser.add_argument(
+        "--model",
+        type=str,
+        help="the optional name of model to add to S3 path",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
     )
@@ -158,7 +163,7 @@ def load(benchmark_results: str) -> Dict[str, List]:
                 continue
 
             if type(r) is not list or "benchmark" not in r[0]:
-                warning(f"Find no PyToch benchmark results in {file}")
+                warning(f"Find no PyTorch benchmark results in {file}")
                 continue
 
             results[filename] = r
@@ -184,9 +189,11 @@ def upload_to_s3(
     head_sha: str,
     aggregated_results: List[Dict[str, Any]],
     device: str,
+    model: str,
     dry_run: bool = True,
 ) -> None:
-    s3_path = f"v3/{REPO}/{head_branch}/{head_sha}/{device}/benchmark_results.json"
+    model_suffix = f"_{model}" if model else ""
+    s3_path = f"v3/{REPO}/{head_branch}/{head_sha}/{device}/benchmark_results{model_suffix}.json"
     info(f"Upload benchmark results to s3://{s3_bucket}/{s3_path}")
     if not dry_run:
         # Write in JSONEachRow format
@@ -225,6 +232,7 @@ def main() -> None:
         head_sha,
         aggregated_results,
         args.device,
+        args.model,
         args.dry_run,
     )
 

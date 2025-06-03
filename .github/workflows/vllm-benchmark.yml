@@ -7,10 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       vllm_branch:
+        description: vLLM branch
         required: true
         type: string
         default: main
       vllm_commit:
+        description: vLLM commit
+        required: false
+        type: string
+      models:
+        description: |
+          A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
   pull_request:
@@ -22,9 +29,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  benchmark-h100:
+  set-parameters:
+    runs-on: ubuntu-latest
+    outputs:
+      benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set parameters
+        id: set-parameters
+        shell: bash
+        env:
+          MODELS: ${{ inputs.models || '' }}
+        run: |
+          set -eux
+
+          # The generated matrix is grouped by model and runner
+          python .github/scripts/generate_vllm_benchmark_matrix.py \
+            --benchmark-configs-dir vllm-benchmarks/benchmarks \
+            --models "${MODELS}"
+
+  benchmarks:
     name: Run vLLM benchmarks
-    runs-on: linux.aws.h100.4
+    needs: set-parameters
+    strategy:
+      matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
+      fail-fast: false
+    runs-on: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     steps:
       - name: Checkout repository
@@ -61,6 +97,7 @@ jobs:
           HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
           HEAD_SHA: ${{ inputs.vllm_commit || '' }}
           DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          MODELS: ${{ matrix.models }}
         run: |
           set -eux
 
@@ -80,7 +117,7 @@ jobs:
               fi
 
               NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results.json"
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results_${MODELS//\//_}.json"
               aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
               if [[ ${NOT_EXIST} == "1" ]]; then
@@ -102,14 +139,24 @@ jobs:
           echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
 
       - name: Setup benchmark tests
-        working-directory: vllm-benchmarks
+        env:
+          MODELS: ${{ matrix.models }}
         run: |
-          pushd vllm
+          pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
+          rm .buildkite/nightly-benchmarks/tests/*.json
           popd
 
-          # Set the list of benchmarks we want to cover in PyTorch infra
-          cp -r benchmarks/*.json vllm/.buildkite/nightly-benchmarks/tests
+          # Set the list of benchmarks we want to cover in this runner
+          python .github/scripts/setup_vllm_benchmark.py \
+            --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
+            --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
+            --models "${MODELS}"
+
+          pushd vllm-benchmarks/vllm
+          ls -lah .buildkite/nightly-benchmarks/tests
+          find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
+          popd
 
       - name: Run vLLM benchmark
         env:
@@ -144,6 +191,7 @@ jobs:
         working-directory: vllm-benchmarks
         env:
           BENCHMARK_RESULTS: vllm/benchmarks/results
+          MODELS: ${{ matrix.models }}
         run: |
           set -eux
 
@@ -153,4 +201,5 @@ jobs:
           python upload_benchmark_results.py \
             --vllm vllm \
             --benchmark-results "${BENCHMARK_RESULTS}" \
-            --device "${GPU_DEVICE}"
+            --device "${GPU_DEVICE}" \
+            --model "${MODELS//\//_}"
