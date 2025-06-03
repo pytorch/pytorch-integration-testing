@@ -42,7 +42,8 @@ jobs:
           set -eux
 
           # The generated matrix is grouped by model and runner
-          python .github/scripts/generate_vllm_benchmark_matrix.py
+          python .github/scripts/generate_vllm_benchmark_matrix.py \
+            --vllm-benchmark-configs-dir vllm-benchmarks/benchmarks
 
   benchmarks:
     name: Run vLLM benchmarks
