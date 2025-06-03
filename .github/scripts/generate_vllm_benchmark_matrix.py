@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+
+import os
+import json
+import glob
+import logging
+from logging import warning
+from argparse import Action, ArgumentParser, Namespace
+from typing import Any, Dict, Optional
+
+
+logging.basicConfig(level=logging.INFO)
+
+RUNNERS_MAPPING = {
+    1: [
+        "linux.aws.h100",
+    ],
+    2: [
+        "linux.aws.h100.4",
+    ],
+    4: [
+        "linux.aws.h100.4",
+    ],
+    8: [
+        "linux.aws.h100.8",
+    ],
+}
+
+# All the different names vLLM uses to refer to their benchmark configs
+VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
+    [
+        "parameters",
+        "server_parameters",
+        "common_parameters",
+    ]
+)
+
+
+class ValidateDir(Action):
+    def __call__(
+        self,
+        parser: ArgumentParser,
+        namespace: Namespace,
+        values: Any,
+        option_string: Optional[str] = None,
+    ) -> None:
+        if os.path.isdir(values):
+            setattr(namespace, self.dest, values)
+            return
+
+        parser.error(f"{values} is not a valid directory")
+
+
+def parse_args() -> Any:
+    parser = ArgumentParser("Generate vLLM benchmark configs")
+
+    parser.add_argument(
+        "--vllm-benchmark-configs-dir",
+        type=str,
+        default=".buildkite/nightly-benchmarks/tests",
+        action=ValidateDir,
+        help="the directory contains vLLM benchmark configs",
+        required=True,
+    )
+
+    return parser.parse_args()
+
+
+def set_output(name: str, val: Any) -> None:
+    """
+    Set the output value to be used by other GitHub jobs.
+
+    Args:
+        name (str): The name of the output variable.
+        val (Any): The value to set for the output variable.
+
+    Example:
+        set_output("benchmark_matrix", {"include": [...]})
+    """
+    github_output = os.getenv("GITHUB_OUTPUT")
+
+    if not github_output:
+        print(f"::set-output name={name}::{val}")
+        return
+
+    with open(github_output, "a") as env:
+        env.write(f"{name}={val}\n")
+
+
+def generate_benchmark_matrix(vllm_benchmark_configs_dir: str) -> Dict[str, Any]:
+    """
+    Parse all the JSON files in vLLM benchmark configs directory to get the
+    model name and tensor parallel size (aka number of GPUs)
+    """
+    benchmark_matrix: Dict[str, Any] = {
+        "include": [],
+    }
+
+    for file in glob.glob(f"{vllm_benchmark_configs_dir}/*.json"):
+        with open(file) as f:
+            try:
+                configs = json.load(f)
+            except json.JSONDecodeError as e:
+                warning(f"Fail to load {file}: {e}")
+                continue
+
+        for config in configs:
+            param = list(VLLM_BENCHMARK_CONFIGS_PARAMETER & set(config.keys()))
+            assert len(param) == 1
+
+            vllm_benchmark_config = config[param[0]]
+            if "model" not in vllm_benchmark_config:
+                warning(
+                    f"Model name is not set in {vllm_benchmark_config}, skipping..."
+                )
+                continue
+            model = vllm_benchmark_config["model"]
+
+            if "tensor_parallel_size" in vllm_benchmark_config:
+                tp = vllm_benchmark_config["tensor_parallel_size"]
+            elif "tp" in vllm_benchmark_config:
+                tp = vllm_benchmark_config["tp"]
+            else:
+                tp = 8
+            assert tp in RUNNERS_MAPPING
+
+            for runner in RUNNERS_MAPPING[tp]:
+                benchmark_matrix["include"].append(
+                    {
+                        "runner": runner,
+                        "model": model,
+                    }
+                )
+
+    return benchmark_matrix
+
+
+def main() -> None:
+    args = parse_args()
+    benchmark_matrix = generate_benchmark_matrix(args.vllm_benchmark_configs_dir)
+    set_output("benchmark_matrix", benchmark_matrix)
+
+
+if __name__ == "__main__":
+    main()
