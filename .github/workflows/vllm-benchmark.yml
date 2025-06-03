@@ -27,9 +27,8 @@ jobs:
     outputs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'false'
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
@@ -43,7 +42,7 @@ jobs:
           set -eux
 
           # The generated matrix is grouped by model and runner
-          python .ci/scripts/generate_vllm_benchmark_matrix.py
+          python .github/scripts/generate_vllm_benchmark_matrix.py
 
   benchmarks:
     name: Run vLLM benchmarks
