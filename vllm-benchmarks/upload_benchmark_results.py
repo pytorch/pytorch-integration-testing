@@ -158,7 +158,7 @@ def load(benchmark_results: str) -> Dict[str, List]:
                 continue
 
             if type(r) is not list or "benchmark" not in r[0]:
-                warning(f"Find no PyToch benchmark results in {file}")
+                warning(f"Find no PyTorch benchmark results in {file}")
                 continue
 
             results[filename] = r

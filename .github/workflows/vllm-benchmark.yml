@@ -176,9 +176,6 @@ jobs:
             "${DOCKER_IMAGE}" \
             bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
-            # DEBUG
-            sleep 3600
-
       - name: Upload the benchmark results
         working-directory: vllm-benchmarks
         env:
