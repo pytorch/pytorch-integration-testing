@@ -11,10 +11,13 @@ from typing import Any, Dict, Optional, List
 
 logging.basicConfig(level=logging.INFO)
 
+# Those are H100 runners from https://github.com/pytorch-labs/pytorch-gha-infra/blob/main/multi-tenant/inventory/manual_inventory
 RUNNERS_MAPPING = {
     1: [
         "linux.aws.h100",
     ],
+    # NB: There is no 2xH100 runner at the momement, so let's use the next one
+    # in the list here which is 4xH100
     2: [
         "linux.aws.h100.4",
     ],
