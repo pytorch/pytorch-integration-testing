@@ -142,8 +142,10 @@ jobs:
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}"
 
-          ls -lah vllm/.buildkite/nightly-benchmarks/tests
-          find vllm/.buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
+          pushd vllm-benchmarks/vllm
+          ls -lah .buildkite/nightly-benchmarks/tests
+          find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
+          popd
 
       - name: Run vLLM benchmark
         # TODO: DEBUG
