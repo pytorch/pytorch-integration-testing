@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   set-parameters:
-    runs-on: linux.2xlarge
+    runs-on: ubuntu-latest
     outputs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
     steps:
