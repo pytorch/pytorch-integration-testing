@@ -90,7 +90,7 @@ def setup_benchmark_configs(
             if "model" not in benchmark_config:
                 warning(f"Model name is not set in {benchmark_config}, skipping...")
                 continue
-            model = benchmark_config["model"]
+            model = benchmark_config["model"].lower()
 
             if model not in models:
                 continue
