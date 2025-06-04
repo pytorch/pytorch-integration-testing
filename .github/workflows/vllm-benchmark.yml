@@ -143,6 +143,8 @@ jobs:
         env:
           MODELS: ${{ matrix.models }}
         run: |
+          set -eux
+
           pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
           rm .buildkite/nightly-benchmarks/tests/*.json
@@ -158,6 +160,8 @@ jobs:
           ls -lah .buildkite/nightly-benchmarks/tests
           find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
           popd
+
+          sleep 3600
 
       - name: Run vLLM benchmark
         env:
