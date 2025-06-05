@@ -199,7 +199,8 @@ jobs:
           ls -lah "${BENCHMARK_RESULTS}"
 
           python upload_benchmark_results.py \
-            --vllm vllm \
+            --repo vllm \
+            --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}" \
             --model "${MODELS//\//_}"
