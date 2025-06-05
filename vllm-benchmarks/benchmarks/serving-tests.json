@@ -87,7 +87,8 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "dummy",
+            "max_model_len": 8192
         },
         "client_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
@@ -102,11 +103,12 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-            "tensor_parallel_size": 4,
+            "tensor_parallel_size": 8,
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "dummy",
+            "max_model_len": 8192
         },
         "client_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
