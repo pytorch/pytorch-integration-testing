@@ -311,7 +311,7 @@ def upload(
         if s3_bucket:
             upload_s3(s3_bucket, s3_path, data)
         elif upload_url:
-            upload_via_api(upload_url, data)
+            upload_via_api(upload_url, s3_path, data)
 
 
 def main() -> None:
