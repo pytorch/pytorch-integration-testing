@@ -203,4 +203,5 @@ jobs:
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}" \
+            --s3-bucket ossci-benchmarks \
             --model "${MODELS//\//_}"

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import requests
 import glob
 import gzip
 import json
@@ -20,6 +21,9 @@ from git import Repo
 
 logging.basicConfig(level=logging.INFO)
 
+username = os.environ.get("UPLOADER_USERNAME")
+password = os.environ.get("UPLOADER_PASSWORD")
+
 
 class ValidateDir(Action):
     def __call__(
@@ -34,6 +38,21 @@ class ValidateDir(Action):
             return
 
         parser.error(f"{values} is not a valid directory")
+
+
+class ValidateURL(Action):
+    def __call__(
+        self,
+        parser: ArgumentParser,
+        namespace: Namespace,
+        values: Any,
+        option_string: Optional[str] = None,
+    ) -> None:
+        if username or password:
+            setattr(namespace, self.dest, values)
+            return
+
+        parser.error(f"No username or password set for URL {values}")
 
 
 def parse_args() -> Any:
@@ -89,13 +108,19 @@ def parse_args() -> Any:
     )
 
     # Where to upload
-    parser.add_argument(
+    uploader = parser.add_mutually_exclusive_group(required=True)
+    uploader.add_argument(
         "--s3-bucket",
         type=str,
-        required=False,
-        default="ossci-benchmarks",
-        help="the S3 bucket to upload the benchmark results",
+        help="the S3 bucket to upload the benchmark results to",
     )
+    uploader.add_argument(
+        "--upload-url",
+        type=str,
+        action=ValidateURL,
+        help="the URL to upload the benchmark results to",
+    )
+
     parser.add_argument(
         "--model",
         type=str,
@@ -237,8 +262,38 @@ def aggregate(
     return aggregated_results
 
 
-def upload_to_s3(
+def upload_s3(s3_bucket: str, s3_path: str, data: str) -> None:
+    boto3.resource("s3").Object(
+        f"{s3_bucket}",
+        f"{s3_path}",
+    ).put(
+        Body=gzip.compress(data.encode()),
+        ContentEncoding="gzip",
+        ContentType="application/json",
+    )
+
+
+def upload_via_api(
+    upload_url: str,
+    s3_path: str,
+    data: str,
+) -> None:
+    json_data = {
+        "username": os.environ.get("UPLOADER_USERNAME"),
+        "password": os.environ.get("UPLOADER_PASSWORD"),
+        "content": data,
+        "s3_path": s3_path,
+    }
+
+    headers = {"content-type": "application/json"}
+
+    r = requests.post(upload_url, json=json_data, headers=headers)
+    info(r.content)
+
+
+def upload(
     s3_bucket: str,
+    upload_url: str,
     repo_name: str,
     head_branch: str,
     head_sha: str,
@@ -249,18 +304,14 @@ def upload_to_s3(
 ) -> None:
     model_suffix = f"_{model}" if model else ""
     s3_path = f"v3/{repo_name}/{head_branch}/{head_sha}/{device}/benchmark_results{model_suffix}.json"
-    info(f"Upload benchmark results to s3://{s3_bucket}/{s3_path}")
+    info(f"Upload benchmark results to {s3_path}")
     if not dry_run:
         # Write in JSONEachRow format
         data = "\n".join([json.dumps(r) for r in aggregated_results])
-        boto3.resource("s3").Object(
-            f"{s3_bucket}",
-            f"{s3_path}",
-        ).put(
-            Body=gzip.compress(data.encode()),
-            ContentEncoding="gzip",
-            ContentType="application/json",
-        )
+        if s3_bucket:
+            upload_s3(s3_bucket, s3_path, data)
+        elif upload_url:
+            upload_via_api(upload_url, data)
 
 
 def main() -> None:
@@ -284,8 +335,9 @@ def main() -> None:
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
-    upload_to_s3(
+    upload(
         args.s3_bucket,
+        args.upload_url,
         repo_name,
         head_branch,
         head_sha,
