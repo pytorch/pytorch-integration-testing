@@ -227,7 +227,7 @@ def main() -> None:
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
-    if aggregated_results:
+    if not aggregated_results:
         warning(f"Find no benchmark results in {args.benchmark_results}")
         sys.exit(1)
 
