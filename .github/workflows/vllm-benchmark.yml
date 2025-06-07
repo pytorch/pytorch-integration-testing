@@ -23,6 +23,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
+      - vllm-benchmarks/benchmarks/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -142,6 +143,8 @@ jobs:
         env:
           MODELS: ${{ matrix.models }}
         run: |
+          set -eux
+
           pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
           rm .buildkite/nightly-benchmarks/tests/*.json

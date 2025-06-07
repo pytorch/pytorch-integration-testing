@@ -3,7 +3,7 @@
         "test_name": "llama8B_tp1_genai_perf",
         "qps_list": [4,8,16,32],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
             "tp": 1,
             "port": 8000,
             "num_prompts": 500,

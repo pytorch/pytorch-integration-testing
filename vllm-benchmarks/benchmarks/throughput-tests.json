@@ -31,5 +31,29 @@
             "num_prompts": 200,
             "backend": "vllm"
         }
+    },
+    {
+        "test_name": "throughput_llama4_scout_tp4",
+        "parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
+    },
+    {
+        "test_name": "throughput_llama4_maverick_fp8_tp8",
+        "parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
     }
 ]

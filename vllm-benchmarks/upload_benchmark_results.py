@@ -7,6 +7,7 @@ import logging
 import os
 import platform
 import socket
+import sys
 import time
 from argparse import Action, ArgumentParser, Namespace
 from logging import info, warning
@@ -226,6 +227,10 @@ def main() -> None:
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
+    if not aggregated_results:
+        warning(f"Find no benchmark results in {args.benchmark_results}")
+        sys.exit(1)
+
     upload_to_s3(
         args.s3_bucket,
         head_branch,
