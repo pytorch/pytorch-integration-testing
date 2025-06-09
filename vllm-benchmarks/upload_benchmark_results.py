@@ -8,6 +8,7 @@ import logging
 import os
 import platform
 import socket
+import sys
 import time
 from argparse import Action, ArgumentParser, Namespace
 from logging import info, warning
@@ -21,8 +22,10 @@ from git import Repo
 
 logging.basicConfig(level=logging.INFO)
 
-username = os.environ.get("UPLOADER_USERNAME")
-password = os.environ.get("UPLOADER_PASSWORD")
+S3_BUCKET = "ossci-benchmarks"
+UPLOADER_URL = "https://qrr6jzjpvyyd77fkj6mqkes4mq0tpirr.lambda-url.us-east-1.on.aws"
+UPLOADER_USERNAME = os.environ.get("UPLOADER_USERNAME")
+UPLOADER_PASSWORD = os.environ.get("UPLOADER_PASSWORD")
 
 
 class ValidateDir(Action):
@@ -38,21 +41,6 @@ class ValidateDir(Action):
             return
 
         parser.error(f"{values} is not a valid directory")
-
-
-class ValidateURL(Action):
-    def __call__(
-        self,
-        parser: ArgumentParser,
-        namespace: Namespace,
-        values: Any,
-        option_string: Optional[str] = None,
-    ) -> None:
-        if username or password:
-            setattr(namespace, self.dest, values)
-            return
-
-        parser.error(f"No username or password set for URL {values}")
 
 
 def parse_args() -> Any:
@@ -107,20 +95,7 @@ def parse_args() -> Any:
         help="the name of the GPU device coming from nvidia-smi or amd-smi",
     )
 
-    # Where to upload
-    uploader = parser.add_mutually_exclusive_group(required=True)
-    uploader.add_argument(
-        "--s3-bucket",
-        type=str,
-        help="the S3 bucket to upload the benchmark results to",
-    )
-    uploader.add_argument(
-        "--upload-url",
-        type=str,
-        action=ValidateURL,
-        help="the URL to upload the benchmark results to",
-    )
-
+    # Optional suffix
     parser.add_argument(
         "--model",
         type=str,
@@ -262,9 +237,9 @@ def aggregate(
     return aggregated_results
 
 
-def upload_s3(s3_bucket: str, s3_path: str, data: str) -> None:
+def upload_s3(s3_path: str, data: str) -> None:
     boto3.resource("s3").Object(
-        f"{s3_bucket}",
+        f"{S3_BUCKET}",
         f"{s3_path}",
     ).put(
         Body=gzip.compress(data.encode()),
@@ -274,26 +249,23 @@ def upload_s3(s3_bucket: str, s3_path: str, data: str) -> None:
 
 
 def upload_via_api(
-    upload_url: str,
     s3_path: str,
     data: str,
 ) -> None:
     json_data = {
-        "username": os.environ.get("UPLOADER_USERNAME"),
-        "password": os.environ.get("UPLOADER_PASSWORD"),
-        "content": data,
+        "username": UPLOADER_USERNAME,
+        "password": UPLOADER_PASSWORD,
         "s3_path": s3_path,
+        "content": data,
     }
 
     headers = {"content-type": "application/json"}
 
-    r = requests.post(upload_url, json=json_data, headers=headers)
+    r = requests.post(UPLOADER_URL, json=json_data, headers=headers)
     info(r.content)
 
 
 def upload(
-    s3_bucket: str,
-    upload_url: str,
     repo_name: str,
     head_branch: str,
     head_sha: str,
@@ -304,14 +276,18 @@ def upload(
 ) -> None:
     model_suffix = f"_{model}" if model else ""
     s3_path = f"v3/{repo_name}/{head_branch}/{head_sha}/{device}/benchmark_results{model_suffix}.json"
+
     info(f"Upload benchmark results to {s3_path}")
     if not dry_run:
         # Write in JSONEachRow format
         data = "\n".join([json.dumps(r) for r in aggregated_results])
-        if s3_bucket:
-            upload_s3(s3_bucket, s3_path, data)
-        elif upload_url:
-            upload_via_api(upload_url, s3_path, data)
+
+        if UPLOADER_USERNAME and UPLOADER_PASSWORD:
+            # If the username and password are set, try to use the API (preferable)
+            upload_via_api(s3_path, data)
+        else:
+            # Otherwise, try to upload directly to the bucket
+            upload_s3(s3_path, data)
 
 
 def main() -> None:
@@ -335,9 +311,11 @@ def main() -> None:
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
+    if not aggregated_results:
+        warning(f"Find no benchmark results in {args.benchmark_results}")
+        sys.exit(1)
+
     upload(
-        args.s3_bucket,
-        args.upload_url,
         repo_name,
         head_branch,
         head_sha,

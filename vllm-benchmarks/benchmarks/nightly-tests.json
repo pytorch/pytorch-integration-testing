@@ -3,7 +3,7 @@
         "test_name": "llama8B_tp1_sharegpt",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
             "tp": 1,
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
@@ -55,7 +55,7 @@
         "test_name": "llama8B_tp1_sonnet_512_16",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
             "tp": 1,
             "dataset_name": "sonnet",
             "dataset_path": "./sonnet_4x.txt",
@@ -110,7 +110,7 @@
         "test_name": "llama8B_tp1_sonnet_512_256",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
             "tp": 1,
             "dataset_name": "sonnet",
             "dataset_path": "./sonnet_4x.txt",
@@ -142,7 +142,7 @@
         },
         "trt_client_parameters": {
             "endpoint": "/v2/models/ensemble/generate_stream"
-        }, 
+        },
         "vllm_server_parameters": {
             "disable_log_stats": "",
             "disable_log_requests": "",
@@ -165,7 +165,7 @@
         "test_name": "llama70B_tp4_sharegpt",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-70B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
             "tp": 4,
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
@@ -194,7 +194,7 @@
         },
         "trt_client_parameters": {
             "endpoint": "/v2/models/ensemble/generate_stream"
-        }, 
+        },
         "vllm_server_parameters": {
             "disable_log_stats": "",
             "disable_log_requests": "",
@@ -216,7 +216,7 @@
         "test_name": "llama70B_tp4_sonnet_512_16",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-70B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
             "tp": 4,
             "dataset_name": "sonnet",
             "dataset_path": "./sonnet_4x.txt",
@@ -270,7 +270,7 @@
         "test_name": "llama70B_tp4_sonnet_512_256",
         "qps_list": [4,8,16,32,"inf"],
         "common_parameters": {
-            "model": "meta-llama/Meta-Llama-3-70B-Instruct",
+            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
             "tp": 4,
             "dataset_name": "sonnet",
             "dataset_path": "./sonnet_4x.txt",
@@ -302,7 +302,7 @@
         },
         "trt_client_parameters": {
             "endpoint": "/v2/models/ensemble/generate_stream"
-        }, 
+        },
         "vllm_server_parameters": {
             "disable_log_stats": "",
             "disable_log_requests": "",
