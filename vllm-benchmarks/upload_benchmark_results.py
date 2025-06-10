@@ -23,7 +23,7 @@ from git import Repo
 logging.basicConfig(level=logging.INFO)
 
 S3_BUCKET = "ossci-benchmarks"
-UPLOADER_URL = "https://qrr6jzjpvyyd77fkj6mqkes4mq0tpirr.lambda-url.us-east-1.on.aws"
+UPLOADER_URL = "https://kvvka55vt7t2dzl6qlxys72kra0xtirv.lambda-url.us-east-1.on.aws"
 UPLOADER_USERNAME = os.environ.get("UPLOADER_USERNAME")
 UPLOADER_PASSWORD = os.environ.get("UPLOADER_PASSWORD")
 
