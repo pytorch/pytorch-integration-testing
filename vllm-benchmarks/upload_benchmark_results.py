@@ -111,8 +111,9 @@ def parse_args() -> Any:
 
 def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
     repo = Repo(repo_dir)
-    # Git metadata
-    repo_name = repo.remotes.origin.url.split(".git")[0].split(":")[-1]
+    # Git metadata, an example remote URL is https://github.com/vllm-project/vllm.git
+    # and we want the vllm-project/vllm part
+    repo_name = repo.remotes.origin.url.split(".git")[0].replace("https://github.com/", "")
     hexsha = repo.head.object.hexsha
     committed_date = repo.head.object.committed_date
 
