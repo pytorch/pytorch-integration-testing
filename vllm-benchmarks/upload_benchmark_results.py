@@ -307,6 +307,7 @@ def main() -> None:
     metadata = get_benchmark_metadata(
         repo_name, head_branch, head_sha, timestamp, args.benchmark_name
     )
+    print(repo_name)
     runner = get_runner_info()
 
     # Extract and aggregate the benchmark results

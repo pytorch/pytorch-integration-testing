@@ -161,6 +161,8 @@ jobs:
           find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
           popd
 
+          sleep 3600
+
       - name: Run vLLM benchmark
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
