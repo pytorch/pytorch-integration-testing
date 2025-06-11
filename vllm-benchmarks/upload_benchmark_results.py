@@ -54,19 +54,19 @@ def parse_args() -> Any:
         action=ValidateDir,
         help="the directory that the repo is checked out",
     )
-    branch_commit = repo_metadata.add_argument_group("the branch and commit metadata")
-    branch_commit.add_argument(
+    repo_metadata.add_argument(
         "--repo-name",
         type=str,
         help="the name of the repo",
     )
-    branch_commit.add_argument(
+
+    parser.add_argument(
         "--head-branch",
         type=str,
         default="main",
         help="the name of the branch the benchmark runs on",
     )
-    branch_commit.add_argument(
+    parser.add_argument(
         "--head-sha",
         type=str,
         help="the commit SHA the benchmark runs on",
@@ -295,8 +295,16 @@ def main() -> None:
     args = parse_args()
 
     if args.repo:
+        if args.head_branch or args.head_sha:
+            warning("No need to set --head-branch and --head-sha when using --repo")
+            sys.exit(1)
+
         repo_name, head_branch, head_sha, timestamp = get_git_metadata(args.repo)
     else:
+        if not args.head_branch or not args.head_sha:
+            warning(f"Need to set --head-branch and --head-sha when manually setting --repo-name")
+            sys.exit(1)
+
         repo_name, head_branch, head_sha, timestamp = (
             args.repo_name,
             args.head_branch,
