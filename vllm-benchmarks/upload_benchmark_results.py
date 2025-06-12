@@ -63,7 +63,6 @@ def parse_args() -> Any:
     parser.add_argument(
         "--head-branch",
         type=str,
-        default="main",
         help="the name of the branch the benchmark runs on",
     )
     parser.add_argument(
