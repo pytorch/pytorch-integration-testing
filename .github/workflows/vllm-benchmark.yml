@@ -54,6 +54,7 @@ jobs:
         env:
           MODELS: ${{ inputs.models || '' }}
           GPUS: ${{ inputs.gpus || '' }}
+          ARCH: ${{ inputs.arch || '' }}
         run: |
           set -eux
 
@@ -62,6 +63,7 @@ jobs:
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
             --gpus "${GPUS}"
+            --arch "${ARCH}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -197,6 +199,7 @@ jobs:
       - name: Setup benchmark tests
         env:
           MODELS: ${{ matrix.models }}
+          ARCH: ${{ inputs.arch || '' }}
         run: |
           set -eux
 
@@ -210,6 +213,7 @@ jobs:
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}"
+            --arch "${ARCH}"
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
@@ -225,9 +229,12 @@ jobs:
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+          ARCH: ${{ inputs.arch || '' }}
         run: |
           set -x
-
+          if [[ "$ARCH" == "cpu" ]]; then
+            on_cpu=1
+          fi
           docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
@@ -238,6 +245,7 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            -e ON_CPU="${on_cpu}" \
             --ipc=host \
             --tty \
             --security-opt seccomp=unconfined \

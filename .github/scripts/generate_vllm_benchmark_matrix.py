@@ -31,6 +31,9 @@ RUNNERS_MAPPING = {
         "linux.aws.h100.8",
         "linux.rocm.gpu.mi300.8",
     ],
+    2: [
+        "intel-cpu-emr",
+    ],
 }
 
 # All the different names vLLM uses to refer to their benchmark configs
@@ -81,6 +84,14 @@ def parse_args() -> Any:
         default="",
         help="the comma-separated list of GPUs to benchmark",
     )
+    parser.add_argument(
+        "--arch",
+        type=str,
+        default="",
+        action=ValidateDir,
+        help="architect for the runner",
+        required=True,
+    )
 
     return parser.parse_args()
 
@@ -107,7 +118,7 @@ def set_output(name: str, val: Any) -> None:
 
 
 def generate_benchmark_matrix(
-    benchmark_configs_dir: str, models: List[str], gpus: List[str]
+    benchmark_configs_dir: str, models: List[str], gpus: List[str], arch: str
 ) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
@@ -119,8 +130,7 @@ def generate_benchmark_matrix(
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
-
-    for file in glob.glob(f"{benchmark_configs_dir}/*.json"):
+    for file in glob.glob(f"{benchmark_configs_dir}/*{arch}.json"):
         with open(file) as f:
             try:
                 configs = json.load(f)
@@ -180,6 +190,7 @@ def main() -> None:
         args.benchmark_configs_dir,
         models,
         gpus,
+        args.arch,
     )
     set_output("benchmark_matrix", benchmark_matrix)
 
