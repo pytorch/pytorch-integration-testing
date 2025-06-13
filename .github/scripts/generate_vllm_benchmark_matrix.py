@@ -27,6 +27,9 @@ RUNNERS_MAPPING = {
     8: [
         "linux.aws.h100.8",
     ],
+    2: [
+        "intel-cpu-emr",
+    ],
 }
 
 # All the different names vLLM uses to refer to their benchmark configs
@@ -71,6 +74,14 @@ def parse_args() -> Any:
         default="",
         help="the comma-separated list of models to benchmark",
     )
+    parser.add_argument(
+        "--arch",
+        type=str,
+        default="",
+        action=ValidateDir,
+        help="architect for the runner",
+        required=True,
+    )
 
     return parser.parse_args()
 
@@ -97,8 +108,8 @@ def set_output(name: str, val: Any) -> None:
 
 
 def generate_benchmark_matrix(
-    benchmark_configs_dir: str, models: List[str]
-) -> Dict[str, Any]:
+    benchmark_configs_dir: str, models: List[str], arch: str
+) -> Dict[str, Any, str]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
@@ -107,8 +118,7 @@ def generate_benchmark_matrix(
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
-
-    for file in glob.glob(f"{benchmark_configs_dir}/*.json"):
+    for file in glob.glob(f"{benchmark_configs_dir}/*{arch}.json"):
         with open(file) as f:
             try:
                 configs = json.load(f)
@@ -159,6 +169,7 @@ def main() -> None:
     benchmark_matrix = generate_benchmark_matrix(
         args.benchmark_configs_dir,
         models,
+        args.arch,
     )
     set_output("benchmark_matrix", benchmark_matrix)
 

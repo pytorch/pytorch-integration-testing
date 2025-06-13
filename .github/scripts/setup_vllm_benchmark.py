@@ -61,17 +61,25 @@ def parse_args() -> Any:
         help="the list of models to benchmark",
         required=True,
     )
+    parser.add_argument(
+        "--arch",
+        type=str,
+        default="",
+        action=ValidateDir,
+        help="architect for the runner",
+        required=True,
+    )
 
     return parser.parse_args()
 
 
 def setup_benchmark_configs(
-    from_benchmark_configs_dir: str, to_benchmark_configs_dir: str, models: List[str]
+        from_benchmark_configs_dir: str, to_benchmark_configs_dir: str, models: List[str], arch: str
 ) -> None:
     """
     Setup the benchmark configs to run on this runner
     """
-    for file in glob.glob(f"{from_benchmark_configs_dir}/*.json"):
+    for file in glob.glob(f"{from_benchmark_configs_dir}/*{arch}.json"):
         filename = os.path.basename(file)
         benchmark_configs = []
 
@@ -108,6 +116,7 @@ def main() -> None:
         args.from_benchmark_configs_dir,
         args.to_benchmark_configs_dir,
         args.models.split(","),
+        args.arch,
     )
 
 
