@@ -87,10 +87,9 @@ jobs:
           echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
 
       - name: Install dependencies
-        working-directory: vllm-benchmarks
         run: |
           set -eux
-          pip install -r requirements.txt
+          pip install -r .github/scripts/requirements.txt
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
@@ -191,9 +190,8 @@ jobs:
             bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
-        working-directory: vllm-benchmarks
         env:
-          BENCHMARK_RESULTS: vllm/benchmarks/results
+          BENCHMARK_RESULTS: vllm-benchmarks/vllm/benchmarks/results
           MODELS: ${{ matrix.models }}
         run: |
           set -eux
@@ -201,8 +199,8 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
-          python upload_benchmark_results.py \
-            --repo vllm \
+          python .github/scripts/upload_benchmark_results.py \
+            --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}" \
