@@ -188,7 +188,7 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+            bash -xc "nvidia-smi; sleep 7200 && cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
         working-directory: vllm-benchmarks
