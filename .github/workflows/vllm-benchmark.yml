@@ -25,8 +25,7 @@ on:
           A comma-separated list of platforms to benchmark, i.e. h100, mi300
         required: true
         type: string
-        # default: h100,mi300
-        default: mi300
+        default: h100,mi300
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -55,7 +54,7 @@ jobs:
         env:
           MODELS: ${{ inputs.models || '' }}
           # DEBUG
-          PLATFORMS: ${{ inputs.platforms || 'mi300' }}
+          PLATFORMS: ${{ inputs.platforms || '' }}
         run: |
           set -eux
 
