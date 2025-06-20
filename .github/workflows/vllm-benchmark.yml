@@ -97,38 +97,38 @@ jobs:
           set -eux
 
           if command -v nvidia-smi; then
-            DEVICE=cuda
+            DEVICE_NAME=cuda
             nvidia-smi
           elif command -v rocm-smi; then
-            DEVICE=rocm
+            DEVICE_NAME=rocm
             rocm-smi
           else
             echo "Only CUDA and ROCm benchmarks are supported at the moment"
             exit 1
           fi
-          echo "DEVICE=$DEVICE" >> $GITHUB_ENV
+          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
 
-      - name: Set GPU device name
+      - name: Set GPU name and type
         working-directory: vllm-benchmarks
         shell: bash
         run: |
           set -eux
 
-          if [[ "${DEVICE}" == "cuda" ]]; then
-            GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
-          elif [[ "${DEVICE}" == "rocm" ]]; then
-            GPU_DEVICE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
           fi
-          echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
+          echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
       - name: Install dependencies
         shell: bash
         run: |
           set -eux
 
-          if [[ "${DEVICE}" == "cuda" ]]; then
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             pip install -r .github/scripts/requirements.txt
-          elif [[ "${DEVICE}" == "rocm" ]]; then
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
           fi
@@ -136,9 +136,9 @@ jobs:
       - name: Set Docker registry
         shell: bash
         run: |
-          if [[ "${DEVICE}" == "cuda" ]]; then
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          elif [[ "${DEVICE}" == "rocm" ]]; then
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
@@ -168,7 +168,7 @@ jobs:
               fi
 
               NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results_${MODELS//\//_}.json"
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
               aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
               if [[ ${NOT_EXIST} == "1" ]]; then
@@ -182,12 +182,12 @@ jobs:
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
       - name: Setup CUDA GPU_FLAG for docker run
-        if: env.DEVICE == 'cuda'
+        if: env.DEVICE_NAME == 'cuda'
         run: |
           echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
 
       - name: Setup ROCm
-        if: env.DEVICE == 'rocm'
+        if: env.DEVICE_NAME == 'rocm'
         uses: pytorch/pytorch/./.github/actions/setup-rocm@main
 
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
@@ -233,7 +233,8 @@ jobs:
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
-            -e GPU_DEVICE \
+            -e DEVICE_NAME \
+            -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
@@ -247,7 +248,7 @@ jobs:
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
-        if: env.DEVICE != 'cuda'
+        if: env.DEVICE_NAME != 'cuda'
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
@@ -269,9 +270,5 @@ jobs:
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
-            --device "${GPU_DEVICE}" \
+            --device "${DEVICE_TYPE// /_}" \
             --model "${MODELS//\//_}"
-
-      - name: Teardown ROCm
-        if: env.DEVICE == 'rocm'
-        uses: pytorch/pytorch/./.github/actions/teardown-rocm@main
