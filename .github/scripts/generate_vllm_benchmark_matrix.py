@@ -78,7 +78,7 @@ def parse_args() -> Any:
     parser.add_argument(
         "--platforms",
         type=str,
-        default="h100,mi300",
+        default="",
         help="the comma-separated list of platforms to benchmark",
     )
 

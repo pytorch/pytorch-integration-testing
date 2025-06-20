@@ -54,7 +54,8 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          PLATFORMS: ${{ inputs.platforms || '' }}
+          # DEBUG
+          PLATFORMS: ${{ inputs.platforms || 'mi300' }}
         run: |
           set -eux
 
@@ -110,10 +111,12 @@ jobs:
         working-directory: vllm-benchmarks
         shell: bash
         run: |
+          set -eux
+
           if [[ "${PLATFORM}" == "cuda" ]]; then
             GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           elif [[ "${PLATFORM}" == "rocm" ]]; then
-            GPU_DEVICE=$(amd-smi static -g 0 -a | grep 'MARKET_NAME' | awk '{print $2}')
+            GPU_DEVICE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
           fi
           echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
 
@@ -137,6 +140,7 @@ jobs:
           elif [[ "${PLATFORM}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           fi
+          echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
