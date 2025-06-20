@@ -76,10 +76,10 @@ def parse_args() -> Any:
         help="the comma-separated list of models to benchmark",
     )
     parser.add_argument(
-        "--platforms",
+        "--gpus",
         type=str,
         default="",
-        help="the comma-separated list of platforms to benchmark",
+        help="the comma-separated list of GPUs to benchmark",
     )
 
     return parser.parse_args()
@@ -107,14 +107,14 @@ def set_output(name: str, val: Any) -> None:
 
 
 def generate_benchmark_matrix(
-    benchmark_configs_dir: str, models: List[str], platforms: List[str]
+    benchmark_configs_dir: str, models: List[str], gpus: List[str]
 ) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
     """
     get_all_models = True if not models else False
-    use_all_platforms = True if not platforms else False
+    use_all_gpus = True if not gpus else False
 
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
@@ -154,12 +154,12 @@ def generate_benchmark_matrix(
 
             for runner in RUNNERS_MAPPING[tp]:
                 found_runner = False
-                for platform in platforms:
-                    if platform in runner:
+                for gpu in gpus:
+                    if gpu.lower() in runner:
                         found_runner = True
                         break
 
-                if found_runner or use_all_platforms:
+                if found_runner or use_all_gpus:
                     benchmark_matrix["include"].append(
                         {
                             "runner": runner,
@@ -175,11 +175,11 @@ def generate_benchmark_matrix(
 def main() -> None:
     args = parse_args()
     models = [m.strip().lower() for m in args.models.split(",") if m.strip()]
-    platforms = [m.strip().lower() for m in args.platforms.split(",") if m.strip()]
+    gpus = [m.strip().lower() for m in args.gpus.split(",") if m.strip()]
     benchmark_matrix = generate_benchmark_matrix(
         args.benchmark_configs_dir,
         models,
-        platforms,
+        gpus,
     )
     set_output("benchmark_matrix", benchmark_matrix)
 

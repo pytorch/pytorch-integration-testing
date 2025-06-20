@@ -20,9 +20,9 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
-      platforms:
+      gpus:
         description: |
-          A comma-separated list of platforms to benchmark, i.e. h100, mi300
+          A comma-separated list of GPUs to benchmark, i.e. h100, mi300
         required: true
         type: string
         default: h100,mi300
@@ -53,8 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          # DEBUG
-          PLATFORMS: ${{ inputs.platforms || '' }}
+          GPUS: ${{ inputs.gpus || '' }}
         run: |
           set -eux
 
@@ -62,7 +61,7 @@ jobs:
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
-            --platforms "${PLATFORMS}"
+            --gpus "${GPUS}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -89,22 +88,22 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Check if the platform is supported
+      - name: Check if the device is supported
         shell: bash
         run: |
           set -eux
 
           if command -v nvidia-smi; then
-            PLATFORM=cuda
+            DEVICE=cuda
             nvidia-smi
           elif command -v rocm-smi; then
-            PLATFORM=rocm
+            DEVICE=rocm
             rocm-smi
           else
             echo "Only CUDA and ROCm benchmarks are supported at the moment"
             exit 1
           fi
-          echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
+          echo "DEVICE=$DEVICE" >> $GITHUB_ENV
 
       - name: Set GPU device name
         working-directory: vllm-benchmarks
@@ -112,9 +111,9 @@ jobs:
         run: |
           set -eux
 
-          if [[ "${PLATFORM}" == "cuda" ]]; then
+          if [[ "${DEVICE}" == "cuda" ]]; then
             GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
-          elif [[ "${PLATFORM}" == "rocm" ]]; then
+          elif [[ "${DEVICE}" == "rocm" ]]; then
             GPU_DEVICE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
           fi
           echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
@@ -124,9 +123,9 @@ jobs:
         run: |
           set -eux
 
-          if [[ "${PLATFORM}" == "cuda" ]]; then
+          if [[ "${DEVICE}" == "cuda" ]]; then
             pip install -r .github/scripts/requirements.txt
-          elif [[ "${PLATFORM}" == "rocm" ]]; then
+          elif [[ "${DEVICE}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
           fi
@@ -134,9 +133,9 @@ jobs:
       - name: Set Docker registry
         shell: bash
         run: |
-          if [[ "${PLATFORM}" == "cuda" ]]; then
+          if [[ "${DEVICE}" == "cuda" ]]; then
             DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          elif [[ "${PLATFORM}" == "rocm" ]]; then
+          elif [[ "${DEVICE}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
@@ -180,12 +179,12 @@ jobs:
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
       - name: Setup CUDA GPU_FLAG for docker run
-        if: env.PLATFORM == 'cuda'
+        if: env.DEVICE == 'cuda'
         run: |
           echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
 
       - name: Setup ROCm
-        if: env.PLATFORM == 'rocm'
+        if: env.DEVICE == 'rocm'
         uses: pytorch/pytorch/./.github/actions/setup-rocm@main
 
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
@@ -245,7 +244,7 @@ jobs:
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
-        if: env.PLATFORM != 'cuda'
+        if: env.DEVICE != 'cuda'
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
@@ -271,5 +270,5 @@ jobs:
             --model "${MODELS//\//_}"
 
       - name: Teardown ROCm
-        if: env.PLATFORM == 'rocm'
+        if: env.DEVICE == 'rocm'
         uses: pytorch/pytorch/./.github/actions/teardown-rocm@main
