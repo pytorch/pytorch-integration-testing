@@ -149,7 +149,7 @@ def generate_benchmark_matrix(
             for runner in RUNNERS_MAPPING[tp]:
                 found_runner = False
                 for platform in platforms:
-                    if platform in runner
+                    if platform in runner:
                         found_runner = True
                         break
 
