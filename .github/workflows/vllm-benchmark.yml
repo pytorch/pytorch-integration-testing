@@ -20,6 +20,12 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
+      gpus:
+        description: |
+          A comma-separated list of GPUs to benchmark, i.e. h100, mi300
+        required: true
+        type: string
+        default: h100,mi300
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -47,13 +53,15 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
+          GPUS: ${{ inputs.gpus || '' }}
         run: |
           set -eux
 
           # The generated matrix is grouped by model and runner
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
-            --models "${MODELS}"
+            --models "${MODELS}" \
+            --gpus "${GPUS}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -63,6 +71,9 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     environment: pytorch-x-vllm
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -80,23 +91,63 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Set GPU device name
-        working-directory: vllm-benchmarks
-        run: |
-          export GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
-          echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
-
-      - name: Install dependencies
+      - name: Check if the device is supported
+        shell: bash
         run: |
           set -eux
-          pip install -r .github/scripts/requirements.txt
+
+          if command -v nvidia-smi; then
+            DEVICE_NAME=cuda
+            nvidia-smi
+          elif command -v rocm-smi; then
+            DEVICE_NAME=rocm
+            rocm-smi
+          else
+            echo "Only CUDA and ROCm benchmarks are supported at the moment"
+            exit 1
+          fi
+          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
+
+      - name: Set GPU name and type
+        working-directory: vllm-benchmarks
+        shell: bash
+        run: |
+          set -eux
+
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          fi
+          echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -eux
+
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            pip install -r .github/scripts/requirements.txt
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            pip install -r .github/scripts/requirements.txt \
+              --extra-index-url https://download.pytorch.org/whl/rocm6.3
+          fi
+
+      - name: Set Docker registry
+        shell: bash
+        run: |
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
+          fi
+          echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
         env:
           HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
           HEAD_SHA: ${{ inputs.vllm_commit || '' }}
-          DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
           MODELS: ${{ matrix.models }}
         run: |
           set -eux
@@ -117,7 +168,7 @@ jobs:
               fi
 
               NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${GPU_DEVICE}/benchmark_results_${MODELS//\//_}.json"
+              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
               aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
 
               if [[ ${NOT_EXIST} == "1" ]]; then
@@ -130,9 +181,14 @@ jobs:
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
-      - name: Setup GPU_FLAG for docker run
+      - name: Setup CUDA GPU_FLAG for docker run
+        if: env.DEVICE_NAME == 'cuda'
         run: |
           echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
+
+      - name: Setup ROCm
+        if: env.DEVICE_NAME == 'rocm'
+        uses: pytorch/pytorch/./.github/actions/setup-rocm@main
 
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
@@ -165,7 +221,7 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
@@ -177,7 +233,8 @@ jobs:
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
             -e SCCACHE_BUCKET \
             -e SCCACHE_REGION \
-            -e GPU_DEVICE \
+            -e DEVICE_NAME \
+            -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
@@ -188,6 +245,16 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
             bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+
+      - name: Authenticate with AWS
+        # AWS CUDA runners already have access to the bucket via its runner IAM role
+        if: env.DEVICE_NAME != 'cuda'
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
+          # The max duration enforced by the server side
+          role-duration-seconds: 18000
+          aws-region: us-east-1
 
       - name: Upload the benchmark results
         env:
@@ -203,5 +270,5 @@ jobs:
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
-            --device "${GPU_DEVICE}" \
+            --device "${DEVICE_TYPE// /_}" \
             --model "${MODELS//\//_}"
