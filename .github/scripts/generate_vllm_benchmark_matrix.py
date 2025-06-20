@@ -75,6 +75,12 @@ def parse_args() -> Any:
         default="",
         help="the comma-separated list of models to benchmark",
     )
+    parser.add_argument(
+        "--platforms",
+        type=str,
+        default="h100,mi300",
+        help="the comma-separated list of platforms to benchmark",
+    )
 
     return parser.parse_args()
 
