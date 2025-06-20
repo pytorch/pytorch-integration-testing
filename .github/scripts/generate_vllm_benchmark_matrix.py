@@ -10,22 +10,26 @@ from typing import Any, Dict, Optional, List
 
 
 logging.basicConfig(level=logging.INFO)
-
 # Those are H100 runners from https://github.com/pytorch-labs/pytorch-gha-infra/blob/main/multi-tenant/inventory/manual_inventory
+# while ROCm runner are provided by AMD
 RUNNERS_MAPPING = {
     1: [
         "linux.aws.h100",
+        "linux.rocm.gpu.mi300.2",  # No single ROCm GPU?
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
     # in the list here which is 4xH100
     2: [
         "linux.aws.h100.4",
+        "linux.rocm.gpu.mi300.2",
     ],
     4: [
         "linux.aws.h100.4",
+        "linux.rocm.gpu.mi300.4",
     ],
     8: [
         "linux.aws.h100.8",
+        "linux.rocm.gpu.mi300.8",
     ],
 }
 
@@ -97,13 +101,15 @@ def set_output(name: str, val: Any) -> None:
 
 
 def generate_benchmark_matrix(
-    benchmark_configs_dir: str, models: List[str]
+    benchmark_configs_dir: str, models: List[str], platforms: List[str]
 ) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
     """
     get_all_models = True if not models else False
+    use_all_platforms = True if not platforms else False
+
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
@@ -141,14 +147,21 @@ def generate_benchmark_matrix(
             assert tp in RUNNERS_MAPPING
 
             for runner in RUNNERS_MAPPING[tp]:
-                benchmark_matrix["include"].append(
-                    {
-                        "runner": runner,
-                        # I opt to return a comma-separated list of models here
-                        # so that we could run multiple models on the same runner
-                        "models": model,
-                    }
-                )
+                found_runner = False
+                for platform in platforms:
+                    if platform in runner
+                        found_runner = True
+                        break
+
+                if found_runner or use_all_platforms:
+                    benchmark_matrix["include"].append(
+                        {
+                            "runner": runner,
+                            # I opt to return a comma-separated list of models here
+                            # so that we could run multiple models on the same runner
+                            "models": model,
+                        }
+                    )
 
     return benchmark_matrix
 
@@ -156,9 +169,11 @@ def generate_benchmark_matrix(
 def main() -> None:
     args = parse_args()
     models = [m.strip().lower() for m in args.models.split(",") if m.strip()]
+    platforms = [m.strip().lower() for m in args.platforms.split(",") if m.strip()]
     benchmark_matrix = generate_benchmark_matrix(
         args.benchmark_configs_dir,
         models,
+        platforms,
     )
     set_output("benchmark_matrix", benchmark_matrix)
 

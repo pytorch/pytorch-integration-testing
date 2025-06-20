@@ -20,6 +20,13 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
+      platforms:
+        description: |
+          A comma-separated list of platforms to benchmark, i.e. h100, mi300
+        required: true
+        type: string
+        # default: h100,mi300
+        default: mi300
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -47,13 +54,15 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
+          PLATFORMS: ${{ inputs.platforms || '' }}
         run: |
           set -eux
 
           # The generated matrix is grouped by model and runner
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
-            --models "${MODELS}"
+            --models "${MODELS}" \
+            --platforms "${PLATFORMS}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -80,23 +89,60 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Check if the platform is supported
+        shell: bash
+        run: |
+          set -eux
+
+          if command -v nvidia-smi; then
+            PLATFORM=cuda
+            nvidia-smi
+          elif command -v amd-smi; then
+            PLATFORM=rocm
+            amd-smi
+          else
+            echo "Only CUDA and ROCm benchmarks are supported at the moment"
+            exit 1
+          fi
+          echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
+
       - name: Set GPU device name
         working-directory: vllm-benchmarks
+        shell: bash
         run: |
-          export GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          if [[ "${PLATFORM}" == "cuda" ]]; then
+            GPU_DEVICE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          elif [[ "${PLATFORM}" == "rocm" ]]; then
+            GPU_DEVICE=$(amd-smi static -g 0 -a | grep 'MARKET_NAME' | awk '{print $2}')
+          fi
           echo "GPU_DEVICE=$GPU_DEVICE" >> $GITHUB_ENV
 
       - name: Install dependencies
+        shell: bash
         run: |
           set -eux
-          pip install -r .github/scripts/requirements.txt
+
+          if [[ "${PLATFORM}" == "cuda" ]]; then
+            pip install -r .github/scripts/requirements.txt
+          elif [[ "${PLATFORM}" == "rocm" ]]; then
+            pip install -r .github/scripts/requirements.txt \
+              --extra-index-url https://download.pytorch.org/whl/rocm6.3
+          fi
+
+      - name: Set Docker registry
+        shell: bash
+        run: |
+          if [[ "${PLATFORM}" == "cuda" ]]; then
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          elif [[ "${PLATFORM}" == "rocm" ]]; then
+            DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
+          fi
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
         env:
           HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
           HEAD_SHA: ${{ inputs.vllm_commit || '' }}
-          DOCKER_IMAGE_PREFIX: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
           MODELS: ${{ matrix.models }}
         run: |
           set -eux
@@ -130,9 +176,14 @@ jobs:
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
-      - name: Setup GPU_FLAG for docker run
+      - name: Setup CUDA GPU_FLAG for docker run
+        if: env.PLATFORM == 'cuda'
         run: |
           echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
+
+      - name: Setup ROCm
+        if: env.PLATFORM == 'rocm'
+        uses: pytorch/pytorch/./.github/actions/setup-rocm@main
 
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
@@ -165,7 +216,7 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:${{ env.HEAD_SHA }}
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
@@ -205,3 +256,7 @@ jobs:
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device "${GPU_DEVICE}" \
             --model "${MODELS//\//_}"
+
+      - name: Teardown ROCm
+        if: env.PLATFORM == 'rocm'
+        uses: pytorch/pytorch/./.github/actions/teardown-rocm@main
