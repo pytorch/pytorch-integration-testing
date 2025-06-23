@@ -212,7 +212,7 @@ jobs:
           python .github/scripts/setup_vllm_benchmark.py \
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
-            --models "${MODELS}"
+            --models "${MODELS}" \
             --arch "${ARCH}"
 
           pushd vllm-benchmarks/vllm
