@@ -62,11 +62,10 @@ def parse_args() -> Any:
         required=True,
     )
     parser.add_argument(
-        "--arch",
+        "--device",
         type=str,
         default="",
-        action=ValidateDir,
-        help="architect for the runner",
+        help="device for the runner",
         required=True,
     )
 
@@ -74,12 +73,12 @@ def parse_args() -> Any:
 
 
 def setup_benchmark_configs(
-        from_benchmark_configs_dir: str, to_benchmark_configs_dir: str, models: List[str], arch: str
+        from_benchmark_configs_dir: str, to_benchmark_configs_dir: str, models: List[str], device: str
 ) -> None:
     """
     Setup the benchmark configs to run on this runner
     """
-    for file in glob.glob(f"{from_benchmark_configs_dir}/*{arch}.json"):
+    for file in glob.glob(f"{from_benchmark_configs_dir}/*{device}.json"):
         filename = os.path.basename(file)
         benchmark_configs = []
 
@@ -116,7 +115,7 @@ def main() -> None:
         args.from_benchmark_configs_dir,
         args.to_benchmark_configs_dir,
         args.models.split(","),
-        args.arch,
+        args.device,
     )
 
 

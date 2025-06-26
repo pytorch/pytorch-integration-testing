@@ -20,9 +20,9 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
-      gpus:
+      platforms:
         description: |
-          A comma-separated list of GPUs to benchmark, i.e. h100, mi300
+          A comma-separated list of platforms to benchmark, i.e. h100, mi300, emr
         required: true
         type: string
         default: h100,mi300
@@ -53,8 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          GPUS: ${{ inputs.gpus || '' }}
-          ARCH: ${{ inputs.arch || '' }}
+          PLATFORMS: ${{ inputs.platforms || '' }}
         run: |
           set -eux
 
@@ -62,8 +61,7 @@ jobs:
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
-            --gpus "${GPUS}"
-            --arch "${ARCH}"
+            --platforms "${PLATFORMS}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -105,8 +103,9 @@ jobs:
             DEVICE_NAME=rocm
             rocm-smi
           else
-            echo "Only CUDA and ROCm benchmarks are supported at the moment"
-            exit 1
+            echo "No accelerators. Use CPU instead"
+            DEVICE_NAME=cpu
+            lscpu
           fi
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
 
@@ -120,6 +119,8 @@ jobs:
             DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
@@ -128,11 +129,11 @@ jobs:
         run: |
           set -eux
 
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            pip install -r .github/scripts/requirements.txt
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
+          else
+            pip install -r .github/scripts/requirements.txt
           fi
 
       - name: Set Docker registry
@@ -142,6 +143,8 @@ jobs:
             DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
+          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
 
@@ -213,7 +216,7 @@ jobs:
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}" \
-            --arch "${ARCH}"
+            --device "${DEVICE_NAME// /_}"
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
@@ -229,11 +232,13 @@ jobs:
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          ARCH: ${{ inputs.arch || '' }}
+          ARCH: ${{ env.DEVICE_NAME }}
         run: |
           set -x
           if [[ "$ARCH" == "cpu" ]]; then
             on_cpu=1
+          else
+            on_cpu=0
           fi
           docker run \
             ${GPU_FLAG:-} \
