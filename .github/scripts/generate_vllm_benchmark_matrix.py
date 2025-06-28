@@ -113,13 +113,12 @@ def generate_benchmark_matrix(
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs)
     """
-    get_all_models = True if not models else False
     use_all_gpus = True if not gpus else False
-
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
 
+    selected_models = []
     for file in glob.glob(f"{benchmark_configs_dir}/*.json"):
         with open(file) as f:
             try:
@@ -139,10 +138,12 @@ def generate_benchmark_matrix(
             model = benchmark_config["model"].lower()
 
             # Dedup
-            if model in models:
+            if model in selected_models:
                 continue
-            if get_all_models:
-                models.append(model)
+            # and only choose the selected model:
+            if models and model not in models:
+                continue
+            selected_models.append(model)
 
             if "tensor_parallel_size" in benchmark_config:
                 tp = benchmark_config["tensor_parallel_size"]
