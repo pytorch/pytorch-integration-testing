@@ -139,14 +139,15 @@ jobs:
       - name: Set Docker registry
         shell: bash
         run: |
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+          DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          DOCKER_IMAGE_POSTFIX=""
+          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+            DOCKER_IMAGE_POSTFIX=-cpu
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_POSTFIX=$DOCKER_IMAGE_POSTFIX" >> $GITHUB_ENV
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
@@ -165,7 +166,7 @@ jobs:
               # Check if the image is there, if it doesn't then check an older one
               # because the commit is too recent
               HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_POSTFIX}"
 
               # No Docker image available yet because the commit is too recent
               if ! docker manifest inspect "${DOCKER_IMAGE}"; then
@@ -228,7 +229,7 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_POSTFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
