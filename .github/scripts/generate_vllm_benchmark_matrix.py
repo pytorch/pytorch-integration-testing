@@ -22,11 +22,11 @@ RUNNERS_MAPPING = {
     2: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.mi300.2",
-        "intel-cpu-emr",
     ],
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.mi300.4",
+        "intel-cpu-emr",
     ],
     8: [
         "linux.aws.h100.8",
