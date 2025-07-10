@@ -115,7 +115,8 @@ def main() -> None:
         args.from_benchmark_configs_dir,
         args.to_benchmark_configs_dir,
         args.models.split(","),
-        args.device,
+        # Only need to CPU benchmark for now
+        args.device if args.device == "cpu" else "",
     )
 
 
