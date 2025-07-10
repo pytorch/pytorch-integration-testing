@@ -217,7 +217,7 @@ jobs:
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}" \
-            --device "${{DOCKER_IMAGE_POSTFIX}"
+            --device "${DOCKER_IMAGE_POSTFIX}"
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
