@@ -243,7 +243,7 @@ jobs:
             ON_CPU=0
           fi
 
-          docker run \
+          container_name=$(docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
             -e SCCACHE_BUCKET \
@@ -256,16 +256,13 @@ jobs:
             -e ON_CPU \
             --ipc=host \
             --tty \
+            --detach \
             --security-opt seccomp=unconfined \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
-            "${DOCKER_IMAGE}" \
-            /bin/bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
-
-      - name: DEBUG
-        if: always()
-        run: |
-          sleep 3600
+            "${DOCKER_IMAGE}"
+          )
+          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
