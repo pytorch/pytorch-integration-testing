@@ -213,7 +213,7 @@ jobs:
           popd
 
           # Set the list of benchmarks we want to cover in this runner
-          python .github/scripts/setup_vllm_benchmark.py \
+          python3 .github/scripts/setup_vllm_benchmark.py \
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}" \
@@ -281,7 +281,7 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
-          python .github/scripts/upload_benchmark_results.py \
+          python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
