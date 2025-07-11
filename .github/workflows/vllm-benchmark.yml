@@ -235,7 +235,7 @@ jobs:
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
-          set -x
+          set -eux
 
           if [[ "${DEVICE_NAME}" == "cpu" ]]; then
             ON_CPU=1
@@ -253,7 +253,7 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
-            -e ON_CPU \
+            -e ON_CPU="${ON_CPU}" \
             --ipc=host \
             --tty \
             --detach \
