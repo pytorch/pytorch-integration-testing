@@ -144,11 +144,10 @@ def generate_benchmark_matrix(
                 if r.lower() in k:
                     platforms.add(v)
 
-    selected_models = []
-
     # Gather all possible benchmarks
-    for platform in platforms:
-        for file in glob.glob(f"{benchmark_configs_dir}/*-{platform}*.json"):
+    for platform in sorted(platforms):
+        selected_models = []
+        for file in glob.glob(f"{benchmark_configs_dir}/{platform}/*.json"):
             with open(file) as f:
                 try:
                     configs = json.load(f)
@@ -183,8 +182,14 @@ def generate_benchmark_matrix(
                 assert tp in TP_TO_RUNNER_MAPPING
 
                 for runner in TP_TO_RUNNER_MAPPING[tp]:
-                    found_runner = any([r and r.lower() in runner for r in runners])
+                    # Wrong platform
+                    if (
+                        runner not in RUNNER_TO_PLATFORM_MAPPING
+                        or RUNNER_TO_PLATFORM_MAPPING[runner] != platform
+                    ):
+                        continue
 
+                    found_runner = any([r and r.lower() in runner for r in runners])
                     if not found_runner and not use_all_runners:
                         continue
 
