@@ -265,7 +265,7 @@ jobs:
       - name: DEBUG
         if: always()
         run: |
-          slepp 3600
+          sleep 3600
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
