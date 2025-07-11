@@ -78,7 +78,7 @@ def setup_benchmark_configs(
     """
     Setup the benchmark configs to run on this runner
     """
-    for file in glob.glob(f"{from_benchmark_configs_dir}/*_{device}.json"):
+    for file in glob.glob(f"{from_benchmark_configs_dir}/*-{device}*.json"):
         filename = os.path.basename(file)
         benchmark_configs = []
 

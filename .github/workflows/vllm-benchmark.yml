@@ -20,12 +20,12 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
-      platforms:
+      runners:
         description: |
-          A comma-separated list of platforms to benchmark, i.e. h100, mi300, emr
+          A comma-separated list of runners to run the benchmark, i.e. h100, mi300, spr, emr
         required: true
         type: string
-        default: h100,mi300
+        default: h100,mi300,spr
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -53,7 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          PLATFORMS: ${{ inputs.platforms || '' }}
+          RUNNERS: ${{ inputs.runners || '' }}
         run: |
           set -eux
 
@@ -61,7 +61,7 @@ jobs:
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
-            --platforms "${PLATFORMS}"
+            --runners "${RUNNERS}"
 
   benchmarks:
     name: Run vLLM benchmarks

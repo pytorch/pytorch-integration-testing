@@ -12,26 +12,40 @@ from typing import Any, Dict, Optional, List
 logging.basicConfig(level=logging.INFO)
 # Those are H100 runners from https://github.com/pytorch-labs/pytorch-gha-infra/blob/main/multi-tenant/inventory/manual_inventory
 # while ROCm runner are provided by AMD
-RUNNERS_MAPPING = {
+TP_TO_RUNNER_MAPPING = {
     1: [
         "linux.aws.h100",
         "linux.rocm.gpu.mi300.2",  # No single ROCm GPU?
+        "linux.24xl.spr-metal",
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
     # in the list here which is 4xH100
     2: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.mi300.2",
+        "linux.24xl.spr-metal",
     ],
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.mi300.4",
-        "intel-cpu-emr",
+        # TODO (huydhn): Enable this when Intel's runners are ready
+        # "intel-cpu-emr",
     ],
     8: [
         "linux.aws.h100.8",
         "linux.rocm.gpu.mi300.8",
     ],
+}
+
+# This mapping is needed to find out the platform of the runner
+RUNNER_TO_PLATFORM_MAPPING = {
+    "linux.aws.h100": "cuda",
+    "linux.aws.h100.4": "cuda",
+    "linux.aws.h100.8": "cuda",
+    "linux.rocm.gpu.mi300.2": "rocm",
+    "linux.rocm.gpu.mi300.4": "rocm",
+    "linux.rocm.gpu.mi300.8": "rocm",
+    "linux.24xl.spr-metal": "cpu",
 }
 
 # All the different names vLLM uses to refer to their benchmark configs
@@ -77,10 +91,10 @@ def parse_args() -> Any:
         help="the comma-separated list of models to benchmark",
     )
     parser.add_argument(
-        "--platforms",
+        "--runners",
         type=str,
         default="",
-        help="the comma-separated list of platforms to benchmark",
+        help="the comma-separated list of runners to run the benchmark",
         required=True,
     )
 
@@ -109,63 +123,71 @@ def set_output(name: str, val: Any) -> None:
 
 
 def generate_benchmark_matrix(
-    benchmark_configs_dir: str, models: List[str], platforms: List[str]
+    benchmark_configs_dir: str, models: List[str], runners: List[str]
 ) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
     model name and tensor parallel size (aka number of GPUs or CPU NUMA nodes)
     """
-
-    use_all_platforms = True if not platforms else False
-
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
 
+    platforms = set()
+    if not runners:
+        use_all_runners = True
+        platforms = set(v for v in RUNNER_TO_PLATFORM_MAPPING.values())
+    else:
+        use_all_runners = False
+        for k, v in RUNNER_TO_PLATFORM_MAPPING.items():
+            for r in runners:
+                if r.lower() in k:
+                    platforms.add(v)
+
     selected_models = []
 
-    for file in glob.glob(f"{benchmark_configs_dir}/*.json"):
-        with open(file) as f:
-            try:
-                configs = json.load(f)
-            except json.JSONDecodeError as e:
-                warning(f"Fail to load {file}: {e}")
-                continue
+    # Gather all possible benchmarks
+    for platform in platforms:
+        for file in glob.glob(f"{benchmark_configs_dir}/*-{platform}*.json"):
+            with open(file) as f:
+                try:
+                    configs = json.load(f)
+                except json.JSONDecodeError as e:
+                    warning(f"Fail to load {file}: {e}")
+                    continue
 
-        for config in configs:
-            param = list(VLLM_BENCHMARK_CONFIGS_PARAMETER & set(config.keys()))
-            assert len(param) == 1
+            for config in configs:
+                param = list(VLLM_BENCHMARK_CONFIGS_PARAMETER & set(config.keys()))
+                assert len(param) == 1
 
-            benchmark_config = config[param[0]]
-            if "model" not in benchmark_config:
-                warning(f"Model name is not set in {benchmark_config}, skipping...")
-                continue
-            model = benchmark_config["model"].lower()
+                benchmark_config = config[param[0]]
+                if "model" not in benchmark_config:
+                    warning(f"Model name is not set in {benchmark_config}, skipping...")
+                    continue
+                model = benchmark_config["model"].lower()
 
-            # Dedup
-            if model in selected_models:
-                continue
-            # and only choose the selected model:
-            if models and model not in models:
-                continue
-            selected_models.append(model)
+                # Dedup
+                if model in selected_models:
+                    continue
+                # and only choose the selected model:
+                if models and model not in models:
+                    continue
+                selected_models.append(model)
 
-            if "tensor_parallel_size" in benchmark_config:
-                tp = benchmark_config["tensor_parallel_size"]
-            elif "tp" in benchmark_config:
-                tp = benchmark_config["tp"]
-            else:
-                tp = 8
-            assert tp in RUNNERS_MAPPING
+                if "tensor_parallel_size" in benchmark_config:
+                    tp = benchmark_config["tensor_parallel_size"]
+                elif "tp" in benchmark_config:
+                    tp = benchmark_config["tp"]
+                else:
+                    tp = 8
+                assert tp in TP_TO_RUNNER_MAPPING
 
-            for runner in RUNNERS_MAPPING[tp]:
-                found_runner = False
-                for platform in platforms:
-                    if platform.lower() in runner:
-                        found_runner = True
-                        break
+                for runner in TP_TO_RUNNER_MAPPING[tp]:
+                    found_runner = any([r and r.lower() in runner for r in runners])
 
-                if found_runner or use_all_platforms:
+                    if not found_runner and not use_all_runners:
+                        continue
+
                     benchmark_matrix["include"].append(
                         {
                             "runner": runner,
@@ -181,11 +203,11 @@ def generate_benchmark_matrix(
 def main() -> None:
     args = parse_args()
     models = [m.strip().lower() for m in args.models.split(",") if m.strip()]
-    platforms = [m.strip().lower() for m in args.platforms.split(",") if m.strip()]
+    runners = [m.strip().lower() for m in args.runners.split(",") if m.strip()]
     benchmark_matrix = generate_benchmark_matrix(
         args.benchmark_configs_dir,
         models,
-        platforms,
+        runners,
     )
     set_output("benchmark_matrix", benchmark_matrix)
 
