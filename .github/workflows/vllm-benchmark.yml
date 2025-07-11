@@ -53,7 +53,8 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || '' }}
+          # TESTING: TO BE REMOVED
+          RUNNERS: ${{ inputs.runners || 'spr' }}
         run: |
           set -eux
 
@@ -259,7 +260,7 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+            bash -xc "cd vllm-benchmarks/vllm && /bin/bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
