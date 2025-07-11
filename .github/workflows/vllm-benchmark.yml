@@ -257,9 +257,9 @@ jobs:
             --tty \
             --detach \
             --security-opt seccomp=unconfined \
+            --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
-            --shm-size=4g  \ 
             "${DOCKER_IMAGE}"
           )
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
