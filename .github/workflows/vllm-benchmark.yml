@@ -287,5 +287,6 @@ jobs:
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
-            --device "${DEVICE_TYPE// /_}" \
+            --device-name "${DEVICE_NAME}" \
+            --device-type "${DEVICE_TYPE// /_}" \
             --model "${MODELS//\//_}"
