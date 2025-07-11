@@ -103,7 +103,6 @@ jobs:
             DEVICE_NAME=rocm
             rocm-smi
           else
-            echo "No accelerators. Use CPU instead"
             DEVICE_NAME=cpu
             lscpu
           fi
@@ -140,14 +139,14 @@ jobs:
         shell: bash
         run: |
           DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          DOCKER_IMAGE_POSTFIX=""
+          DOCKER_IMAGE_SUFFIX=""
           if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DOCKER_IMAGE_POSTFIX=-cpu
+            DOCKER_IMAGE_SUFFIX=-cpu
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE_POSTFIX=$DOCKER_IMAGE_POSTFIX" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
@@ -166,7 +165,7 @@ jobs:
               # Check if the image is there, if it doesn't then check an older one
               # because the commit is too recent
               HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_POSTFIX}"
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
 
               # No Docker image available yet because the commit is too recent
               if ! docker manifest inspect "${DOCKER_IMAGE}"; then
@@ -203,7 +202,6 @@ jobs:
       - name: Setup benchmark tests
         env:
           MODELS: ${{ matrix.models }}
-          ARCH: ${{ inputs.arch || '' }}
         run: |
           set -eux
 
@@ -217,7 +215,7 @@ jobs:
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
             --models "${MODELS}" \
-            --device "${DOCKER_IMAGE_POSTFIX}"
+            --device "${DEVICE_NAME}"
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
@@ -229,18 +227,19 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_POSTFIX }}
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          ARCH: ${{ env.DEVICE_NAME }}
         run: |
           set -x
-          if [[ "$ARCH" == "cpu" ]]; then
-            on_cpu=1
+
+          if [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            ON_CPU=1
           else
-            on_cpu=0
+            ON_CPU=0
           fi
+
           docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
@@ -251,7 +250,7 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
-            -e ON_CPU="${on_cpu}" \
+            -e ON_CPU \
             --ipc=host \
             --tty \
             --security-opt seccomp=unconfined \

@@ -73,7 +73,10 @@ def parse_args() -> Any:
 
 
 def setup_benchmark_configs(
-        from_benchmark_configs_dir: str, to_benchmark_configs_dir: str, models: List[str], device: str
+    from_benchmark_configs_dir: str,
+    to_benchmark_configs_dir: str,
+    models: List[str],
+    device: str,
 ) -> None:
     """
     Setup the benchmark configs to run on this runner
