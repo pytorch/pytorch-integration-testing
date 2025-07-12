@@ -284,11 +284,11 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
-          SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alpha:].-]//g")
+          SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alpha:].-]/_/g")
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device-name "${DEVICE_NAME}" \
-            --device-type SANITIZED_DEVICE_TYPE \
+            --device-type "${SANITIZED_DEVICE_TYPE}" \
             --model "${MODELS//\//_}"
