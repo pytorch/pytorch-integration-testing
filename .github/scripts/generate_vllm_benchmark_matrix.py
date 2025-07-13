@@ -23,7 +23,6 @@ TP_TO_RUNNER_MAPPING = {
     2: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.mi300.2",
-        "linux.24xl.spr-metal",
     ],
     4: [
         "linux.aws.h100.4",
