@@ -20,12 +20,12 @@ on:
           A comma-separated list of models to benchmark, leave empty to run everything
         required: false
         type: string
-      gpus:
+      runners:
         description: |
-          A comma-separated list of GPUs to benchmark, i.e. h100, mi300
+          A comma-separated list of runners to run the benchmark, i.e. h100, mi300, spr, emr
         required: true
         type: string
-        default: h100,mi300
+        default: h100,mi300,spr
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -53,7 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          GPUS: ${{ inputs.gpus || '' }}
+          RUNNERS: ${{ inputs.runners || '' }}
         run: |
           set -eux
 
@@ -61,7 +61,7 @@ jobs:
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
-            --gpus "${GPUS}"
+            --runners "${RUNNERS}"
 
   benchmarks:
     name: Run vLLM benchmarks
@@ -87,6 +87,8 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
+        # Amazon Linux fails on this step
+        continue-on-error: true
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -103,8 +105,8 @@ jobs:
             DEVICE_NAME=rocm
             rocm-smi
           else
-            echo "Only CUDA and ROCm benchmarks are supported at the moment"
-            exit 1
+            DEVICE_NAME=cpu
+            lscpu
           fi
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
 
@@ -118,6 +120,8 @@ jobs:
             DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
@@ -126,22 +130,25 @@ jobs:
         run: |
           set -eux
 
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            pip install -r .github/scripts/requirements.txt
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
+          else
+            pip install -r .github/scripts/requirements.txt
           fi
 
       - name: Set Docker registry
         shell: bash
         run: |
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+          DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          DOCKER_IMAGE_SUFFIX=""
+          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
+          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            DOCKER_IMAGE_SUFFIX=-cpu
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
@@ -160,7 +167,7 @@ jobs:
               # Check if the image is there, if it doesn't then check an older one
               # because the commit is too recent
               HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
 
               # No Docker image available yet because the commit is too recent
               if ! docker manifest inspect "${DOCKER_IMAGE}"; then
@@ -206,10 +213,11 @@ jobs:
           popd
 
           # Set the list of benchmarks we want to cover in this runner
-          python .github/scripts/setup_vllm_benchmark.py \
+          python3 .github/scripts/setup_vllm_benchmark.py \
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
-            --models "${MODELS}"
+            --models "${MODELS}" \
+            --device "${DEVICE_NAME}"
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
@@ -221,14 +229,20 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
-          set -x
+          set -eux
 
-          docker run \
+          if [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            ON_CPU=1
+          else
+            ON_CPU=0
+          fi
+
+          container_name=$(docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
             -e SCCACHE_BUCKET \
@@ -238,13 +252,17 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            -e ON_CPU="${ON_CPU}" \
             --ipc=host \
             --tty \
+            --detach \
             --security-opt seccomp=unconfined \
+            --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
             -w /tmp/workspace \
-            "${DOCKER_IMAGE}" \
-            bash -xc "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+            "${DOCKER_IMAGE}"
+          )
+          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
@@ -266,9 +284,11 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
-          python .github/scripts/upload_benchmark_results.py \
+          SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alpha:].-]/_/g")
+          python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
-            --device "${DEVICE_TYPE// /_}" \
+            --device-name "${DEVICE_NAME}" \
+            --device-type "${SANITIZED_DEVICE_TYPE}" \
             --model "${MODELS//\//_}"

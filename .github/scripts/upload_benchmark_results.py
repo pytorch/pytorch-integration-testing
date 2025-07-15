@@ -88,10 +88,16 @@ def parse_args() -> Any:
 
     # Device info
     parser.add_argument(
-        "--device",
+        "--device-name",
         type=str,
         required=True,
-        help="the name of the GPU device coming from nvidia-smi or amd-smi",
+        help="the name of the benchmark device",
+    )
+    parser.add_argument(
+        "--device-type",
+        type=str,
+        required=True,
+        help="the type of the benchmark device coming from nvidia-smi, amd-smi, or lscpu",
     )
 
     # Optional suffix
@@ -112,7 +118,9 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
     repo = Repo(repo_dir)
     # Git metadata, an example remote URL is https://github.com/vllm-project/vllm.git
     # and we want the vllm-project/vllm part
-    repo_name = repo.remotes.origin.url.split(".git")[0].replace("https://github.com/", "")
+    repo_name = repo.remotes.origin.url.split(".git")[0].replace(
+        "https://github.com/", ""
+    )
     hexsha = repo.head.object.hexsha
     committed_date = repo.head.object.committed_date
 
@@ -144,25 +152,34 @@ def get_benchmark_metadata(
     }
 
 
-def get_runner_info() -> Dict[str, Any]:
-    if torch.cuda.is_available() and torch.version.hip:
-        name = "rocm"
-    elif torch.cuda.is_available() and torch.version.cuda:
-        name = "cuda"
+def get_runner_info(device_name: str, device_type: str) -> Dict[str, Any]:
+    if torch.cuda.is_available():
+        if torch.version.hip:
+            name = "rocm"
+        elif torch.version.cuda:
+            name = "cuda"
+        type = torch.cuda.get_device_name()
+        gpu_info = torch.cuda.get_device_name()
+        gpu_count = torch.cuda.device_count()
+        avail_gpu_mem_in_gb = int(
+            torch.cuda.get_device_properties(0).total_memory / (1024 * 1024 * 1024)
+        )
     else:
-        name = "unknown"
+        name = device_name
+        type = device_type
+        gpu_info = ""
+        gpu_count = 0
+        avail_gpu_mem_in_gb = 0
 
     return {
         "name": name,
-        "type": torch.cuda.get_device_name(),
+        "type": type,
         "cpu_info": platform.processor(),
         "cpu_count": psutil.cpu_count(),
         "avail_mem_in_gb": int(psutil.virtual_memory().total / (1024 * 1024 * 1024)),
-        "gpu_info": torch.cuda.get_device_name(),
-        "gpu_count": torch.cuda.device_count(),
-        "avail_gpu_mem_in_gb": int(
-            torch.cuda.get_device_properties(0).total_memory / (1024 * 1024 * 1024)
-        ),
+        "gpu_info": gpu_info,
+        "gpu_count": gpu_count,
+        "avail_gpu_mem_in_gb": avail_gpu_mem_in_gb,
         "extra_info": {
             "hostname": socket.gethostname(),
         },
@@ -270,12 +287,12 @@ def upload(
     head_branch: str,
     head_sha: str,
     aggregated_results: List[Dict[str, Any]],
-    device: str,
+    device_type: str,
     model: str,
     dry_run: bool = True,
 ) -> None:
     model_suffix = f"_{model}" if model else ""
-    s3_path = f"v3/{repo_name}/{head_branch}/{head_sha}/{device}/benchmark_results{model_suffix}.json"
+    s3_path = f"v3/{repo_name}/{head_branch}/{head_sha}/{device_type}/benchmark_results{model_suffix}.json"
 
     info(f"Upload benchmark results to {s3_path}")
     if not dry_run:
@@ -301,7 +318,9 @@ def main() -> None:
         repo_name, head_branch, head_sha, timestamp = get_git_metadata(args.repo)
     else:
         if not args.head_branch or not args.head_sha:
-            warning(f"Need to set --head-branch and --head-sha when manually setting --repo-name")
+            warning(
+                "Need to set --head-branch and --head-sha when manually setting --repo-name"
+            )
             sys.exit(1)
 
         repo_name, head_branch, head_sha, timestamp = (
@@ -315,7 +334,7 @@ def main() -> None:
     metadata = get_benchmark_metadata(
         repo_name, head_branch, head_sha, timestamp, args.benchmark_name
     )
-    runner = get_runner_info()
+    runner = get_runner_info(args.device_name, args.device_type)
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
@@ -328,7 +347,7 @@ def main() -> None:
         head_branch,
         head_sha,
         aggregated_results,
-        args.device,
+        args.device_type,
         args.model,
         args.dry_run,
     )
