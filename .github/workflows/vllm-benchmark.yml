@@ -139,8 +139,18 @@ jobs:
 
       - name: Set Docker registry
         shell: bash
+        env:
+          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
         run: |
-          DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          set -eux
+
+          # Mimic the logic from vllm ci-infra test template
+          if [[ "${HEAD_BRANCH}" == "main" ]]; then
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          else
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-test-repo
+          fi
+
           DOCKER_IMAGE_SUFFIX=""
           if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
@@ -284,7 +294,7 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
-          SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alpha:].-]/_/g")
+          SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
