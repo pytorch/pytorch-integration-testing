@@ -131,9 +131,16 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
             hexsha,
             committed_date,
         )
-    except TypeError as error:
-        warning(f"Fail to get the branch name {e}")
-        # This is a detached HEAD, default the branch to main
+    except TypeError as e:
+        # This is a detached HEAD, try to find out where the commit comes from
+        for head in repo.heads:
+            info(f"Check commits from {head.name}")
+            for commit in repo.iter_commits(head):
+                if commit.hexsha == hexsha:
+                    return repo_name, head.name, hexsha, committed_date
+
+        warning(f"Found no branch name, default to main: {e}")
+        # We couldn't find the branch name
         return repo_name, "main", hexsha, committed_date
 
 
