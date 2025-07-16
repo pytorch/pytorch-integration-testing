@@ -131,7 +131,8 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
             hexsha,
             committed_date,
         )
-    except TypeError:
+    except TypeError as error:
+        warning(f"Fail to get the branch name {e}")
         # This is a detached HEAD, default the branch to main
         return repo_name, "main", hexsha, committed_date
 
