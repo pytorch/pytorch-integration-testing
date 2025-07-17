@@ -53,7 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || '' }}
+          RUNNERS: ${{ inputs.runners || 'spr' }}
         run: |
           set -eux
 
@@ -302,3 +302,6 @@ jobs:
             --device-name "${DEVICE_NAME}" \
             --device-type "${SANITIZED_DEVICE_TYPE}" \
             --model "${MODELS//\//_}"
+
+          # DEBUG
+          sleep 1800
