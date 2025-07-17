@@ -7,22 +7,22 @@ on:
   workflow_dispatch:
     inputs:
       vllm_branch:
-        description: vLLM branch
+        description: vLLM branch, i.e. main, releases/v0.9.2 for release validation, or refs/pull/PR_NUMBER/head for pre-merge check on pull request
         required: true
         type: string
         default: main
       vllm_commit:
-        description: vLLM commit
+        description: vLLM commit, if not set, default to the latest commit in the branch that has not yet been benchmarked
         required: false
         type: string
       models:
         description: |
-          A comma-separated list of models to benchmark, leave empty to run everything
+          A comma-separated list of models from vllm-benchmarks/benchmarks, leave empty to run everything
         required: false
         type: string
       runners:
         description: |
-          A comma-separated list of runners to run the benchmark, i.e. h100, mi300, spr, emr
+          A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark, i.e. h100, mi300, spr
         required: true
         type: string
         default: h100,mi300,spr
