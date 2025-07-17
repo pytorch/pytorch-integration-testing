@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       vllm_branch:
-        description: vLLM branch (main, releases/v0.9.2 for release validation, or refs/pull/PR_NUMBER/head for pre-merge check on pull request)
+        description: vLLM branch (main, releases/vERSION for release validation, or refs/pull/PR_NUMBER/head for pre-merge check on pull request)
         required: true
         type: string
         default: main
