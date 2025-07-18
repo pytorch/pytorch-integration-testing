@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import itertools
 import requests
 import glob
 import gzip
@@ -133,7 +134,7 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
         )
     except TypeError as e:
         # This is a detached HEAD, try to find out where the commit comes from
-        for head in repo.heads:
+        for head in itertools.chain(repo.heads, repo.refs):
             info(f"Check commits from {head.name}")
             for commit in repo.iter_commits(head):
                 if commit.hexsha == hexsha:
