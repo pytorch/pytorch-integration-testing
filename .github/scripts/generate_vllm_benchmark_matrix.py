@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.INFO)
 # while ROCm runner are provided by AMD
 TP_TO_RUNNER_MAPPING = {
     1: [
+        "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.mi300.2",  # No single ROCm GPU?
         "linux.24xl.spr-metal",
@@ -38,6 +39,7 @@ TP_TO_RUNNER_MAPPING = {
 
 # This mapping is needed to find out the platform of the runner
 RUNNER_TO_PLATFORM_MAPPING = {
+    "linux.aws.a100": "cuda",
     "linux.aws.h100": "cuda",
     "linux.aws.h100.4": "cuda",
     "linux.aws.h100.8": "cuda",
