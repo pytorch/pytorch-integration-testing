@@ -79,6 +79,90 @@
         }
     },
     {
+        "test_name": "serving_qwen3_30b_a3b_tp8_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "Qwen/Qwen3-30B-A3B",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "Qwen/Qwen3-30B-A3B",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma_3_27b_it_tp8_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "google/gemma-3-27b-it",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "google/gemma-3-27b-it",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma_3_4b_it_tp1_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "google/gemma-3-4b-it",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "google/gemma-3-4b-it",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_qwen3_8b_tp1_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "Qwen/Qwen3-8B",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "Qwen/Qwen3-8B",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
         "test_name": "serving_llama4_scout_tp4_sharegpt",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
@@ -99,7 +183,112 @@
         }
     },
     {
-        "test_name": "serving_llama4_maverick_fp8_tp8",
+        "test_name": "serving_llama4_scout_tp4_random_in200_out200",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 200,
+            "random_output_len": 200
+        }
+    },
+    {
+        "test_name": "serving_llama4_scout_tp4_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_llama4_scout_tp4_random_in5k_out1k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5120,
+            "random_output_len": 1024
+        }
+    },
+    {
+        "test_name": "serving_llama4_scout_tp4_random_in10k_out500",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 11264
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 500
+        }
+    },
+    {
+        "test_name": "serving_llama4_scout_tp4_random_in30k_out100",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 31744
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 30720,
+            "random_output_len": 100
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_sharegpt",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
@@ -116,6 +305,111 @@
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_random_in200_out200",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 200,
+            "random_output_len": 200
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_random_in5k_out1k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5120,
+            "random_output_len": 1024
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_random_in10k_out500",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 11264
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 10240,
+            "random_output_len": 500
+        }
+    },
+    {
+        "test_name": "serving_llama4_maverick_fp8_tp8_random_in30k_out100",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 31744
+        },
+        "client_parameters": {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 30720,
+            "random_output_len": 100
         }
     }
 ]
