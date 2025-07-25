@@ -36,7 +36,7 @@ pytest -v -s v1/test_utils.py
 pytest -v -s v1/test_oracle.py
 pytest -v -s v1/e2e
 # Integration test for streaming correctness (requires special branch).
-pip install -U git+https://github.com/robertgshaw2-neuralmagic/lm-evaluation-harness.git@streaming-api
+pip install -U git+https://github.com/robertgshaw2-redhat/lm-evaluation-harness.git@streaming-api
 pytest -v -s entrypoints/openai/correctness/test_lmeval.py::test_lm_eval_accuracy_v1_engine
 ################# v1 tests #################
 ##########Chunked Prefill Test #################
