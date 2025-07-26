@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # TODO (huydhn): Figure out later if I need to distribute these tests
+          # TODO (huydhn): Figure out later if we need to scale this up to multiple runners
           - runs-on: linux.aws.h100.4
             device-name: cuda
     permissions:
