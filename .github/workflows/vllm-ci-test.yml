@@ -18,6 +18,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/vllm-ci-test.yml
+      - .github/scripts/run_vllm_tests.sh
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
