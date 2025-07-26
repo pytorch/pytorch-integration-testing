@@ -30,7 +30,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runs-on: linux.aws.h100
+          # TODO (huydhn): Figure out later if I need to distribute these tests
+          - runs-on: linux.aws.h100.4
             device-name: cuda
     permissions:
       id-token: write
