@@ -18,6 +18,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.mi300.2",  # No single ROCm GPU?
         "linux.24xl.spr-metal",
+        "linux.dgx.b200",
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
     # in the list here which is 4xH100
