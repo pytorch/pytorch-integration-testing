@@ -46,23 +46,23 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.4",
+      "runner": "linux.rocm.gpu.gfx942.4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.4",
+      "runner": "linux.rocm.gpu.gfx942.4",
       "models": "meta-llama/llama-4-scout-17b-16e-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.8",
+      "runner": "linux.rocm.gpu.gfx942.8",
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     }
   ]
@@ -89,7 +89,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -123,11 +123,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.8",
+      "runner": "linux.rocm.gpu.gfx942.8",
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     }
   ]
@@ -154,7 +154,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -181,7 +181,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -370,11 +370,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     }
   ]
@@ -393,7 +393,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -412,7 +412,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.rocm.gpu.mi300.2",
+      "runner": "linux.rocm.gpu.gfx942.2",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
