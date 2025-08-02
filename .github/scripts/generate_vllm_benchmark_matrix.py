@@ -16,7 +16,7 @@ TP_TO_RUNNER_MAPPING = {
     1: [
         "linux.aws.a100",
         "linux.aws.h100",
-        "linux.rocm.gpu.mi300.2",  # No single ROCm GPU?
+        "linux.rocm.gpu.gfx942.2",  # No single ROCm GPU?
         "linux.24xl.spr-metal",
         "linux.dgx.b200",
     ],
@@ -24,17 +24,17 @@ TP_TO_RUNNER_MAPPING = {
     # in the list here which is 4xH100
     2: [
         "linux.aws.h100.4",
-        "linux.rocm.gpu.mi300.2",
+        "linux.rocm.gpu.gfx942.2",
     ],
     4: [
         "linux.aws.h100.4",
-        "linux.rocm.gpu.mi300.4",
+        "linux.rocm.gpu.gfx942.4",
         # TODO (huydhn): Enable this when Intel's runners are ready
         # "intel-cpu-emr",
     ],
     8: [
         "linux.aws.h100.8",
-        "linux.rocm.gpu.mi300.8",
+        "linux.rocm.gpu.gfx942.8",
     ],
 }
 
@@ -45,9 +45,9 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.dgx.b200": "cuda",
     "linux.aws.h100.4": "cuda",
     "linux.aws.h100.8": "cuda",
-    "linux.rocm.gpu.mi300.2": "rocm",
-    "linux.rocm.gpu.mi300.4": "rocm",
-    "linux.rocm.gpu.mi300.8": "rocm",
+    "linux.rocm.gpu.gfx942.2": "rocm",
+    "linux.rocm.gpu.gfx942.4": "rocm",
+    "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
 }
 
