@@ -44,9 +44,10 @@ TP_TO_RUNNER_MAPPING = {
 RUNNER_TO_PLATFORM_MAPPING = {
     "linux.aws.a100": "cuda",
     "linux.aws.h100": "cuda",
-    "linux.dgx.b200": "cuda",
     "linux.aws.h100.4": "cuda",
     "linux.aws.h100.8": "cuda",
+    "linux.dgx.b200": "cuda",
+    "linux.dgx.b200.8": "cuda",
     "linux.rocm.gpu.gfx942.2": "rocm",
     "linux.rocm.gpu.gfx942.4": "rocm",
     "linux.rocm.gpu.gfx942.8": "rocm",
