@@ -134,7 +134,8 @@ jobs:
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
           else
-            pip install -r .github/scripts/requirements.txt
+            pip install -r .github/scripts/requirements.txt \
+              --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
       - name: Set Docker registry
