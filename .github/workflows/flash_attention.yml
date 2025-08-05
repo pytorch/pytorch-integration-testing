@@ -66,7 +66,7 @@ jobs:
             python setup.py install
 
             echo '<h1>B200 1000W</h1>' >> /tmp/workspace/fa4_output.txt
-            nvidia-smi >> /tmp/workspace/fa4_output.txt
+            nvidia-smi
             export PYTHONPATH=\$(pwd)
             python benchmarks/benchmark_attn.py >> /tmp/workspace/fa4_output.txt
             popd
