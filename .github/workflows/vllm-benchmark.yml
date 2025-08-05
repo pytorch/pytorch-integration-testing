@@ -199,6 +199,9 @@ jobs:
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
+          # Print the benchmark commit for rereference
+          echo "### Run benchmark on [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Setup CUDA GPU_FLAG for docker run
         if: env.DEVICE_NAME == 'cuda'
         run: |
@@ -274,6 +277,12 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+
+      # Keep a copy of the benchmark results on GitHub for reference
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: vllm-benchmarks/vllm/benchmarks/results
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
