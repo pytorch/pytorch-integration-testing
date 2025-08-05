@@ -29,7 +29,6 @@ TP_TO_RUNNER_MAPPING = {
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.4",
-        "linux.dgx.b200.8",  # TODO (huydh): See if it makes sense to have 4xB200
         # TODO (huydhn): Enable this when Intel's runners are ready
         # "intel-cpu-emr",
     ],
