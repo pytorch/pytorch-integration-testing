@@ -309,10 +309,11 @@ jobs:
             --device-type "${SANITIZED_DEVICE_TYPE}" \
             --model "${SANITIZED_MODELS}"
 
+          echo "SANITIZED_DEVICE_TYPE=$SANITIZED_DEVICE_TYPE" >> $GITHUB_ENV
           echo "SANITIZED_MODELS=$SANITIZED_MODELS" >> $GITHUB_ENV
 
       # Keep a copy of the benchmark results on GitHub for reference
       - uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-${{ env.SANITIZED_MODELS }}
+          name: benchmark-results--${{ env.SANITIZED_DEVICE_TYPE }}-${{ env.SANITIZED_MODELS }}
           path: vllm-benchmarks/vllm/benchmarks/results
