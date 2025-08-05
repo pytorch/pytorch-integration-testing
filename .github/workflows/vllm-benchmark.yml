@@ -281,7 +281,7 @@ jobs:
       # Keep a copy of the benchmark results on GitHub for reference
       - uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results
+          name: benchmark-results-${{ matrix.models }}
           path: vllm-benchmarks/vllm/benchmarks/results
 
       - name: Authenticate with AWS
