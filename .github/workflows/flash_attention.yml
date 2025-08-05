@@ -11,34 +11,68 @@ on:
       - .github/workflows/flash_attention.yml
   repository_dispatch:
     types: benchmark_flash_attention
-  workflow_dispatch: 
+  workflow_dispatch:
+
 jobs:
   benchmark-flash-attn:
     name: Flash Attention CuTe DSL Benchmark
     runs-on: linux.dgx.b200.8
-    container:
-      # https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch/
-      image: nvcr.io/nvidia/pytorch:25.06-py3
-      options: --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout Flash Attention repository
+        uses: actions/checkout@v4
         with:
-          repository: 'Dao-AILab/flash-attention'
-          path: 'fa4'
-      - name: Install CuTe DSL
-        run: |
-          set -x
-          echo "Installing nvidia-cutlass-dsl"
-          pip install nvidia-cutlass-dsl==4.1.0
-      - name: Buid and Run FlashAttention CuTe DSL
-        run: |
-          set -x
-          pushd fa4
-          python setup.py install
+          repository: Dao-AILab/flash-attention
+          path: fa4
+          submodules: recursive
 
-          echo '<h1>B200 1000W</h1>' >> $GITHUB_STEP_SUMMARY
-          nvidia-smi
-          export PYTHONPATH=$(pwd)
-          python benchmarks/benchmark_attn.py >> $GITHUB_STEP_SUMMARY
+      - name: Setup GPU flags for docker run
+        run: |
+          echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
 
-          popd
+      - name: Run Flash Attention benchmark in Docker
+        env:
+          DOCKER_IMAGE: nvcr.io/nvidia/pytorch:25.06-py3
+        run: |
+          set -eux
+
+          container_name=$(docker run \
+            ${GPU_FLAG} \
+            --ipc=host \
+            --ulimit memlock=-1 \
+            --ulimit stack=67108864 \
+            --tty \
+            --detach \
+            --security-opt seccomp=unconfined \
+            --shm-size=4g \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            "${DOCKER_IMAGE}"
+          )
+
+          # Install CuTe DSL
+          docker exec -t "${container_name}" bash -c "
+            set -x
+            echo 'Installing nvidia-cutlass-dsl'
+            pip install nvidia-cutlass-dsl==4.1.0
+          "
+
+          # Build and run FlashAttention CuTe DSL
+          docker exec -t "${container_name}" bash -c "
+            set -x
+            pushd fa4
+            python setup.py install
+
+            echo '<h1>B200 1000W</h1>' >> /tmp/workspace/fa4_output.txt
+            nvidia-smi
+            export PYTHONPATH=\$(pwd)
+            python benchmarks/benchmark_attn.py >> /tmp/workspace/fa4_output.txt
+            popd
+          "
+
+          # Display results in GitHub step summary
+          if [ -f fa4_output.txt ]; then
+            cat fa4_output.txt >> $GITHUB_STEP_SUMMARY
+          fi
