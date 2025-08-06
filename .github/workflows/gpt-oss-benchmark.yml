@@ -26,15 +26,16 @@ jobs:
         #   model: openai/gpt-oss-120b
         #   docker-image: rocm/vllm-dev:open-mi300-08052025
         # gpt-oss-20b
-        - runner: linux.aws.h100
-          model: openai/gpt-oss-20b
-          docker-image: 'vllm/vllm-openai:gptoss'
-        - runner: linux.dgx.b200
-          model: openai/gpt-oss-20b
-          docker-image: 'vllm/vllm-openai:gptoss'
-        - runner: linux.rocm.gpu.gfx942.2
-          model: openai/gpt-oss-20b
-          docker-image: rocm/vllm-dev:open-mi300-08052025
+        include:
+          - runner: linux.aws.h100
+            model: openai/gpt-oss-20b
+            docker-image: 'vllm/vllm-openai:gptoss'
+          - runner: linux.dgx.b200
+            model: openai/gpt-oss-20b
+            docker-image: 'vllm/vllm-openai:gptoss'
+          - runner: linux.rocm.gpu.gfx942.2
+            model: openai/gpt-oss-20b
+            docker-image: rocm/vllm-dev:open-mi300-08052025
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     environment: pytorch-x-vllm
@@ -50,6 +51,12 @@ jobs:
         with:
           repository: vllm-project/vllm
           path: vllm-benchmarks/vllm
+
+      - name: Checkout gpt-oss repository
+        uses: actions/checkout@v4
+        with:
+          repository: openai/gpt-oss
+          path: vllm-benchmarks/gpt-oss
 
       - uses: actions/setup-python@v5
         # Amazon Linux fails on this step
