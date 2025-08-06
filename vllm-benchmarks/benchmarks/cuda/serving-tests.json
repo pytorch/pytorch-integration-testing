@@ -422,8 +422,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 4096,
-            "gpu_memory_utilization": 0.95
+            "max_model_len": 4096
         },
         "client_parameters": {
             "model": "",

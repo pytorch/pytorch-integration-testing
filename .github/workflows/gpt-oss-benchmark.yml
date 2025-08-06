@@ -26,7 +26,7 @@ jobs:
             model: openai/gpt-oss-120b
             docker-image: rocm/vllm-dev:open-mi300-08052025
           # gpt-oss-20b
-          - runner: linux.aws.h100
+          - runner: linux.aws.h100.4
             model: openai/gpt-oss-20b
             docker-image: 'vllm/vllm-openai:gptoss'
           - runner: linux.dgx.b200
@@ -199,7 +199,7 @@ jobs:
           docker exec -t "${container_name}" bash -c "
             cd vllm-benchmarks/vllm
             cp vllm/benchmarks/lib/utils.py /app/vllm-os-mini/vllm/benchmarks/utils.py || true
-            bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+            bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh || true
             sleep 7200
           "
 
