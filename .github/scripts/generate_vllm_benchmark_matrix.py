@@ -18,6 +18,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.2",  # No single ROCm GPU?
         "linux.24xl.spr-metal",
+        "linux.dgx.b200",
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
     # in the list here which is 4xH100
@@ -34,6 +35,7 @@ TP_TO_RUNNER_MAPPING = {
     8: [
         "linux.aws.h100.8",
         "linux.rocm.gpu.gfx942.8",
+        "linux.dgx.b200.8",
     ],
 }
 
@@ -43,6 +45,8 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.aws.h100": "cuda",
     "linux.aws.h100.4": "cuda",
     "linux.aws.h100.8": "cuda",
+    "linux.dgx.b200": "cuda",
+    "linux.dgx.b200.8": "cuda",
     "linux.rocm.gpu.gfx942.2": "rocm",
     "linux.rocm.gpu.gfx942.4": "rocm",
     "linux.rocm.gpu.gfx942.8": "rocm",

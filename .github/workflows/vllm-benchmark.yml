@@ -134,7 +134,8 @@ jobs:
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
           else
-            pip install -r .github/scripts/requirements.txt
+            pip install -r .github/scripts/requirements.txt \
+              --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
       - name: Set Docker registry
@@ -277,15 +278,9 @@ jobs:
           )
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
-      # Keep a copy of the benchmark results on GitHub for reference
-      - uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results
-          path: vllm-benchmarks/vllm/benchmarks/results
-
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
-        if: env.DEVICE_NAME != 'cuda'
+        if: env.DEVICE_NAME == 'rocm' || contains(env.DEVICE_TYPE, 'B200')
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
@@ -304,10 +299,21 @@ jobs:
           ls -lah "${BENCHMARK_RESULTS}"
 
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
+          SANITIZED_MODELS="${MODELS//\//_}"
+
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
             --benchmark-results "${BENCHMARK_RESULTS}" \
             --device-name "${DEVICE_NAME}" \
             --device-type "${SANITIZED_DEVICE_TYPE}" \
-            --model "${MODELS//\//_}"
+            --model "${SANITIZED_MODELS}"
+
+          echo "SANITIZED_DEVICE_TYPE=$SANITIZED_DEVICE_TYPE" >> $GITHUB_ENV
+          echo "SANITIZED_MODELS=$SANITIZED_MODELS" >> $GITHUB_ENV
+
+      # Keep a copy of the benchmark results on GitHub for reference
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results--${{ env.SANITIZED_DEVICE_TYPE }}-${{ env.SANITIZED_MODELS }}
+          path: vllm-benchmarks/vllm/benchmarks/results
