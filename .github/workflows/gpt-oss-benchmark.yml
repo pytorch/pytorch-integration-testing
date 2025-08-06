@@ -14,18 +14,18 @@ jobs:
     name: Run gpt-oss benchmarks
     strategy:
       matrix:
-        # gpt-oss-120b
-        - runner: linux.aws.h100.4
-          model: openai/gpt-oss-120b
-          docker-image: 'vllm/vllm-openai:gptoss'
-        - runner: linux.dgx.b200.8
-          model: openai/gpt-oss-120b
-          docker-image: 'vllm/vllm-openai:gptoss'
-        - runner: linux.rocm.gpu.gfx942.4
-          model: openai/gpt-oss-120b
-          docker-image: rocm/vllm-dev:open-mi300-08052025
-        # gpt-oss-20b
         include:
+          # gpt-oss-120b
+          - runner: linux.aws.h100.4
+            model: openai/gpt-oss-120b
+            docker-image: 'vllm/vllm-openai:gptoss'
+          - runner: linux.dgx.b200.8
+            model: openai/gpt-oss-120b
+            docker-image: 'vllm/vllm-openai:gptoss'
+          - runner: linux.rocm.gpu.gfx942.4
+            model: openai/gpt-oss-120b
+            docker-image: rocm/vllm-dev:open-mi300-08052025
+          # gpt-oss-20b
           - runner: linux.aws.h100
             model: openai/gpt-oss-20b
             docker-image: 'vllm/vllm-openai:gptoss'
