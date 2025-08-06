@@ -65,7 +65,8 @@
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
             "backend": "vllm",
-            "max_model_len": 4096
+            "max_model_len": 4096,
+            "gpu_memory_utilization": 0.95
         }
     },
     {

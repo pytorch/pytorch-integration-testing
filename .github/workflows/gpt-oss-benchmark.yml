@@ -197,14 +197,10 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           docker exec -t "${container_name}" bash -c "
-            set -x
             cd vllm-benchmarks/vllm
-            ls -la .
-            ls -la vllm
-            ls -la vllm/benchmarks
-
-            cp vllm/benchmarks/utils.py /app/vllm-os-mini/vllm/benchmarks/utils.py || true
+            cp vllm/benchmarks/lib/utils.py /app/vllm-os-mini/vllm/benchmarks/utils.py || true
             bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+            sleep 7200
           "
 
       - name: Authenticate with AWS
