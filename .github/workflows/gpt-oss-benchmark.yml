@@ -125,7 +125,6 @@ jobs:
           set -eux
 
           pushd vllm-benchmarks/vllm
-          git checkout "${HEAD_SHA}"
           rm .buildkite/nightly-benchmarks/tests/*.json
           popd
 
@@ -181,6 +180,13 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            -e VLLM_USE_TRTLLM_ATTENTION \
+            -e VLLM_USE_TRTLLM_DECODE_ATTENTION \
+            -e VLLM_USE_TRTLLM_CONTEXT_ATTENTION \
+            -e VLLM_USE_FLASHINFER_MXFP4_BF16_MOE \
+            -e VLLM_ROCM_USE_AITER \
+            -e VLLM_USE_AITER_UNIFIED_ATTENTION \
+            -e VLLM_ROCM_USE_AITER_MHA \
             --ipc=host \
             --tty \
             --detach \
