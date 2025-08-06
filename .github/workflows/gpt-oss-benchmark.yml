@@ -157,10 +157,10 @@ jobs:
             export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=1
             export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=1
           else
-            export VLLM_USE_TRTLLM_ATTENTION=
-            export VLLM_USE_TRTLLM_DECODE_ATTENTION=
-            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=
-            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=
+            export VLLM_USE_TRTLLM_ATTENTION=0
+            export VLLM_USE_TRTLLM_DECODE_ATTENTION=0
+            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=0
+            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=0
           fi
 
           if [[ "${DEVICE_NAME}" == *rocm* ]]; then
@@ -168,9 +168,9 @@ jobs:
             export VLLM_USE_AITER_UNIFIED_ATTENTION=1
             export VLLM_ROCM_USE_AITER_MHA=0
           else
-            export VLLM_ROCM_USE_AITER=
-            export VLLM_USE_AITER_UNIFIED_ATTENTION=
-            export VLLM_ROCM_USE_AITER_MHA=
+            export VLLM_ROCM_USE_AITER=0
+            export VLLM_USE_AITER_UNIFIED_ATTENTION=0
+            export VLLM_ROCM_USE_AITER_MHA=0
           fi
 
           container_name=$(docker run \
@@ -196,7 +196,12 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
-          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+          docker exec -t "${container_name}" bash -c "
+            set -x
+            cd vllm-benchmarks/vllm
+            cp vllm/benchmarks/utils.py /app/vllm-os-mini/vllm/benchmarks/utils.py || true
+            bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+          "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
