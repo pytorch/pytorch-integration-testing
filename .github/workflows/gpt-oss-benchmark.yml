@@ -12,7 +12,6 @@ concurrency:
 jobs:
   benchmarks:
     name: Run gpt-oss benchmarks
-    needs: set-parameters
     strategy:
       matrix:
         # gpt-oss-120b
@@ -151,6 +150,29 @@ jobs:
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
+
+          # https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html
+          if [[ "${DEVICE_TYPE}" == *B200* ]]; then
+            export VLLM_USE_TRTLLM_ATTENTION=1
+            export VLLM_USE_TRTLLM_DECODE_ATTENTION=1
+            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=1
+            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=1
+          else
+            export VLLM_USE_TRTLLM_ATTENTION=
+            export VLLM_USE_TRTLLM_DECODE_ATTENTION=
+            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=
+            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=
+          fi
+
+          if [[ "${DEVICE_NAME}" == *rocm* ]]; then
+            export VLLM_ROCM_USE_AITER=1
+            export VLLM_USE_AITER_UNIFIED_ATTENTION=1
+            export VLLM_ROCM_USE_AITER_MHA=0
+          else
+            export VLLM_ROCM_USE_AITER=
+            export VLLM_USE_AITER_UNIFIED_ATTENTION=
+            export VLLM_ROCM_USE_AITER_MHA=
+          fi
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
