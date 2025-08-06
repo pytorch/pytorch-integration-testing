@@ -59,8 +59,7 @@
             "load_format": "dummy",
             "num_iters_warmup": 5,
             "num_iters": 15,
-            "max_model_len": 8192,
-            "gpu_memory_utilization": 0.95
+            "max_model_len": 4096
         }
     },
     {
@@ -71,7 +70,7 @@
             "load_format": "dummy",
             "num_iters_warmup": 5,
             "num_iters": 15,
-            "max_model_len": 8192
+            "max_model_len": 4096
         }
     },
     {
@@ -82,7 +81,7 @@
             "load_format": "dummy",
             "num_iters_warmup": 5,
             "num_iters": 15,
-            "max_model_len": 8192
+            "max_model_len": 4096
         }
     }
 ]

@@ -421,7 +421,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192,
+            "max_model_len": 4096,
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
@@ -442,7 +442,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192,
+            "max_model_len": 4096,
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
@@ -463,7 +463,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192,
+            "max_model_len": 4096,
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
