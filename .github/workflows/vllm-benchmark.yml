@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,mi300,spr
+        default: h100,rocm,spr,b200
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
