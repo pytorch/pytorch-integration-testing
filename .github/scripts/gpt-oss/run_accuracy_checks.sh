@@ -42,8 +42,8 @@ fi
 pushd vllm-benchmarks/gpt-oss
 mkdir -p /tmp/gpqa_openai
 
-# Not sure why this is needed on ROCm image
 if [[ "${DEVICE_NAME}" == "rocm" ]]; then
+  # Not sure why this is needed on ROCm image
   pushd gpt_oss
   # Low
   OPENAI_API_KEY="" python3 -mevals --base-url http://localhost:8000/v1 \
@@ -53,14 +53,13 @@ if [[ "${DEVICE_NAME}" == "rocm" ]]; then
     --n-threads $(expr $(nproc) / 2)
   popd
 else
-  sleep 7200
   # Low
-  #OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
-  #  --model $MODEL \
-  #  --eval gpqa \
-  #  --reasoning-effort low \
-  #  --n-threads $(expr $(nproc) / 2)
-  #
+  OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
+    --model $MODEL \
+    --eval gpqa \
+    --reasoning-effort low \
+    --n-threads $(expr $(nproc) / 2)
+
   # Mid
   #OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
   #  --model $MODEL \
