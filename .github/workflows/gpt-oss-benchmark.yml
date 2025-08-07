@@ -142,6 +142,9 @@ jobs:
 
       - name: Run vLLM gpt-oss benchmark
         env:
+          # To login to public.ecr.aws
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           DOCKER_IMAGE: ${{ matrix.docker-image }}
           # vLLM-related environment variables
@@ -149,6 +152,12 @@ jobs:
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
+
+          if [[ "${DEVICE_TYPE}" == *B200* ]]; then
+            aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
+            aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+          fi
 
           # https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html
           if [[ "${DEVICE_TYPE}" == *B200* ]]; then
@@ -199,13 +208,11 @@ jobs:
           docker exec -t "${container_name}" bash -c "
             cd vllm-benchmarks/vllm
             cp vllm/benchmarks/lib/utils.py /app/vllm-os-mini/vllm/benchmarks/utils.py || true
-
-            pip install --pre vllm==0.10.1+gptoss \
-              --extra-index-url https://wheels.vllm.ai/gpt-oss/ \
-              --extra-index-url https://download.pytorch.org/whl/nightly/cu128 \
-              --index-strategy unsafe-best-match
-            sleep 7200
-
+            if [[ $DEVICE_NAME != 'rocm' ]]; then
+              pip install --pre vllm==0.10.1+gptoss \
+                --extra-index-url https://wheels.vllm.ai/gpt-oss/ \
+                --extra-index-url https://download.pytorch.org/whl/nightly/cu128
+            fi
             bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
           "
 
