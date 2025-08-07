@@ -226,10 +226,10 @@ jobs:
 
           # Run accuracy check
           docker exec -t "${container_name}" bash -c "
-            local tp
+            local tp=0
             if [[ $MODEL == 'openai/gpt-oss-120b' ]]; then
               tp=4
-            elfi [[ $MODEL == 'openai/gpt-oss-20b' ]]; then
+            elif [[ $MODEL == 'openai/gpt-oss-20b' ]]; then
               tp=1
             fi
 
