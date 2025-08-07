@@ -162,6 +162,12 @@ jobs:
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
           fi
 
+          # Leaving 1GB for the runner and other things
+          TOTAL_AVAILABLE_MEMORY_IN_GB=$(awk '/MemTotal/ { printf "%.3f \n", $2/1024/1024 - 1 }' /proc/meminfo)
+          # https://docs.docker.com/engine/containers/resource_constraints/#--memory-swap-details, the 3GB swap
+          # comes from https://github.com/pytorch/test-infra/pull/6058
+          TOTAL_MEMORY_WITH_SWAP=$(("${TOTAL_AVAILABLE_MEMORY_IN_GB%.*}" + 3))
+
           container_name=$(docker run \
             ${GPU_FLAG:-} \
             -e MODEL \
@@ -170,6 +176,8 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --memory="${TOTAL_AVAILABLE_MEMORY_IN_GB%.*}g" \
+            --memory-swap="${TOTAL_MEMORY_WITH_SWAP}g" \
             --ipc=host \
             --tty \
             --detach \
