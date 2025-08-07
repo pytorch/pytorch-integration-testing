@@ -422,7 +422,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 4096
+            "max_model_len": 8192
         },
         "client_parameters": {
             "model": "",
@@ -442,7 +442,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 4096
+            "max_model_len": 8192
         },
         "client_parameters": {
             "model": "",
@@ -462,7 +462,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 4096
+            "max_model_len": 8192
         },
         "client_parameters": {
             "model": "",
