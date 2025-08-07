@@ -41,6 +41,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    timeout-minutes: 720
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -138,7 +139,7 @@ jobs:
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/nightly-benchmarks/tests
           find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
-          popd
+
 
       - name: Run vLLM gpt-oss benchmark
         env:
@@ -206,7 +207,7 @@ jobs:
           ls -lah "${BENCHMARK_RESULTS}"
 
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
-          SANITIZED_MODELS="${MODELS//\//_}"
+          SANITIZED_MODEL="${MODEL//\//_}"
 
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
