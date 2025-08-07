@@ -213,6 +213,7 @@ jobs:
                 --extra-index-url https://wheels.vllm.ai/gpt-oss/ \
                 --extra-index-url https://download.pytorch.org/whl/nightly/cu128
             fi
+            sleep 7200
             bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
           "
 
@@ -237,6 +238,8 @@ jobs:
           ls -lah "${BENCHMARK_RESULTS}"
 
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
+          SANITIZED_MODELS="${MODELS//\//_}"
+
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
