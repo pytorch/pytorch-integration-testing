@@ -12,6 +12,8 @@ elif [[ "${DEVICE_NAME}" == *rocm* ]]; then
   export VLLM_ROCM_USE_AITER=1
   export VLLM_USE_AITER_UNIFIED_ATTENTION=1
   export VLLM_ROCM_USE_AITER_MHA=0
+else
+  export VLLM_FLASH_ATTN_VERSION=2
 fi
 
 tp=0
@@ -44,9 +46,7 @@ mkdir -p /tmp/gpqa_openai
 
 # Not sure why this is needed on ROCm image
 if [[ "${DEVICE_NAME}" == "rocm" ]]; then
-  ls -la gpt_oss
-  ls -la gpt_oss/evals
-  export PYTHONPATH=$(pwd):$PYTHONPATH
+  export PYTHONPATH=$(pwd)
 fi
 
 # Low

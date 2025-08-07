@@ -12,6 +12,8 @@ elif [[ "${DEVICE_NAME}" == *rocm* ]]; then
   export VLLM_ROCM_USE_AITER=1
   export VLLM_USE_AITER_UNIFIED_ATTENTION=1
   export VLLM_ROCM_USE_AITER_MHA=0
+else
+  export VLLM_FLASH_ATTN_VERSION=2
 fi
 
 pushd vllm-benchmarks/vllm
@@ -21,10 +23,6 @@ if [[ "${DEVICE_NAME}" != "rocm" ]]; then
   pip install -U openai transformers setuptools
   pip install --pre vllm==0.10.1+gptoss \
     --extra-index-url https://wheels.vllm.ai/gpt-oss/ \
-    --extra-index-url https://download.pytorch.org/whl/nightly/cu128
-
-  export TORCH_CUDA_ARCH_LIST='8.9 9.0'
-  pip install --no-build-isolation "git+https://github.com/facebookresearch/xformers@v0.0.31" \
     --extra-index-url https://download.pytorch.org/whl/nightly/cu128
 fi
 

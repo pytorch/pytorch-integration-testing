@@ -16,7 +16,7 @@ jobs:
       matrix:
         include:
           # gpt-oss-120b
-          - runner: linux.aws.h100.4
+          - runner: linux.aws.h100.8
             model: openai/gpt-oss-120b
             docker-image: 'public.ecr.aws/q9t5s3a7/vllm-ci-test-repo:6d8d0a24c02bfd84d46b3016b865a44f048ae84b'
           - runner: linux.dgx.b200.8
