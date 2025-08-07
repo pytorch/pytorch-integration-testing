@@ -22,7 +22,7 @@ jobs:
           - runner: linux.dgx.b200.8
             model: openai/gpt-oss-120b
             docker-image: 'public.ecr.aws/q9t5s3a7/vllm-ci-test-repo:6d8d0a24c02bfd84d46b3016b865a44f048ae84b'
-          - runner: linux.rocm.gpu.gfx942.4
+          - runner: linux.rocm.gpu.gfx942.8
             model: openai/gpt-oss-120b
             docker-image: rocm/vllm-dev:open-mi300-08052025
           # gpt-oss-20b
