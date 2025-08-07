@@ -161,29 +161,6 @@ jobs:
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
           fi
 
-          # https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html
-          if [[ "${DEVICE_TYPE}" == *B200* ]]; then
-            export VLLM_USE_TRTLLM_ATTENTION=1
-            export VLLM_USE_TRTLLM_DECODE_ATTENTION=1
-            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=1
-            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=1
-          else
-            export VLLM_USE_TRTLLM_ATTENTION=0
-            export VLLM_USE_TRTLLM_DECODE_ATTENTION=0
-            export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=0
-            export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=0
-          fi
-
-          if [[ "${DEVICE_NAME}" == *rocm* ]]; then
-            export VLLM_ROCM_USE_AITER=1
-            export VLLM_USE_AITER_UNIFIED_ATTENTION=1
-            export VLLM_ROCM_USE_AITER_MHA=0
-          else
-            export VLLM_ROCM_USE_AITER=0
-            export VLLM_USE_AITER_UNIFIED_ATTENTION=0
-            export VLLM_ROCM_USE_AITER_MHA=0
-          fi
-
           container_name=$(docker run \
             ${GPU_FLAG:-} \
             -e MODEL \
@@ -192,13 +169,6 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
-            -e VLLM_USE_TRTLLM_ATTENTION \
-            -e VLLM_USE_TRTLLM_DECODE_ATTENTION \
-            -e VLLM_USE_TRTLLM_CONTEXT_ATTENTION \
-            -e VLLM_USE_FLASHINFER_MXFP4_BF16_MOE \
-            -e VLLM_ROCM_USE_AITER \
-            -e VLLM_USE_AITER_UNIFIED_ATTENTION \
-            -e VLLM_ROCM_USE_AITER_MHA \
             --ipc=host \
             --tty \
             --detach \

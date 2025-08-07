@@ -2,6 +2,18 @@
 
 set -eux
 
+# https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html
+if [[ "${DEVICE_TYPE}" == *B200* ]]; then
+  export VLLM_USE_TRTLLM_ATTENTION=1
+  export VLLM_USE_TRTLLM_DECODE_ATTENTION=1
+  export VLLM_USE_TRTLLM_CONTEXT_ATTENTION=1
+  export VLLM_USE_FLASHINFER_MXFP4_BF16_MOE=1
+elif [[ "${DEVICE_NAME}" == *rocm* ]]; then
+  export VLLM_ROCM_USE_AITER=1
+  export VLLM_USE_AITER_UNIFIED_ATTENTION=1
+  export VLLM_ROCM_USE_AITER_MHA=0
+fi
+
 tp=0
 if [[ "${MODEL}" == "openai/gpt-oss-120b" ]]; then
   tp=4
