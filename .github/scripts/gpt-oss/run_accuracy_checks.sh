@@ -63,7 +63,7 @@ if [[ "${DEVICE_NAME}" == "rocm" ]]; then
   # High
   OPENAI_API_KEY="" python3 -mevals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval \
+    --eval aime25 \
     --reasoning-effort high \
     --n-threads $(expr $(nproc) / 2)
   popd
