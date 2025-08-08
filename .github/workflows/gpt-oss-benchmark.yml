@@ -218,6 +218,9 @@ jobs:
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
           SANITIZED_MODEL="${MODEL//\//_}"
 
+          echo "SANITIZED_DEVICE_TYPE=$SANITIZED_DEVICE_TYPE" >> $GITHUB_ENV
+          echo "SANITIZED_MODEL=$SANITIZED_MODEL" >> $GITHUB_ENV
+
           python3 .github/scripts/upload_benchmark_results.py \
             --repo vllm-benchmarks/vllm \
             --benchmark-name "vLLM benchmark" \
@@ -225,9 +228,6 @@ jobs:
             --device-name "${DEVICE_NAME}" \
             --device-type "${SANITIZED_DEVICE_TYPE}" \
             --model "${MODEL//\//_}"
-
-          echo "SANITIZED_DEVICE_TYPE=$SANITIZED_DEVICE_TYPE" >> $GITHUB_ENV
-          echo "SANITIZED_MODEL=$SANITIZED_MODEL" >> $GITHUB_ENV
 
       # Keep a copy of the benchmark results on GitHub for reference
       - uses: actions/upload-artifact@v4
