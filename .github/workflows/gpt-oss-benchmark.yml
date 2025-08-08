@@ -191,7 +191,7 @@ jobs:
           # Run perf tests
           docker exec -t "${container_name}" bash .github/scripts/gpt-oss/run_benchmarks.sh
 
-          # Run accuracy check
+          # Run accuracy check (turning this on later if needed)
           # docker exec -t "${container_name}" bash .github/scripts/gpt-oss/run_accuracy_checks.sh
 
       - name: Authenticate with AWS
