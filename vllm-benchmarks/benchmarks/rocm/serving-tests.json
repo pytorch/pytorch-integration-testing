@@ -425,7 +425,7 @@
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
-            "model": "",
+            "model": "openai/gpt-oss-20b",
             "backend": "vllm",
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
@@ -446,7 +446,7 @@
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
-            "model": "",
+            "model": "openai/gpt-oss-120b",
             "backend": "vllm",
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
@@ -467,7 +467,7 @@
             "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
-            "model": "",
+            "model": "openai/gpt-oss-120b",
             "backend": "vllm",
             "dataset_name": "sharegpt",
             "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
