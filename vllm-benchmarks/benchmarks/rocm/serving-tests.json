@@ -436,8 +436,28 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "openai/gpt-oss-120b",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
+            "tensor_parallel_size": 2,
+            "swap_space": 128,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "",
+            "backend": "vllm",
+            "dataset_name": "sharegpt",
+            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200
+        }
+    },
+    {
+        "test_name": "serving_gpt_oss_120b_tp4_sharegpt",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "openai/gpt-oss-120b",
+            "tensor_parallel_size": 4,
+            "swap_space": 128,
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
