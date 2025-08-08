@@ -25,5 +25,6 @@ if [[ "${DEVICE_NAME}" != "rocm" ]]; then
 fi
 
 pip freeze
-bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+# Just run accuracy tests for now
+# bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 popd

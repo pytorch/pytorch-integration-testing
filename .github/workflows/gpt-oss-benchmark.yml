@@ -192,7 +192,7 @@ jobs:
           docker exec -t "${container_name}" bash .github/scripts/gpt-oss/run_benchmarks.sh
 
           # Run accuracy check (turning this on later if needed)
-          # docker exec -t "${container_name}" bash .github/scripts/gpt-oss/run_accuracy_checks.sh
+          docker exec -t "${container_name}" bash .github/scripts/gpt-oss/run_accuracy_checks.sh
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role

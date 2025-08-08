@@ -41,6 +41,7 @@ fi
 
 pushd vllm-benchmarks/gpt-oss
 mkdir -p /tmp/gpqa_openai
+mkdir -p /tmp/aime25_openai
 
 if [[ "${DEVICE_NAME}" == "rocm" ]]; then
   # Not sure why this is needed on ROCm
@@ -48,21 +49,21 @@ if [[ "${DEVICE_NAME}" == "rocm" ]]; then
   # Low
   OPENAI_API_KEY="" python3 -mevals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval aime25 \
     --reasoning-effort low \
     --n-threads $(expr $(nproc) / 2)
 
   # Mid
   OPENAI_API_KEY="" python3 -mevals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval aime25 \
     --reasoning-effort medium \
     --n-threads $(expr $(nproc) / 2)
 
   # High
   OPENAI_API_KEY="" python3 -mevals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval \
     --reasoning-effort high \
     --n-threads $(expr $(nproc) / 2)
   popd
@@ -70,26 +71,27 @@ else
   # Low
   OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval aime25 \
     --reasoning-effort low \
     --n-threads $(expr $(nproc) / 2)
 
   # Mid
   OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval aime25 \
     --reasoning-effort medium \
     --n-threads $(expr $(nproc) / 2)
 
   # High
   OPENAI_API_KEY="" python3 -m gpt_oss.evals --base-url http://localhost:8000/v1 \
     --model $MODEL \
-    --eval gpqa \
+    --eval aime25 \
     --reasoning-effort high \
     --n-threads $(expr $(nproc) / 2)
 fi
 
 mv /tmp/gpqa_openai .
+mv /tmp/aime25_openai .
 popd
 
 kill -9 $server_pid
