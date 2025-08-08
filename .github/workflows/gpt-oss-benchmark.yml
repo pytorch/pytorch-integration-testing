@@ -241,3 +241,4 @@ jobs:
           name: accuracy-results--${{ env.SANITIZED_DEVICE_TYPE }}-${{ env.SANITIZED_MODEL }}
           path: |
             vllm-benchmarks/gpt-oss/gpqa_openai
+            vllm-benchmarks/gpt-oss/aime25_openai
