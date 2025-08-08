@@ -421,7 +421,8 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_model_len": 8192,
+            "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
             "model": "",
@@ -437,11 +438,12 @@
         "server_parameters": {
             "model": "openai/gpt-oss-120b",
             "tensor_parallel_size": 2,
-            "swap_space": 128,
+            "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_model_len": 8192,
+            "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
             "model": "",
@@ -457,11 +459,12 @@
         "server_parameters": {
             "model": "openai/gpt-oss-120b",
             "tensor_parallel_size": 4,
-            "swap_space": 128,
+            "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_model_len": 8192,
+            "compilation-config": "{'full_cuda_graph': true}"
         },
         "client_parameters": {
             "model": "",
