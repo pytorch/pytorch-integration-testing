@@ -26,5 +26,5 @@ fi
 
 pip freeze
 # Just run accuracy tests for now
-# bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
+bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 popd
