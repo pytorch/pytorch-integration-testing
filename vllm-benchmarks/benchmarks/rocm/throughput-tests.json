@@ -55,5 +55,41 @@
             "backend": "vllm",
             "max_model_len": 8192
         }
+    },
+    {
+        "test_name": "throughput_gpt_oss_20b_tp1",
+        "parameters": {
+            "model": "openai/gpt-oss-20b",
+            "tensor_parallel_size": 1,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
+    },
+    {
+        "test_name": "throughput_gpt_oss_120b_tp2",
+        "parameters": {
+            "model": "openai/gpt-oss-120b",
+            "tensor_parallel_size": 2,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
+    },
+    {
+        "test_name": "throughput_gpt_oss_120b_tp4",
+        "parameters": {
+            "model": "openai/gpt-oss-120b",
+            "tensor_parallel_size": 4,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
     }
 ]
