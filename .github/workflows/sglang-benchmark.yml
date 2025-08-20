@@ -283,7 +283,7 @@ jobs:
           CURRENT_LLM_SERVING_ENGINE: sglang
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          VLLM_SOURCE_CODE: $(pwd)
+          VLLM_SOURCE_CODE: /tmp/workspace/sglang-benchmarks/vllm
         run: |
           set -eux
 
@@ -321,7 +321,7 @@ jobs:
           # Set VLLM_SOURCE_CODE_LOC inside the container and run SGLang benchmark
           docker exec -t "${container_name}" bash -c "
             cd sglang-benchmarks/vllm &&
-            export VLLM_SOURCE_CODE_LOC=$(pwd)
+            export VLLM_SOURCE_CODE_LOC=/tmp/workspace/sglang-benchmarks/vllm &&
             bash .buildkite/nightly-benchmarks/scripts/run-nightly-benchmarks.sh
           "
 
