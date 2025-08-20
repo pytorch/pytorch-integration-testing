@@ -339,4 +339,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark-results--${{ env.SANITIZED_DEVICE_TYPE }}-${{ env.SANITIZED_MODELS }}
-          path: vllm-benchmarks/vllm/benchmarks/results
+          path: sglang-benchmarks/vllm/benchmarks/results
