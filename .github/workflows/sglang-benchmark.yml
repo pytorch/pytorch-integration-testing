@@ -279,7 +279,6 @@ jobs:
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # SGLang-specific environment variables
           HF_HUB_DISABLE_XET: 1
-          NIGHTLY_BACKENDS: sglang
           CURRENT_LLM_SERVING_ENGINE: sglang
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
@@ -302,7 +301,6 @@ jobs:
             -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e HF_HUB_DISABLE_XET \
-            -e NIGHTLY_BACKENDS \
             -e CURRENT_LLM_SERVING_ENGINE \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
@@ -318,9 +316,11 @@ jobs:
             "${DOCKER_IMAGE}"
           )
 
-          # Set VLLM_SOURCE_CODE_LOC inside the container and run SGLang benchmark
+          # Run SGLang benchmark with proper environment variables
           docker exec -t "${container_name}" bash -c "
+            touch /sgl-workspace &&
             cd sglang-benchmarks/vllm &&
+            export CURRENT_LLM_SERVING_ENGINE=sglang &&
             export VLLM_SOURCE_CODE_LOC=/tmp/workspace/sglang-benchmarks/vllm &&
             bash .buildkite/nightly-benchmarks/scripts/run-nightly-benchmarks.sh
           "
