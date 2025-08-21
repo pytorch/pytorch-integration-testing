@@ -148,13 +148,6 @@ jobs:
               --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
-      - name: Install SGLang
-        working-directory: sglang-benchmarks/sglang
-        shell: bash
-        run: |
-          set -eux
-          pip install -e "python[all]"
-
       - name: Set Docker registry
         shell: bash
         env:
@@ -316,12 +309,26 @@ jobs:
             "${DOCKER_IMAGE}"
           )
 
-          # Run SGLang benchmark with proper environment variables
+          echo "container_name=${container_name}" >> $GITHUB_ENV
+
+          # Install SGLang inside the container and run benchmark
           docker exec -t "${container_name}" bash -c "
-            touch /sgl-workspace &&
-            cd sglang-benchmarks/vllm &&
-            export CURRENT_LLM_SERVING_ENGINE=sglang &&
-            export VLLM_SOURCE_CODE_LOC=/tmp/workspace/sglang-benchmarks/vllm &&
+            set -eux
+
+            # Install SGLang inside the container
+            cd /tmp/workspace/sglang-benchmarks/sglang
+            pip install -e 'python[all]'
+
+            # (TODO: Remove this once verified)
+            python3 -c 'import sglang; print(\"SGLang installed successfully\")'
+
+            # Create SGLang workspace marker and set environment
+            touch /sgl-workspace
+            export CURRENT_LLM_SERVING_ENGINE=sglang
+            export VLLM_SOURCE_CODE_LOC=/tmp/workspace/sglang-benchmarks/vllm
+
+            # Run the benchmark
+            cd /tmp/workspace/sglang-benchmarks/vllm
             bash .buildkite/nightly-benchmarks/scripts/run-nightly-benchmarks.sh
           "
 
