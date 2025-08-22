@@ -248,9 +248,8 @@ run_serving_tests() {
       new_test_name=$test_name"_qps_"$qps
       echo "new test name $new_test_name"
 
-      # SGLang bench_serving command
-      client_command="python3 -m sglang.bench_serving \
-        --backend sglang \
+      # Bench serving command
+      client_command="vllm bench serve \
         --dataset-name sharegpt \
         --dataset-path ./ShareGPT_V3_unfiltered_cleaned_split.json \
         --model $client_model \
