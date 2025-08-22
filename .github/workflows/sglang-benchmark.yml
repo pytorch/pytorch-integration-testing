@@ -41,10 +41,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Packages for SGLang
-        run: |
-          sudo apt-get install -y libnuma-dev
-
       - name: Set parameters
         id: set-parameters
         shell: bash
@@ -89,6 +85,10 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
+
+      - name: Install Packages for SGLang
+        run: |
+          sudo apt-get install -y libnuma-dev
 
       - name: Check if the device is supported
         shell: bash
