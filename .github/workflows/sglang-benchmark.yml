@@ -159,12 +159,12 @@ jobs:
         run: |
           set -eux
 
+          # Install vLLM
+          pip install vllm
+
           # Install SGLang from source
           pushd sglang
           pip install -e "python[all]"
-
-          # Install vLLM
-          pip install vllm
 
           # Verify installations
           python3 -c "import vllm; print('vLLM installed successfully')"
