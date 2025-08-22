@@ -135,6 +135,7 @@ jobs:
           else
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/cu128
+            pip install flash-attn --no-build-isolation
           fi
 
       - name: Authenticate with AWS
