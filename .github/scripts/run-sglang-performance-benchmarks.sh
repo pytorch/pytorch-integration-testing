@@ -122,7 +122,7 @@ kill_processes_launched_by_current_bash() {
 }
 
 kill_gpu_processes() {
-#   ps -aux
+  ps -aux
   lsof -t -i:30000 | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
   pgrep python | xargs -r kill -9
