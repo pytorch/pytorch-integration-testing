@@ -153,12 +153,12 @@ jobs:
         run: |
           set -eux
 
-          # Install vLLM
-          pip install vllm
-
           # Install SGLang from source
           pushd sglang
           pip install -e "python[all]"
+
+          # Install vLLM
+          pip install vllm
 
           # Verify installations
           python3 -c "import vllm; print('vLLM installed successfully')"
@@ -194,7 +194,6 @@ jobs:
 
           # Set environment variables for SGLang
           export CURRENT_LLM_SERVING_ENGINE=sglang
-          export SGLANG_SOURCE_CODE_LOC=$(pwd)/sglang-benchmarks/sglang
 
           # Run the SGLang benchmark script
           cd sglang-benchmarks/benchmarks
