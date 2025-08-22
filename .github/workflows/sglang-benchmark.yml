@@ -41,10 +41,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Packages for SGLang
-        run: |
-          sudo apt-get install -y libnuma-dev numactl
-
       - name: Set parameters
         id: set-parameters
         shell: bash
@@ -74,6 +70,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnuma-dev numactl
 
       - name: Checkout SGLang repository
         uses: actions/checkout@v4
