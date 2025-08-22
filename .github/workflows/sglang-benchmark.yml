@@ -41,6 +41,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install Packages for SGLang
+        run: |
+          sudo apt-get install -y libnuma-dev
+
       - name: Set parameters
         id: set-parameters
         shell: bash
@@ -74,7 +78,7 @@ jobs:
       - name: Checkout SGLang repository
         uses: actions/checkout@v4
         with:
-          repository: sgl-project/sglang.git
+          repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
           ref: ${{ inputs.sglang_branch || 'main' }}
           fetch-depth: 0
@@ -85,10 +89,6 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
-
-      - name: Install Packages for SGLang
-        run: |
-          sudo apt-get install -y libnuma-dev
 
       - name: Check if the device is supported
         shell: bash
