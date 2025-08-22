@@ -299,7 +299,8 @@ main() {
     # dependencies
     (which wget && which curl) || (apt-get update && apt-get install -y wget curl)
     (which jq) || (apt-get update && apt-get -y install jq)
-    (which lsof) || (apt-get update && apt-get install -y lsof libnuma-dev)
+    (which lsof) || (apt-get update && apt-get install -y lsof)
+    (apt-get install -y libnuma-dev)
 
     # get the current IP address, required by SGLang bench commands
     export SGLANG_HOST_IP=$(hostname -I | awk '{print $1}')
