@@ -274,10 +274,10 @@ jobs:
             git clone https://github.com/vllm-project/vllm.git &&
             cd vllm &&
             python use_existing_torch.py &&
-            uv pip install -r requirements/build.txt &&
-            uv pip install --no-build-isolation -e .
+            pip install -r requirements/build.txt &&
+            pip install --no-build-isolation -e .
           "
-          # Run the benchmark script inside the SGLang container
+          # Run the benchmark script inside the SGLang container to run the benchmarks
           docker exec -t "${container_name}" bash -c "cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
