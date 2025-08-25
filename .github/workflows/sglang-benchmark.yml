@@ -152,10 +152,6 @@ jobs:
         if: env.DEVICE_NAME == 'rocm'
         uses: pytorch/pytorch/./.github/actions/setup-rocm@main
 
-      - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
-        run: |
-          echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
-
       - name: Authenticate with AWS
         # Only need for DGX hosts
         if: contains(env.DEVICE_TYPE, 'B200')
