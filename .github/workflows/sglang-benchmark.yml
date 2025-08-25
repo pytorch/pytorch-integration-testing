@@ -258,12 +258,25 @@ jobs:
             "${SGLANG_DOCKER_IMAGE}"
           )
 
-          # Install vLLM client tools inside SGLang container (needed for 'vllm bench serve')
-          docker exec -t "${container_name}" bash -c "pip install vllm --extra-index-url https://download.pytorch.org/whl/cu128"
+          # Install system dependencies and build tools
+          docker exec -t "${container_name}" bash -c "
+            apt-get update &&
+            apt-get install -y wget curl jq lsof git build-essential python3-dev &&
+            pip install uv
+          "
 
-          # Install additional dependencies that might be needed
-          docker exec -t "${container_name}" bash -c "apt-get update && apt-get install -y wget curl jq lsof"
+          # Check current PyTorch version
+          docker exec -t "${container_name}" bash -c "python3 -c 'import torch; print(f\"SGLang container PyTorch: {torch.__version__}\")'"
 
+          # Clone vLLM and build with existing PyTorch
+          docker exec -t "${container_name}" bash -c "
+            cd /tmp &&
+            git clone https://github.com/vllm-project/vllm.git &&
+            cd vllm &&
+            python use_existing_torch.py &&
+            uv pip install -r requirements/build.txt &&
+            uv pip install --no-build-isolation -e .
+          "
           # Run the benchmark script inside the SGLang container
           docker exec -t "${container_name}" bash -c "cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
 
