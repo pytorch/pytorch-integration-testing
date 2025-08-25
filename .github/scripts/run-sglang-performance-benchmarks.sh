@@ -190,13 +190,6 @@ run_serving_tests() {
     qps_list=$(echo "$params" | jq -r '.qps_list')
     qps_list=$(echo "$qps_list" | jq -r '.[] | @sh')
     echo "Running over qps list $qps_list"
-    max_concurrency_list=$(echo "$params" | jq -r '.max_concurrency_list')
-    if [[ -z "$max_concurrency_list" || "$max_concurrency_list" == "null" ]]; then
-        num_prompts=$(echo "$client_params" | jq -r '.num_prompts')
-        max_concurrency_list="[$num_prompts]"
-    fi
-    max_concurrency_list=$(echo "$max_concurrency_list" | jq -r '.[] | @sh')
-    echo "Running over max concurrency list $max_concurrency_list"
 
     # Extract only specific SGLang server parameters
     model_path=$(echo "$server_params" | jq -r '.model_path // .model')
@@ -224,7 +217,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="source sglang_env/bin/activate && python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
 
     # run the server
     echo "Running test case $test_name"
@@ -261,38 +254,35 @@ run_serving_tests() {
         echo "now qps is $qps"
       fi
 
-      for max_concurrency in $max_concurrency_list; do
-        new_test_name=$test_name"_qps_"$qps"_concurrency_"$max_concurrency
-        echo " new test name $new_test_name"
-        # pass the tensor parallel size to the client so that it can be displayed
-        # on the benchmark dashboard
-        client_command="vllm bench serve \
-          --save-result \
-          --result-dir $RESULTS_FOLDER \
-          --result-filename ${new_test_name}.json \
-          --request-rate $qps \
-          --max-concurrency $max_concurrency \
-          --metadata "tensor_parallel_size=$tp" \
-          --port 30000 \
-          $client_args "
+      new_test_name=$test_name"_qps_"$qps"_concurrency_"
+      echo " new test name $new_test_name"
+      # pass the tensor parallel size to the client so that it can be displayed
+      # on the benchmark dashboard
+      client_command="vllm bench serve \
+        --save-result \
+        --result-dir $RESULTS_FOLDER \
+        --result-filename ${new_test_name}.json \
+        --request-rate $qps \
+        --metadata "tensor_parallel_size=$tp" \
+        --port 30000 \
+        $client_args "
 
-        echo "Running test case $test_name with qps $qps"
-        echo "Client command: $client_command"
+      echo "Running test case $test_name with qps $qps"
+      echo "Client command: $client_command"
 
-        bash -c "$client_command"
+      bash -c "$client_command"
 
-        # record the benchmarking commands
-        jq_output=$(jq -n \
-          --arg server "$server_command" \
-          --arg client "$client_command" \
-          --arg gpu "$gpu_type" \
-          '{
-            server_command: $server,
-            client_command: $client,
-            gpu_type: $gpu
-          }')
-        echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
-      done
+      # record the benchmarking commands
+      jq_output=$(jq -n \
+        --arg server "$server_command" \
+        --arg client "$client_command" \
+        --arg gpu "$gpu_type" \
+        '{
+          server_command: $server,
+          client_command: $client,
+          gpu_type: $gpu
+        }')
+      echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
     done
 
     # Deactivate and clean up the environment after all QPS tests
