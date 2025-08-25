@@ -221,7 +221,6 @@ jobs:
 
           cd sglang-benchmarks/benchmarks &&
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
-          "
 
       - name: Upload the benchmark results
         if: always()

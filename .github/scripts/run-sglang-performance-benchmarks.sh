@@ -254,7 +254,7 @@ run_serving_tests() {
         echo "now qps is $qps"
       fi
 
-      new_test_name=$test_name"_qps_"$qps"_concurrency_"
+      new_test_name=$test_name"_qps_"$qps"
       echo " new test name $new_test_name"
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
