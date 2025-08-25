@@ -296,14 +296,7 @@ run_serving_tests() {
 }
 
 main() {
-    local ARCH
-    ARCH=''
-    if [ "$ON_CPU" == "1" ];then
-        check_cpus
-        ARCH='-cpu'
-    else
-        check_gpus
-    fi
+    check_gpus
     check_hf_token
 
     # dependencies
@@ -323,9 +316,7 @@ main() {
     BENCHMARK_ROOT=tests/
 
     # benchmarking - look for test files in the tests/ directory
-    if [ -f "$BENCHMARK_ROOT/serving-tests$ARCH.json" ]; then
-    run_serving_tests "$BENCHMARK_ROOT/serving-tests$ARCH.json"
-    elif [ -f "$BENCHMARK_ROOT/serving-tests.json" ]; then
+    if [ -f "$BENCHMARK_ROOT/serving-tests.json" ]; then
     run_serving_tests "$BENCHMARK_ROOT/serving-tests.json"
     else
     echo "No serving test file found"
