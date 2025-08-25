@@ -41,6 +41,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Set parameters
         id: set-parameters
         shell: bash
@@ -135,7 +138,6 @@ jobs:
           else
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/cu128
-            pip install flashinfer-python
           fi
 
       - name: Set Docker registry
@@ -182,16 +184,58 @@ jobs:
         with:
           registry-type: public
 
-      - name: Setup SGLang Docker Environment
-        shell: bash
+      - name: Check for latest vLLM commit with Docker image
+        working-directory: sglang-benchmarks
+        env:
+          HEAD_BRANCH: main
+          HEAD_SHA: ''
+          MODELS: ${{ matrix.models }}
         run: |
           set -eux
 
-          # Set SGLang Docker image
-          echo "SGLANG_DOCKER_IMAGE=lmsysorg/sglang:latest" >> $GITHUB_ENV
+          # Clone vLLM repository to get the latest commit
+          git clone --depth 100 https://github.com/vllm-project/vllm.git vllm-temp
+          pushd vllm-temp
 
-          # Pull SGLang image
-          docker pull lmsysorg/sglang:latest
+          # Looking back the latest 100 commits is enough
+          for i in {0..99}
+          do
+            # Check if the image is there, if it doesn't then check an older one
+            # because the commit is too recent
+            HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+            DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
+
+            # No Docker image available yet because the commit is too recent
+            if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+              continue
+            fi
+
+            echo "Found vLLM commit ${HEAD_SHA} with available Docker image"
+            break
+          done
+          popd
+
+          # Clean up temporary vLLM repo
+          rm -rf vllm-temp
+
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+
+          # Print the benchmark commit for reference
+          echo "### Using vLLM Docker image for commit [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
+
+      # - name: Install SGLang
+      #   working-directory: sglang-benchmarks
+      #   shell: bash
+      #   run: |
+      #     set -eux
+
+      #     # Install SGLang from source
+      #     pushd sglang
+      #     pip install -e "python[all]"
+
+      #     # Verify installations
+      #     python3 -c "import sglang; print('SGLang installed successfully')"
 
       - name: Setup benchmark tests
         env:
@@ -233,7 +277,6 @@ jobs:
             ON_CPU=0
           fi
 
-          # Use SGLang Docker image instead of vLLM image
           container_name=$(docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
@@ -245,40 +288,16 @@ jobs:
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
-            -e CURRENT_LLM_SERVING_ENGINE \
             --ipc=host \
             --tty \
             --detach \
             --security-opt seccomp=unconfined \
-            --shm-size=32g \
-            -p 30000:30000 \
+            --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-            -v ~/.cache/huggingface:/root/.cache/huggingface \
             -w /tmp/workspace \
-            "${SGLANG_DOCKER_IMAGE}"
+            "${DOCKER_IMAGE}"
           )
-
-          # Install system dependencies and build tools
-          docker exec -t "${container_name}" bash -c "
-            apt-get update &&
-            apt-get install -y wget curl jq lsof git build-essential python3-dev &&
-            pip install uv
-          "
-
-          # Check current PyTorch version
-          docker exec -t "${container_name}" bash -c "python3 -c 'import torch; print(f\"SGLang container PyTorch: {torch.__version__}\")'"
-
-          # Clone vLLM and build with existing PyTorch
-          docker exec -t "${container_name}" bash -c "
-            cd /tmp &&
-            git clone https://github.com/vllm-project/vllm.git &&
-            cd vllm &&
-            python use_existing_torch.py &&
-            pip install -r requirements/build.txt &&
-            pip install --no-build-isolation -e .
-          "
-          # Run the benchmark script inside the SGLang container to run the benchmarks
-          docker exec -t "${container_name}" bash -c "cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
+          docker exec -t "${container_name}" bash -c "pip install sglang && cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
         if: always()
