@@ -172,11 +172,15 @@ jobs:
         with:
           registry-type: public
 
-      - name: Install SGLang
+      - name: Install SGLang in virtual environment
         working-directory: sglang-benchmarks
         shell: bash
         run: |
           set -eux
+
+          # Create virtual environment for SGLang
+          uv venv sglang_env
+          source sglang_env/bin/activate
 
           # Install SGLang from source
           pushd sglang
@@ -184,6 +188,9 @@ jobs:
 
           # Verify installations
           python3 -c "import sglang; print('SGLang installed successfully')"
+
+          # Deactivate for now - will be activated in the benchmark script
+          deactivate
 
       - name: Setup benchmark tests
         env:
@@ -211,9 +218,6 @@ jobs:
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
-
-          # Set environment variables for SGLang
-          export CURRENT_LLM_SERVING_ENGINE=sglang
 
           cd sglang-benchmarks/benchmarks &&
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
