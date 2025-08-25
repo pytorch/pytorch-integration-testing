@@ -297,7 +297,6 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
-          docker exec -t "${container_name}" bash -c "pip install sglang && cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
           docker exec -t "${container_name}" bash -c "
             # Install system dependencies
             apt-get update &&
