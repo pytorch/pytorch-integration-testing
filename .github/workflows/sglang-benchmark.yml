@@ -95,6 +95,9 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Check if the device is supported
         shell: bash
         run: |
@@ -140,21 +143,6 @@ jobs:
               --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
-      - name: Set Docker registry
-        shell: bash
-        run: |
-          set -eux
-
-          DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
-          DOCKER_IMAGE_SUFFIX=""
-          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
-          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DOCKER_IMAGE_SUFFIX=-cpu
-          fi
-          echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
-
       - name: Setup CUDA GPU_FLAG for docker run
         if: env.DEVICE_NAME == 'cuda'
         run: |
@@ -184,58 +172,18 @@ jobs:
         with:
           registry-type: public
 
-      - name: Check for latest vLLM commit with Docker image
+      - name: Install SGLang
         working-directory: sglang-benchmarks
-        env:
-          HEAD_BRANCH: main
-          HEAD_SHA: ''
-          MODELS: ${{ matrix.models }}
+        shell: bash
         run: |
           set -eux
 
-          # Clone vLLM repository to get the latest commit
-          git clone --depth 100 https://github.com/vllm-project/vllm.git vllm-temp
-          pushd vllm-temp
+          # Install SGLang from source
+          pushd sglang
+          pip install -e "python[all]"
 
-          # Looking back the latest 100 commits is enough
-          for i in {0..99}
-          do
-            # Check if the image is there, if it doesn't then check an older one
-            # because the commit is too recent
-            HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-            DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
-
-            # No Docker image available yet because the commit is too recent
-            if ! docker manifest inspect "${DOCKER_IMAGE}"; then
-              continue
-            fi
-
-            echo "Found vLLM commit ${HEAD_SHA} with available Docker image"
-            break
-          done
-          popd
-
-          # Clean up temporary vLLM repo
-          rm -rf vllm-temp
-
-          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
-
-          # Print the benchmark commit for reference
-          echo "### Using vLLM Docker image for commit [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
-
-      # - name: Install SGLang
-      #   working-directory: sglang-benchmarks
-      #   shell: bash
-      #   run: |
-      #     set -eux
-
-      #     # Install SGLang from source
-      #     pushd sglang
-      #     pip install -e "python[all]"
-
-      #     # Verify installations
-      #     python3 -c "import sglang; print('SGLang installed successfully')"
+          # Verify installations
+          python3 -c "import sglang; print('SGLang installed successfully')"
 
       - name: Setup benchmark tests
         env:
@@ -260,10 +208,6 @@ jobs:
       - name: Run SGLang benchmark
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          MODELS: ${{ matrix.models }}
-          SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
-          SCCACHE_REGION: us-east-1
-          ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
@@ -271,51 +215,8 @@ jobs:
           # Set environment variables for SGLang
           export CURRENT_LLM_SERVING_ENGINE=sglang
 
-          if [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            ON_CPU=1
-          else
-            ON_CPU=0
-          fi
-
-          container_name=$(docker run \
-            ${GPU_FLAG:-} \
-            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
-            -e SCCACHE_BUCKET \
-            -e SCCACHE_REGION \
-            -e DEVICE_NAME \
-            -e DEVICE_TYPE \
-            -e HF_TOKEN \
-            -e ENGINE_VERSION \
-            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
-            -e ON_CPU="${ON_CPU}" \
-            --ipc=host \
-            --tty \
-            --detach \
-            --security-opt seccomp=unconfined \
-            --shm-size=4g \
-            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-            -w /tmp/workspace \
-            "${DOCKER_IMAGE}"
-          )
-          docker exec -t "${container_name}" bash -c "
-            # Install system dependencies
-            apt-get update &&
-            apt-get install -y wget curl jq lsof git build-essential python3-dev &&
-
-            # Check current PyTorch version
-            python3 -c 'import torch; print(f\"vLLM container PyTorch: {torch.__version__}\")' &&
-
-            # Clone SGLang repository
-            cd /tmp &&
-            git clone https://github.com/sgl-project/sglang.git &&
-            cd sglang &&
-
-            # Install SGLang with existing PyTorch
-            pip install -e 'python[all]' &&
-
-            # Navigate to workspace and run benchmarks
-            cd /tmp/workspace/sglang-benchmarks/benchmarks &&
-            bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+          cd sglang-benchmarks/benchmarks &&
+          bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
           "
 
       - name: Upload the benchmark results

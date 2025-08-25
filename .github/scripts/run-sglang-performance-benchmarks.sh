@@ -236,6 +236,15 @@ run_serving_tests() {
       continue
     fi
 
+    # Create a new uv environment for vllm client (once per test case)
+    echo "Creating new uv environment for vllm client..."
+    uv venv vllm_client_env
+
+    # Activate the environment and install vllm
+    echo "Installing vllm in the new environment..."
+    source vllm_client_env/bin/activate
+    pip install vllm
+
     # iterate over different QPS
     for qps in $qps_list; do
       # remove the surrounding single quote from qps
@@ -261,6 +270,7 @@ run_serving_tests() {
       echo "Running test case $test_name with qps $qps"
       echo "Client command: $client_command"
 
+      # Run the vllm bench serve command in the activated environment
       bash -c "$client_command"
 
       # record the benchmarking commands
@@ -276,6 +286,10 @@ run_serving_tests() {
       echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
 
     done
+
+    # Deactivate and clean up the environment after all QPS tests
+    deactivate
+    rm -rf vllm_client_env
 
     # clean up
     kill -9 $server_pid
