@@ -185,6 +185,46 @@ jobs:
         with:
           registry-type: public
 
+      - name: Check for latest vLLM commit with Docker image
+        working-directory: sglang-benchmarks
+        env:
+          HEAD_BRANCH: main
+          HEAD_SHA: ''
+          MODELS: ${{ matrix.models }}
+        run: |
+          set -eux
+
+          # Clone vLLM repository to get the latest commit
+          git clone --depth 100 https://github.com/vllm-project/vllm.git vllm-temp
+          pushd vllm-temp
+
+          # Looking back the latest 100 commits is enough
+          for i in {0..99}
+          do
+            # Check if the image is there, if it doesn't then check an older one
+            # because the commit is too recent
+            HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+            DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
+
+            # No Docker image available yet because the commit is too recent
+            if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+              continue
+            fi
+
+            echo "Found vLLM commit ${HEAD_SHA} with available Docker image"
+            break
+          done
+          popd
+
+          # Clean up temporary vLLM repo
+          rm -rf vllm-temp
+
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+
+          # Print the benchmark commit for reference
+          echo "### Using vLLM Docker image for commit [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Install SGLang
         working-directory: sglang-benchmarks
         shell: bash
