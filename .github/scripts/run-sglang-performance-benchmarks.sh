@@ -257,14 +257,16 @@ run_serving_tests() {
       new_test_name=$test_name"_qps_"$qps
       echo "new test name $new_test_name"
 
-      # Bench serving command
+      # Bench serving command with proper parameters for connecting to external server
       client_command="vllm bench serve \
+        --port 30000 \
+        --model $client_model \
         --dataset-name sharegpt \
         --dataset-path ./ShareGPT_V3_unfiltered_cleaned_split.json \
-        --model $client_model \
         --request-rate $qps \
-        --port 30000 \
-        --output-file $RESULTS_FOLDER/${new_test_name}.json \
+        --save-result \
+        --result-dir $RESULTS_FOLDER \
+        --result-filename ${new_test_name}.json \
         $client_args"
 
       echo "Running test case $test_name with qps $qps"
