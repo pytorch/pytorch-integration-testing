@@ -244,7 +244,6 @@ run_serving_tests() {
     source vllm_client_env/bin/activate
 
     echo "Pulling official vLLM Docker image..."
-    docker pull public.ecr.aws/q9t5s3a7/vllm-release-repo:latest
 
     # iterate over different QPS
     for qps in $qps_list; do
@@ -279,7 +278,7 @@ run_serving_tests() {
         -e HF_TOKEN="$HF_TOKEN" \
         --shm-size=4g \
         --security-opt seccomp=unconfined \
-        public.ecr.aws/q9t5s3a7/vllm-release-repo:latest \
+        vllm/vllm-openai:latest \
         $client_command
 
       # record the benchmarking commands
