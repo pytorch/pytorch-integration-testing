@@ -9,6 +9,9 @@
 set -x
 set -o pipefail
 
+# The helper functions and their implementations are referred from the implementation
+# of the run-performance-benchmarks.sh script in the official vllm repo
+# Path:- .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 check_gpus() {
   if command -v nvidia-smi; then
     # check the number of GPUs and GPU type.
