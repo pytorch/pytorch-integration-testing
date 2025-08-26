@@ -181,9 +181,7 @@ jobs:
           # Install SGLang from source
           pushd sglang
           pip install -e "python[all]"
-
-          # Verify installations
-          python3 -c "import sglang; print('SGLang installed successfully')"
+          popd
 
           # Deactivate the environment
           deactivate
