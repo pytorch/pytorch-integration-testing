@@ -125,7 +125,7 @@ kill_processes_launched_by_current_bash() {
 }
 
 kill_gpu_processes() {
-  ps -aux
+  # ps -aux
   lsof -t -i:30000 | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
   pgrep python | xargs -r kill -9
@@ -221,9 +221,11 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    # Use SGLang environment's Python directly for complete isolation
+    sglang_python="../sglang_env/bin/python3"
+    server_command="$sglang_python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
 
-    # run the server
+    # run the server in a completely separate process with its own environment
     echo "Running test case $test_name"
     echo "Server command: $server_command"
     bash -c "$server_command" &
