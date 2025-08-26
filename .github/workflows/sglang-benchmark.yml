@@ -231,19 +231,19 @@ jobs:
 
           container_name=$(docker run \
             --gpus all \
-            -e NVIDIA_DRIVER_CAPABILITIES=all \
+            --shm-size 4g \
             -e HF_TOKEN \
             -e CUDA_VISIBLE_DEVICES \
             -e TORCH_COMPILE_DISABLE \
             -e TORCHDYNAMO_DISABLE \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             --ipc=host \
-            --shm-size=4g \
             --tty \
             --detach \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -v ~/.cache/huggingface:/root/.cache/huggingface \
             -w /tmp/workspace \
-            python:3.12
+            lmsysorg/sglang:latest
           )
 
           docker exec -t "${container_name}" bash -c "
