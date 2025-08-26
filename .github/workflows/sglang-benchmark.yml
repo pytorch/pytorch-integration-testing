@@ -171,9 +171,6 @@ jobs:
       - name: Install SGLang
         working-directory: sglang-benchmarks
         shell: bash
-        env:
-          TORCHDYNAMO_DISABLE: "1"
-          TRITON_DISABLE_LINE_INFO: "1"
         run: |
           set -eux
 
@@ -208,7 +205,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          TORCHDYNAMO_DISABLE: "1"
         run: |
           set -eux
 
