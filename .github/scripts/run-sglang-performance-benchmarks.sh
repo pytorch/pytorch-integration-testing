@@ -221,11 +221,9 @@ run_serving_tests() {
       continue
     fi
 
-    # Use SGLang environment's Python directly for complete isolation
-    sglang_python="../sglang_env/bin/python3"
-    server_command="$sglang_python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
 
-    # run the server in a completely separate process with its own environment
+    # run the server
     echo "Running test case $test_name"
     echo "Server command: $server_command"
     bash -c "$server_command" &

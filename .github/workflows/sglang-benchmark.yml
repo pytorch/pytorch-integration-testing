@@ -174,17 +174,12 @@ jobs:
         run: |
           set -eux
 
-          # Create a virtual environment for SGLang
-          uv venv sglang_env
-          source sglang_env/bin/activate
-
           # Install SGLang from source
           pushd sglang
           pip install -e "python[all]"
-          popd
 
-          # Deactivate the environment
-          deactivate
+          # Verify installations
+          python3 -c "import sglang; print('SGLang installed successfully')"
 
       - name: Setup benchmark tests
         env:
@@ -210,6 +205,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+          TORCHDYNAMO_DISABLE: "1"
         run: |
           set -eux
 
