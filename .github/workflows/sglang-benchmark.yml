@@ -205,6 +205,20 @@ jobs:
           ls -lah sglang-benchmarks/benchmarks/tests || echo "No test files found"
           find sglang-benchmarks/benchmarks/tests -type f -exec cat {} \; || echo "No test files to display"
 
+      # - name: Run SGLang benchmark
+      #   env:
+      #     HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      #     SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+      #     CUDA_VISIBLE_DEVICES: "0"
+      #     TORCH_COMPILE_DISABLE: "1"
+      #     TORCHDYNAMO_DISABLE: "1"
+      #   run: |
+      #     set -eux
+
+      #     cd sglang-benchmarks/benchmarks &&
+      #     bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+
+
       - name: Run SGLang benchmark
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -215,8 +229,27 @@ jobs:
         run: |
           set -eux
 
-          cd sglang-benchmarks/benchmarks &&
-          bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+          container_name=$(docker run \
+            --gpus all \
+            -e NVIDIA_DRIVER_CAPABILITIES=all \
+            -e HF_TOKEN \
+            -e CUDA_VISIBLE_DEVICES \
+            -e TORCH_COMPILE_DISABLE \
+            -e TORCHDYNAMO_DISABLE \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --ipc=host \
+            --shm-size=4g \
+            --tty \
+            --detach \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            python:3.12
+          )
+
+          docker exec -t "${container_name}" bash -c "
+            cd sglang-benchmarks/benchmarks &&
+            bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+          "
 
       - name: Upload the benchmark results
         if: always()
