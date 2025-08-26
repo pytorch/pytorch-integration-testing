@@ -238,13 +238,13 @@ run_serving_tests() {
     fi
 
     # Create a new uv environment for vllm client (once per test case)
-    echo "Creating new uv environment for vllm client..."
+    # echo "Creating new uv environment for vllm client..."
     uv venv vllm_client_env
-
-    # Activate the environment and install vllm
-    echo "Installing vllm in the new environment..."
+    # echo "Installing vllm in the new environment..."
     source vllm_client_env/bin/activate
-    pip install vllm
+
+    echo "Pulling official vLLM Docker image..."
+    docker pull public.ecr.aws/q9t5s3a7/vllm-release-repo:latest
 
     # iterate over different QPS
     for qps in $qps_list; do
@@ -257,8 +257,7 @@ run_serving_tests() {
 
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
-      # pass the tensor parallel size to the client so that it can be displayed
-      # on the benchmark dashboard
+
       client_command="vllm bench serve \
         --save-result \
         --result-dir $RESULTS_FOLDER \
@@ -271,7 +270,17 @@ run_serving_tests() {
       echo "Running test case $test_name with qps $qps"
       echo "Client command: $client_command"
 
-      bash -c "$client_command"
+      # Run vLLM client inside Docker container
+      docker run --rm \
+        --gpus all \
+        -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+        -w /tmp/workspace \
+        --ipc=host \
+        -e HF_TOKEN="$HF_TOKEN" \
+        --shm-size=4g \
+        --security-opt seccomp=unconfined \
+        public.ecr.aws/q9t5s3a7/vllm-release-repo:latest \
+        $client_command
 
       # record the benchmarking commands
       jq_output=$(jq -n \
