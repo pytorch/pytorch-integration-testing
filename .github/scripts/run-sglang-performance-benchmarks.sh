@@ -126,6 +126,7 @@ kill_gpu_processes() {
   lsof -t -i:30000 | xargs -r kill -9
   pgrep python3 | xargs -r kill -9
   pgrep python | xargs -r kill -9
+  pgrep VLLM | xargs -r kill -9
 
   # wait until GPU memory usage smaller than 1GB
   if command -v nvidia-smi; then
