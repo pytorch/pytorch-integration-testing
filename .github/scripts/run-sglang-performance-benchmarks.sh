@@ -143,25 +143,6 @@ kill_gpu_processes() {
   fi
 }
 
-upload_to_buildkite() {
-  # upload the benchmarking results to buildkite
-
-  # if the agent binary is not found, skip uploading the results, exit 0
-  # Check if buildkite-agent is available in the PATH or at /workspace/buildkite-agent
-  if command -v buildkite-agent >/dev/null 2>&1; then
-    BUILDKITE_AGENT_COMMAND="buildkite-agent"
-  elif [ -f /workspace/buildkite-agent ]; then
-    BUILDKITE_AGENT_COMMAND="/workspace/buildkite-agent"
-  else
-    echo "buildkite-agent binary not found. Skip uploading the results."
-    return 0
-  fi
-
-  # Use the determined command to annotate and upload artifacts
-  $BUILDKITE_AGENT_COMMAND annotate --style "info" --context "sglang-benchmark-results" < "$RESULTS_FOLDER/benchmark_results.md"
-  $BUILDKITE_AGENT_COMMAND artifact upload "$RESULTS_FOLDER/*"
-}
-
 run_serving_tests() {
   # run serving tests using `sglang.bench_serving` command
   # $1: a json file specifying serving test cases
@@ -345,8 +326,6 @@ main() {
     else
     echo "No JSON result files were generated." >> "$RESULTS_FOLDER/benchmark_results.md"
     fi
-
-    upload_to_buildkite
 }
 
 main "$@"

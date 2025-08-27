@@ -202,14 +202,13 @@ jobs:
           find sglang-benchmarks/benchmarks/tests -type f -exec cat {} \; || echo "No test files to display"
 
       - name: Run SGLang benchmark
+        working-directory: sglang-benchmarks/benchmarks
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
           TORCHDYNAMO_DISABLE: "1"
         run: |
           set -eux
-
-          cd sglang-benchmarks/benchmarks &&
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
 
       - name: Upload the benchmark results
