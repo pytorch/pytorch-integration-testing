@@ -258,7 +258,9 @@ run_serving_tests() {
 
       bash -c "$client_command"
 
-      # Post-process the result file to fix the benchmark name issue for AWS S3
+      # Workaround: The vllm bench serve command generates a .pytorch.json result file with the benchmark name hardcoded as "vLLM benchmark".
+      # This causes issues in the HUD dashboard, which expects the benchmark name to be "SGLang benchmark" for SGLang tests.
+      # To ensure correct dashboard aggregation, replace the benchmark name in the result file if it exists.
       if [ -f "$RESULTS_FOLDER/${new_test_name}.pytorch.json" ]; then
         # Replace "vLLM benchmark" with "SGLang benchmark" in the JSON file
         sed -i 's/"name": "vLLM benchmark"/"name": "SGLang benchmark"/g' "$RESULTS_FOLDER/${new_test_name}.pytorch.json"
