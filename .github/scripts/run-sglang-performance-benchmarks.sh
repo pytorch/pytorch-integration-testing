@@ -258,6 +258,12 @@ run_serving_tests() {
 
       bash -c "$client_command"
 
+      # Post-process the result file to fix the benchmark name issue for AWS S3
+      if [ -f "$RESULTS_FOLDER/${new_test_name}.json" ]; then
+        # Replace "vLLM benchmark" with "SGLang benchmark" in the JSON file
+        sed -i 's/"name": "vLLM benchmark"/"name": "SGLang benchmark"/g' "$RESULTS_FOLDER/${new_test_name}.json"
+      fi
+
       # record the benchmarking commands
       jq_output=$(jq -n \
         --arg server "$server_command" \
