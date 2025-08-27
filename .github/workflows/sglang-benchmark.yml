@@ -238,6 +238,14 @@ jobs:
             echo "⚠️ No benchmark results found in ${BENCHMARK_RESULTS}" >> $GITHUB_STEP_SUMMARY
           fi
 
+          python3 .github/scripts/upload_benchmark_results.py \
+              --repo sglang-benchmarks/sglang \
+              --benchmark-name "SGLang benchmark" \
+              --benchmark-results "${BENCHMARK_RESULTS}" \
+              --device-name "${DEVICE_NAME}" \
+              --device-type "${SANITIZED_DEVICE_TYPE}" \
+              --model "${SANITIZED_MODELS}"
+
           echo "SANITIZED_DEVICE_TYPE=$SANITIZED_DEVICE_TYPE" >> $GITHUB_ENV
           echo "SANITIZED_MODELS=$SANITIZED_MODELS" >> $GITHUB_ENV
 
