@@ -202,7 +202,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --mem-fraction-static 0.8"
 
     # run the server
     echo "Running test case $test_name"
