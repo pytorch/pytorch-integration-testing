@@ -1,6 +1,9 @@
 name: SGLang Benchmark
 
 on:
+  schedule:
+    # Run every week on Sunday at midnight
+    - cron: '0 0 * * 0'
   workflow_dispatch:
     inputs:
       sglang_branch:

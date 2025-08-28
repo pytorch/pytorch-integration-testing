@@ -202,7 +202,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --mem-fraction-static 0.8"
 
     # run the server
     echo "Running test case $test_name"
@@ -263,7 +263,7 @@ run_serving_tests() {
       # To ensure correct dashboard aggregation, replace the benchmark name in the result file if it exists.
       if [ -f "$RESULTS_FOLDER/${new_test_name}.pytorch.json" ]; then
         # Replace "vLLM benchmark" with "SGLang benchmark" in the JSON file
-        sed -i 's/"name": "vLLM benchmark"/"name": "SGLang benchmark"/g' "$RESULTS_FOLDER/${new_test_name}.pytorch.json"
+        jq 'map(.benchmark.name = "SGLang benchmark")' "$RESULTS_FOLDER/${new_test_name}.pytorch.json" > temp.json && mv temp.json "$RESULTS_FOLDER/${new_test_name}.pytorch.json"
       fi
 
       # record the benchmarking commands
