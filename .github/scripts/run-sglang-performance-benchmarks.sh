@@ -263,7 +263,7 @@ run_serving_tests() {
       # To ensure correct dashboard aggregation, replace the benchmark name in the result file if it exists.
       if [ -f "$RESULTS_FOLDER/${new_test_name}.pytorch.json" ]; then
         # Replace "vLLM benchmark" with "SGLang benchmark" in the JSON file
-        sed -i 's/"name": "vLLM benchmark"/"name": "SGLang benchmark"/g' "$RESULTS_FOLDER/${new_test_name}.pytorch.json"
+        jq '.benchmark.name = "SGLang benchmark"' "$RESULTS_FOLDER/${new_test_name}.pytorch.json" --in-place
       fi
 
       # record the benchmarking commands

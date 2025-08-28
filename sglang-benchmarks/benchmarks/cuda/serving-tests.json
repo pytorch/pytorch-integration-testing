@@ -19,25 +19,6 @@
         }
     },
     {
-        "test_name": "serving_mixtral8x7B_tp2_sharegpt",
-        "qps_list": [1, 4, 16, "inf"],
-        "server_parameters": {
-            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-            "tensor_parallel_size": 2,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy"
-        },
-        "client_parameters": {
-            "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-            "backend": "vllm",
-            "dataset_name": "sharegpt",
-            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200
-        }
-    },
-    {
         "test_name": "serving_qwen3_30b_a3b_tp8_random_in1k_out2k",
         "qps_list": [10],
         "server_parameters": {
@@ -119,110 +100,6 @@
             "num_prompts": 200,
             "random_input_len": 1024,
             "random_output_len": 2048
-        }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_sharegpt",
-        "qps_list": [1, 4, 16, "inf"],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy",
-            "max_model_len": 8192
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "sharegpt",
-            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200
-        }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_random_in200_out200",
-        "qps_list": [10],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy",
-            "max_model_len": 8192
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 200,
-            "random_output_len": 200
-        }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_random_in1k_out2k",
-        "qps_list": [10],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy",
-            "max_model_len": 8192
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 1024,
-            "random_output_len": 2048
-        }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_random_in5k_out1k",
-        "qps_list": [10],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy",
-            "max_model_len": 8192
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 5120,
-            "random_output_len": 1024
-        }
-    },
-    {
-        "test_name": "serving_llama4_scout_tp4_random_in10k_out500",
-        "qps_list": [10],
-        "server_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
-            "load_format": "dummy",
-            "max_model_len": 11264
-        },
-        "client_parameters": {
-            "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 1024,
-            "random_output_len": 500
         }
     }
 ]
