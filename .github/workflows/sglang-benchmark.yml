@@ -89,7 +89,7 @@ jobs:
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || 'main' }}
+          ref: ${{ inputs.sglang_branch || 'v0.5.1.post2' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -210,7 +210,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          TORCHDYNAMO_DISABLE: "1" #TODO: remove this variable in future. As of now, this is a workaround to fix cuda errors to avoid breaking the sglang server.
         run: |
           set -eux
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
