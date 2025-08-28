@@ -172,18 +172,22 @@ jobs:
         with:
           registry-type: public
 
-      - name: Install SGLang
-        working-directory: sglang-benchmarks
-        shell: bash
+      # - name: Install SGLang
+      #   working-directory: sglang-benchmarks
+      #   shell: bash
+      #   run: |
+      #     set -eux
+
+      #     # Install SGLang from source
+      #     pushd sglang
+      #     pip install -e "python[all]"
+
+      #     # Verify installations
+      #     python3 -c "import sglang; print('SGLang installed successfully')"
+
+      - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
-          set -eux
-
-          # Install SGLang from source
-          pushd sglang
-          pip install -e "python[all]" --force-reinstall
-
-          # Verify installations
-          python3 -c "import sglang; print('SGLang installed successfully')"
+          echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
 
       - name: Setup benchmark tests
         env:
@@ -208,11 +212,35 @@ jobs:
       - name: Run SGLang benchmark
         working-directory: sglang-benchmarks/benchmarks
         env:
+          SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
+          SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          DOCKER_IMAGE: lmsysorg/sglang:latest
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+          ENGINE_VERSION: v1
         run: |
           set -eux
-          bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+
+          container_name=$(docker run \
+            ${GPU_FLAG:-} \
+            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
+            -e SCCACHE_BUCKET \
+            -e SCCACHE_REGION \
+            -e DEVICE_NAME \
+            -e DEVICE_TYPE \
+            -e HF_TOKEN \
+            -e ENGINE_VERSION \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --ipc=host \
+            --tty \
+            --detach \
+            --security-opt seccomp=unconfined \
+            --shm-size=32g \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            "${DOCKER_IMAGE}"
+          )
+          docker exec -t "${container_name}" bash -c "bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
 
       - name: Upload the benchmark results
         if: always()
