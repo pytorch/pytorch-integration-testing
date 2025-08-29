@@ -89,7 +89,7 @@ jobs:
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || 'v0.5.1.post2' }}
+          ref: ${{ inputs.sglang_branch || 'main' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -172,19 +172,6 @@ jobs:
         with:
           registry-type: public
 
-      # - name: Install SGLang
-      #   working-directory: sglang-benchmarks
-      #   shell: bash
-      #   run: |
-      #     set -eux
-
-      #     # Install SGLang from source
-      #     pushd sglang
-      #     pip install -e "python[all]"
-
-      #     # Verify installations
-      #     python3 -c "import sglang; print('SGLang installed successfully')"
-
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
           echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
@@ -216,6 +203,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           DOCKER_IMAGE: lmsysorg/sglang:latest
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+          TORCHDYNAMO_DISABLE: "1" #TODO: remove this variable in future. As of now, this is a workaround to fix cuda errors to avoid breaking the sglang server.
           ENGINE_VERSION: v1
         run: |
           set -eux
