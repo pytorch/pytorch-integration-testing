@@ -146,6 +146,13 @@ jobs:
               --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
+      - name: Set Docker registry
+        shell: bash
+        run: |
+          set -eux
+          DOCKER_IMAGE_PREFIX=lmsysorg/sglang
+          echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
+
       - name: Setup CUDA GPU_FLAG for docker run
         if: env.DEVICE_NAME == 'cuda'
         run: |
@@ -170,6 +177,47 @@ jobs:
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
         with:
           registry-type: public
+
+      - name: Check for last benchmark commit
+        working-directory: sglang-benchmarks
+        env:
+          HEAD_BRANCH: ${{ inputs.sglang_branch || 'main' }}
+          HEAD_SHA: ''
+          MODELS: ${{ matrix.models }}
+        run: |
+          set -eux
+
+          if [[ -z "${HEAD_SHA}" ]]; then
+            pushd sglang
+            # Looking back the latest 100 commits is enough
+            for i in {0..99}
+            do
+              # Check if the image is there, if it doesn't then check an older one
+              # because the commit is too recent
+              HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+
+              # No Docker image available yet because the commit is too recent
+              if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+                continue
+              fi
+
+              NOT_EXIST=0
+              S3_PATH="v3/sgl-project/sglang/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
+              aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+              if [[ ${NOT_EXIST} == "1" ]]; then
+                echo "Found a SGLang commit ${HEAD_SHA} that hasn't been benchmarked yet"
+                break
+              fi
+            done
+            popd
+          fi
+
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+
+          # Print the benchmark commit for rereference
+          echo "### Run benchmark on [${HEAD_SHA}](https://github.com/sgl-project/sglang/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
         run: |
@@ -200,7 +248,7 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: lmsysorg/sglang:latest
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
           TORCHDYNAMO_DISABLE: "1" #TODO: remove this variable in future. As of now, this is a workaround to fix cuda errors to avoid breaking the sglang server.
           ENGINE_VERSION: v1
