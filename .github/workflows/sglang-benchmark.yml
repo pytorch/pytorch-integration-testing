@@ -176,13 +176,17 @@ jobs:
         shell: bash
         run: |
           set -eux
+          uv venv sgl_server_env
+          . sgl_server_env/bin/activate
 
           # Install SGLang from source
           pushd sglang
           pip install -e "python[all]"
+          popd
 
           # Verify installations
           python3 -c "import sglang; print('SGLang installed successfully')"
+          echo "SGLANG_SERVER_PY=$(pwd)/sgl_server_env/bin/python" >> $GITHUB_ENV
 
       - name: Setup benchmark tests
         env:
@@ -209,7 +213,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          TORCHDYNAMO_DISABLE: "1" #TODO: remove this variable in future. As of now, this is a workaround to fix cuda errors to avoid breaking the sglang server.
+          SGLANG_SERVER_PY: ${{ env.SGLANG_SERVER_PY }}
         run: |
           set -eux
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
