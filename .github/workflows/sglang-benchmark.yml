@@ -178,14 +178,11 @@ jobs:
           set -eux
           uv venv sgl_server_env
 
-          SGL_PY="$(pwd)/sgl_server_env/bin/python"
-          SGL_PIP="$(pwd)/sgl_server_env/bin/pip"
-
           # Install SGLang from source
-          $SGL_PIP install -e "$(pwd)/sglang/python[all]"
+          uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]"
 
           # Verify installations
-          echo "SGLANG_SERVER_PY=$SGL_PY" >> $GITHUB_ENV
+          echo "SGLANG_SERVER_PY=$(pwd)/sgl_server_env/bin/python" >> $GITHUB_ENV
 
       - name: Setup benchmark tests
         env:
