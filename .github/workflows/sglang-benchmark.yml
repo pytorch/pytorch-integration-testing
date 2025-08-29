@@ -216,6 +216,7 @@ jobs:
             -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e ENGINE_VERSION \
+            -e TORCHDYNAMO_DISABLE \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             --ipc=host \
             --tty \
