@@ -258,6 +258,14 @@ run_serving_tests() {
 
       bash -c "$client_command"
 
+      # Workaround: The vllm bench serve command generates a .pytorch.json result file with the benchmark name hardcoded as "vLLM benchmark".
+      # This causes issues in the HUD dashboard, which expects the benchmark name to be "SGLang benchmark" for SGLang tests.
+      # To ensure correct dashboard aggregation, replace the benchmark name in the result file if it exists.
+      if [ -f "$RESULTS_FOLDER/${new_test_name}.pytorch.json" ]; then
+        # Replace "vLLM benchmark" with "SGLang benchmark" in the JSON file
+        jq 'map(.benchmark.name = "SGLang benchmark")' "$RESULTS_FOLDER/${new_test_name}.pytorch.json" > temp.json && mv temp.json "$RESULTS_FOLDER/${new_test_name}.pytorch.json"
+      fi
+
       # record the benchmarking commands
       jq_output=$(jq -n \
         --arg server "$server_command" \
