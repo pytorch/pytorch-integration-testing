@@ -88,7 +88,7 @@ jobs:
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || 'main' }}
+          ref: ${{ inputs.sglang_branch || 'v0.5.1.post2' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -176,13 +176,13 @@ jobs:
         shell: bash
         run: |
           set -eux
+          uv venv sgl_server_env
 
           # Install SGLang from source
-          pushd sglang
-          pip install -e "python[all]"
+          uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]" boto3 psutil gitpython
 
           # Verify installations
-          python3 -c "import sglang; print('SGLang installed successfully')"
+          echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
 
       - name: Setup benchmark tests
         env:
@@ -209,7 +209,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          TORCHDYNAMO_DISABLE: "1" #TODO: remove this variable in future. As of now, this is a workaround to fix cuda errors to avoid breaking the sglang server.
         run: |
           set -eux
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
