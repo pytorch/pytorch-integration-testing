@@ -179,7 +179,7 @@ jobs:
           uv venv sgl_server_env
 
           # Install SGLang from source
-          uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]" boto3 psutil git
+          uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]" boto3 psutil gitpython
 
           # Verify installations
           echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
