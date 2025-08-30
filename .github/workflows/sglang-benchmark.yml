@@ -52,7 +52,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || '' }}
+          RUNNERS: ${{ inputs.runners || 'h100' }}
         run: |
           set -eux
 
@@ -182,7 +182,7 @@ jobs:
           uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]"
 
           # Verify installations
-          echo "SGLANG_SERVER_PY=$(pwd)/sgl_server_env/bin/python" >> $GITHUB_ENV
+          echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
 
       - name: Setup benchmark tests
         env:
@@ -209,7 +209,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
-          SGLANG_SERVER_PY: ${{ env.SGLANG_SERVER_PY }}
         run: |
           set -eux
           bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
