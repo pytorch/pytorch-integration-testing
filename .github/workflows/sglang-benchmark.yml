@@ -195,7 +195,6 @@ jobs:
 
           # Verify installations
           echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
-          uv pip install -p sgl_server_env sgl-kernel==0.3.7
 
       - name: Setup benchmark tests
         env:
