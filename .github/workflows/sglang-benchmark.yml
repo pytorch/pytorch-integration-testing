@@ -88,7 +88,7 @@ jobs:
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || 'v0.5.1.post2' }}
+          ref: ${{ inputs.sglang_branch || 'main' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -126,6 +126,8 @@ jobs:
 
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+            CUDA_HOME="/usr/local/cuda"
+            echo "CUDA_HOME=$CUDA_HOME" >> $GITHUB_ENV
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
