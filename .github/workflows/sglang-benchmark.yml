@@ -98,7 +98,7 @@ jobs:
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || env.LATEST_TAG }}
+          ref: ${{ inputs.sglang_branch || 'main' }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
