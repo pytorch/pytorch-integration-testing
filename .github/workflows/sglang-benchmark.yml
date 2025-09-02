@@ -21,7 +21,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,b200
+        default: h100
   pull_request:
     paths:
       - .github/workflows/sglang-benchmark.yml
@@ -81,14 +81,24 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnuma-dev numactl
+          sudo apt-get install -y libnuma-dev numactl jq
+
+      - name: Get latest SGLang release tag/branch and commit SHA
+        shell: bash
+        run: |
+          set -eux
+          TAG_INFO=$(curl -s "https://api.github.com/repos/sgl-project/sglang/tags" | jq '.[0]')
+          LATEST_TAG=$(echo "$TAG_INFO" | jq -r '.name')
+          LATEST_SHA=$(echo "$TAG_INFO" | jq -r '.commit.sha')
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "LATEST_COMMIT=$LATEST_SHA" >> $GITHUB_ENV
 
       - name: Checkout SGLang repository
         uses: actions/checkout@v4
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
-          ref: ${{ inputs.sglang_branch || 'v0.5.1.post2' }}
+          ref: ${{ inputs.sglang_branch || env.LATEST_TAG }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
