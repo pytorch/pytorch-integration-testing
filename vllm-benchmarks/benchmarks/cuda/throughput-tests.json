@@ -65,7 +65,7 @@
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
             "backend": "vllm",
-            "max_batch_size": 224
+            "max_model_len": 8192
         }
     },
     {
@@ -77,7 +77,7 @@
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
             "backend": "vllm",
-            "max_batch_size": 224
+            "max_model_len": 8192
         }
     }
 ]
