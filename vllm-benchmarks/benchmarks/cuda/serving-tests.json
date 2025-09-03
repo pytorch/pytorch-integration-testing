@@ -413,7 +413,7 @@
         }
     },
     {
-        "test_name": "serving_gpt_oss_20b_tp1_sharegpt",
+        "test_name": "serving_gpt_oss_20b_tp1_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "openai/gpt-oss-20b",
@@ -422,18 +422,19 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_batch_size": 224
         },
         "client_parameters": {
             "model": "openai/gpt-oss-20b",
             "backend": "vllm",
-            "dataset_name": "sharegpt",
-            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
         }
     },
     {
-        "test_name": "serving_gpt_oss_120b_tp4_sharegpt",
+        "test_name": "serving_gpt_oss_120b_tp4_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "openai/gpt-oss-120b",
@@ -442,14 +443,15 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_batch_size": 336
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",
             "backend": "vllm",
-            "dataset_name": "sharegpt",
-            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
         }
     }
 ]
