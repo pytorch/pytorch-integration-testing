@@ -71,5 +71,6 @@
             "num_iters_warmup": 5,
             "num_iters": 15,
             "max_model_len": 8192
+        }
     }
 ]
