@@ -78,5 +78,6 @@
             "num_prompts": 200,
             "backend": "vllm",
             "max_model_len": 8192
+        }
     }
 ]
