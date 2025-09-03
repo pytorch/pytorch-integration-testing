@@ -443,7 +443,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_batch_size": 336
+            "max_batch_size": 224
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",
