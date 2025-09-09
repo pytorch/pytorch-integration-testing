@@ -190,7 +190,7 @@ jobs:
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           VLLM_USE_MODELSCOPE: false
-          VLLM_TORCH_PROFILER_DIR: ~/tmp/workspace/vllm/vllm_profile
+          VLLM_TORCH_PROFILER_DIR: ~/vllm_profile
           CUDA_VISIBLE_DEVICES: 0
           VLLM_USE_V1: 1
           # Profiling parameters
@@ -246,4 +246,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: profiling-results--${{ env.DEVICE_TYPE }}
-          path: vllm/vllm_profile
+          path: ~/vllm_profile
