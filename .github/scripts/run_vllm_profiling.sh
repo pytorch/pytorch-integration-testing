@@ -43,8 +43,12 @@ setup_workspace() {
   # The Docker container has vLLM pre-installed, we shouldn't run from source
   cd /tmp/workspace
 
-  # Create the profiling directory if it doesn't exist
-  mkdir -p "$(dirname "${VLLM_TORCH_PROFILER_DIR/#\~/$HOME}")" 2>/dev/null || true
+  # Create the profiling directory (no need for tilde expansion now)
+  echo "Creating profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
+  mkdir -p "${VLLM_TORCH_PROFILER_DIR}"
+
+  # Ensure the directory is writable
+  chmod 755 "${VLLM_TORCH_PROFILER_DIR}"
 }
 
 wait_for_server() {
@@ -131,6 +135,9 @@ main() {
   install_dependencies
   setup_workspace
 
+  # Debug: Show environment variables
+  echo "DEBUG: VLLM_TORCH_PROFILER_DIR=${VLLM_TORCH_PROFILER_DIR:-not set}"
+
   # Clean up any existing processes first
   kill_gpu_processes
 
@@ -138,7 +145,26 @@ main() {
   if start_vllm_server; then
     run_profiling
     cleanup_server
-    echo "Profiling completed. Artifacts will be available in ${VLLM_TORCH_PROFILER_DIR:-default profiler directory}."
+
+    # Debug: Check if profiling files were created
+    echo "DEBUG: Checking profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
+    if [ -d "${VLLM_TORCH_PROFILER_DIR}" ]; then
+      echo "DEBUG: Profiling directory exists"
+      ls -la "${VLLM_TORCH_PROFILER_DIR}" || echo "DEBUG: Directory is empty or inaccessible"
+      find "${VLLM_TORCH_PROFILER_DIR}" -type f 2>/dev/null | head -10 | while read file; do
+        echo "DEBUG: Found profiling file: ${file}"
+      done
+    else
+      echo "DEBUG: Profiling directory does not exist!"
+    fi
+
+    # Also check if any profiling files were created in current directory
+    echo "DEBUG: Checking current directory for profiling artifacts:"
+    find . -name "*.json" -o -name "*.trace" -o -name "*.pt" 2>/dev/null | head -5 | while read file; do
+      echo "DEBUG: Found artifact in current dir: ${file}"
+    done
+
+    echo "Profiling completed. Artifacts should be available in ${VLLM_TORCH_PROFILER_DIR:-default profiler directory}."
   else
     echo "Failed to start vLLM server. Exiting."
     exit 1
