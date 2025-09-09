@@ -39,8 +39,12 @@ install_dependencies() {
 }
 
 setup_workspace() {
-  # Ensure we're in the right directory (mounted workspace)
-  cd /tmp/workspace/vllm
+  # Ensure we're in the workspace directory, but don't go into vllm source
+  # The Docker container has vLLM pre-installed, we shouldn't run from source
+  cd /tmp/workspace
+
+  # Create the profiling directory if it doesn't exist
+  mkdir -p "$(dirname "${VLLM_TORCH_PROFILER_DIR/#\~/$HOME}")" 2>/dev/null || true
 }
 
 wait_for_server() {
