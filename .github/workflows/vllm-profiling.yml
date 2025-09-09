@@ -162,7 +162,6 @@ jobs:
                 break
               fi
             done
-            popd
           fi
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
