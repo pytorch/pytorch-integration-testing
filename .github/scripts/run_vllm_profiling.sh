@@ -16,6 +16,11 @@ echo "  Port: ${PORT:-8000}"
 echo "  Num Prompts: ${NUM_PROMPTS:-100}"
 echo "  VLLM_USE_V1: ${VLLM_USE_V1:-1}"
 
+# Install required dependencies
+echo "Installing required dependencies..."
+(which curl) || (apt-get update && apt-get install -y curl)
+(which lsof) || (apt-get update && apt-get install -y lsof)
+
 # Ensure we're in the right directory (mounted workspace)
 cd /tmp/workspace/vllm
 
