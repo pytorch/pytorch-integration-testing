@@ -47,9 +47,8 @@ wait_for_server() {
 kill_gpu_processes() {
   echo "Cleaning up processes..."
   lsof -t -i:${PORT} | xargs -r kill -9 2>/dev/null || true
-  pgrep -f "vllm serve" | xargs -r kill -9 2>/dev/null || true
+  pgrep -f "vllm" | xargs -r kill -9 2>/dev/null || true
   pgrep python3 | xargs -r kill -9 2>/dev/null || true
-  pgrep python | xargs -r kill -9 2>/dev/null || true
 
   # Wait until GPU memory usage decreases
   if command -v nvidia-smi; then
@@ -65,9 +64,9 @@ kill_gpu_processes
 
 # Start vLLM server in the background
 echo "Starting vLLM server..."
-echo "Server command: VLLM_USE_V1=${VLLM_USE_V1} vllm serve ${MODEL_NAME} --swap-space 16 --disable-log-requests --host :: --port ${PORT} --dtype float16"
 
-VLLM_USE_V1=${VLLM_USE_V1} vllm serve "${MODEL_NAME}" \
+VLLM_USE_V1=${VLLM_USE_V1} python3 -m vllm.entrypoints.openai.api_server \
+  --model "${MODEL_NAME}" \
   --swap-space 16 \
   --disable-log-requests \
   --host :: \
