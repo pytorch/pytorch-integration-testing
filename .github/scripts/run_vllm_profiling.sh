@@ -53,10 +53,10 @@ wait_for_server() {
 }
 
 kill_gpu_processes() {
-  echo "Cleaning up processes..."
-  lsof -t -i:${PORT} | xargs -r kill -9 2>/dev/null || true
-  pgrep -f "vllm" | xargs -r kill -9 2>/dev/null || true
-  pgrep python3 | xargs -r kill -9 2>/dev/null || true
+  ps -aux
+  lsof -t -i:8000 | xargs -r kill -9
+  pgrep python3 | xargs -r kill -9
+  pgrep VLLM | xargs -r kill -9
 
   # Wait until GPU memory usage decreases
   if command -v nvidia-smi; then
