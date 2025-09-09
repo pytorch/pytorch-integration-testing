@@ -34,8 +34,62 @@ HOST=${HOST:-localhost}
 PORT=${PORT:-8000}
 NUM_PROMPTS=${NUM_PROMPTS:-100}
 
-# Run the vLLM profiling command
-echo "Starting vLLM bench serve profiling..."
+# Helper functions
+wait_for_server() {
+  # Wait for vLLM server to start
+  # Return 1 if vLLM server crashes
+  timeout 1200 bash -c "
+    until curl -s ${HOST}:${PORT}/v1/models > /dev/null; do
+      sleep 1
+    done" && return 0 || return 1
+}
+
+kill_gpu_processes() {
+  echo "Cleaning up processes..."
+  lsof -t -i:${PORT} | xargs -r kill -9 2>/dev/null || true
+  pgrep -f "vllm serve" | xargs -r kill -9 2>/dev/null || true
+  pgrep python3 | xargs -r kill -9 2>/dev/null || true
+  pgrep python | xargs -r kill -9 2>/dev/null || true
+
+  # Wait until GPU memory usage decreases
+  if command -v nvidia-smi; then
+    echo "Waiting for GPU memory to clear..."
+    while [ "$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n 1)" -ge 1000 ]; do
+      sleep 1
+    done
+  fi
+}
+
+# Clean up any existing processes first
+kill_gpu_processes
+
+# Start vLLM server in the background
+echo "Starting vLLM server..."
+echo "Server command: VLLM_USE_V1=${VLLM_USE_V1} vllm serve ${MODEL_NAME} --swap-space 16 --disable-log-requests --host :: --port ${PORT} --dtype float16"
+
+VLLM_USE_V1=${VLLM_USE_V1} vllm serve "${MODEL_NAME}" \
+  --swap-space 16 \
+  --disable-log-requests \
+  --host :: \
+  --port "${PORT}" \
+  --dtype float16 &
+
+server_pid=$!
+echo "vLLM server started with PID: ${server_pid}"
+
+# Wait for server to be ready
+echo "Waiting for vLLM server to be ready..."
+if wait_for_server; then
+  echo "vLLM server is up and running!"
+else
+  echo "vLLM server failed to start within the timeout period."
+  kill -9 $server_pid 2>/dev/null || true
+  exit 1
+fi
+
+# Run the load generation/profiling command
+echo "Starting load generation for profiling..."
+echo "Load gen command: vllm bench serve --dataset-name ${DATASET_NAME} --model ${SERVED_MODEL_NAME} --random-input-len ${RANDOM_INPUT_LEN} --random-output-len ${RANDOM_OUTPUT_LEN} --endpoint ${ENDPOINT} --ignore-eos --host ${HOST} --port ${PORT} --num-prompts ${NUM_PROMPTS}"
 
 vllm bench serve \
   --dataset-name "${DATASET_NAME}" \
@@ -50,7 +104,10 @@ vllm bench serve \
   --num-prompts "${NUM_PROMPTS}" \
   --profile
 
-echo "vLLM profiling completed successfully!"
+# Clean up the server
+echo "Stopping vLLM server..."
+kill -9 $server_pid 2>/dev/null || true
+kill_gpu_processes
 
 # Copy any generated profiling results to the profiling-results directory
 if [ -d "${VLLM_TORCH_PROFILER_DIR:-}" ]; then
