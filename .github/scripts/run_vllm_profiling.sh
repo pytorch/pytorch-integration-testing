@@ -173,11 +173,11 @@ main() {
     # Setup phase
     print_configuration
     install_dependencies
-    setup_workspace
+    # setup_workspace
 
     # Determine the profiling test file based on device type
     local device_name="${DEVICE_NAME:-cuda}"
-    local profiling_test_file="/tmp/workspace/vllm-profiling/${device_name}/profiling-tests.json"
+    local profiling_test_file="vllm-profiling/${device_name}/profiling-tests.json"
 
     echo "Looking for profiling test file: $profiling_test_file"
 
@@ -187,7 +187,7 @@ main() {
     else
         echo "Error: No profiling test file found at $profiling_test_file"
         echo "Available files in vllm-profiling/:"
-        find /tmp/workspace/vllm-profiling/ -name "*.json" 2>/dev/null || echo "No JSON files found"
+        find vllm-profiling/ -name "*.json" 2>/dev/null || echo "No JSON files found"
         exit 1
     fi
 
