@@ -188,18 +188,12 @@ jobs:
 
       - name: Install NVCC
         if: env.DEVICE_NAME == 'cuda'
-        working-directory: sglang-benchmarks
         shell: bash
         run: |
           set -eux
-          uv pip install -p sgl_server_env nvidia-cuda-nvcc-cu12
-          NVCC_BIN=$(python - <<'PY'
-          import os, nvidia.cuda_nvcc
-          print(os.path.join(nvidia.cuda_nvcc.__path__[0], 'bin'))
-          PY
-          )
-          echo "$NVCC_BIN" >> $GITHUB_PATH
-          echo "CUDA_HOME=$(dirname "$NVCC_BIN")" >> $GITHUB_ENV
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends nvidia-cuda-toolkit
+          echo "CUDA_HOME=/usr" >> $GITHUB_ENV
 
       - name: Setup benchmark tests
         env:
