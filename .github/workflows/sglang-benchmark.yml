@@ -199,6 +199,7 @@ jobs:
           PY
           )
           echo "$NVCC_BIN" >> $GITHUB_PATH
+          echo "CUDA_HOME=$(dirname "$NVCC_BIN")" >> $GITHUB_ENV
 
       - name: Setup benchmark tests
         env:
