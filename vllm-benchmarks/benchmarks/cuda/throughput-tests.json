@@ -88,7 +88,8 @@
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
-            "backend": "vllm"
+            "backend": "vllm",
+            "max_model_len": 2048
         }
     }
 ]

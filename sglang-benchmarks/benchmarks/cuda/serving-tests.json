@@ -111,7 +111,8 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "dummy",
+            "max_model_len": 2048
         },
         "client_parameters": {
             "model": "facebook/opt-125m",
@@ -131,7 +132,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "max_model_len": 2048
         },
         "client_parameters": {
             "model": "facebook/opt-125m",
