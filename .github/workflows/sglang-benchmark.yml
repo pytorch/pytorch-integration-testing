@@ -194,8 +194,8 @@ jobs:
           set -eux
           pip install nvidia-cuda-nvcc-cu12
           NVCC_BIN=$(python - <<'PY'
-            import os, nvidia.cuda_nvcc
-            print(os.path.join(os.path.dirname(nvidia.cuda_nvcc.__file__), 'bin'))
+          import os, nvidia.cuda_nvcc
+          print(os.path.join(nvidia.cuda_nvcc.__path__[0], 'bin'))
           PY
           )
           echo "$NVCC_BIN" >> $GITHUB_PATH
