@@ -192,7 +192,7 @@ jobs:
         shell: bash
         run: |
           set -eux
-          pip install nvidia-cuda-nvcc-cu12
+          python -m pip install nvidia-cuda-nvcc-cu12
           NVCC_BIN=$(python - <<'PY'
           import os, nvidia.cuda_nvcc
           print(os.path.join(nvidia.cuda_nvcc.__path__[0], 'bin'))
