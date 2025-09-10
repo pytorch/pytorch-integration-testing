@@ -35,10 +35,9 @@ install_dependencies() {
 }
 
 setup_workspace() {
-    # Ensure we're in the workspace directory, but don't go into vllm source
-    cd /tmp/workspace
+    WORKSPACE_DIR="/tmp/workspace"
+    cd "${WORKSPACE_DIR}"
 
-    # Create the profiling directory
     echo "Creating profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
     mkdir -p "${VLLM_TORCH_PROFILER_DIR}"
     chmod 755 "${VLLM_TORCH_PROFILER_DIR}"
@@ -173,11 +172,11 @@ main() {
     # Setup phase
     print_configuration
     install_dependencies
-    # setup_workspace
+    setup_workspace
 
     # Determine the profiling test file based on device type
     local device_name="${DEVICE_NAME:-cuda}"
-    local profiling_test_file="vllm-profiling/${device_name}/profiling-tests.json"
+    local profiling_test_file="${WORKSPACE_DIR}/vllm-profiling/${device_name}/profiling-tests.json"
 
     echo "Looking for profiling test file: $profiling_test_file"
 
@@ -186,8 +185,8 @@ main() {
         run_profiling_tests "$profiling_test_file"
     else
         echo "Error: No profiling test file found at $profiling_test_file"
-        echo "Available files in vllm-profiling/:"
-        find vllm-profiling/ -name "*.json" 2>/dev/null || echo "No JSON files found"
+        echo "Available files in ${WORKSPACE_DIR}/vllm-profiling/:"
+        find "${WORKSPACE_DIR}/vllm-profiling/" -name "*.json" 2>/dev/null || echo "No JSON files found"
         exit 1
     fi
 

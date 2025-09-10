@@ -2,7 +2,6 @@ name: vLLM Profiling
 
 on:
   schedule:
-    # Run every week on Sunday at midnight
     - cron: '0 0 * * 0'
   workflow_dispatch:
     inputs:
@@ -40,7 +39,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # TODO: Figure out later if we need to scale this up to multiple runners
           - runs-on: linux.aws.h100.4
             device-name: cuda
     runs-on: ${{ matrix.runs-on }}
@@ -61,7 +59,6 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
-        # Amazon Linux fails on this step
         continue-on-error: true
         with:
           python-version: '3.12'
@@ -118,7 +115,6 @@ jobs:
         run: |
           set -eux
 
-          # Mimic the logic from vllm ci-infra test template
           if [[ "${HEAD_BRANCH}" == "main" ]]; then
             DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
           else
@@ -143,11 +139,8 @@ jobs:
           set -eux
 
           if [[ -z "${HEAD_SHA}" ]]; then
-            # Looking back the latest 100 commits is enough
             for i in {0..99}
             do
-              # Check if the image is there, if it doesn't then check an older one
-              # because the commit is too recent
               HEAD_SHA=$(git rev-parse --verify HEAD~${i})
               DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
 
@@ -159,8 +152,6 @@ jobs:
           fi
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
-
-          # Print the profiling commit for rereference
           echo "### Run profiling on [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Setup CUDA GPU_FLAG for docker run
@@ -182,7 +173,6 @@ jobs:
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
-          # vLLM-related environment variables
           VLLM_USE_MODELSCOPE: false
           VLLM_TORCH_PROFILER_DIR: /tmp/workspace/vllm-profiling/profiling-results
           CUDA_VISIBLE_DEVICES: 0
@@ -222,7 +212,6 @@ jobs:
           )
           docker exec -t "${container_name}" bash -c "cd vllm-profiling && bash ../.github/scripts/run_vllm_profiling.sh"
 
-      # Keep a copy of the profiling results on GitHub for reference
       - uses: actions/upload-artifact@v4
         with:
           name: profiling-results--${{ env.DEVICE_TYPE }}
