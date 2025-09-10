@@ -15,12 +15,6 @@ on:
         description: vLLM commit (optional, default to the latest commit in the branch that has not yet been benchmarked)
         required: false
         type: string
-      models:
-        description: |
-          A comma-separated list of models (optional, default to run everything)
-        required: false
-        type: string
-        default: 'facebook/opt-125m'
   pull_request:
     paths:
       - .github/workflows/vllm-profiling.yml
@@ -193,14 +187,6 @@ jobs:
           VLLM_TORCH_PROFILER_DIR: /tmp/workspace/vllm/vllm_profile
           CUDA_VISIBLE_DEVICES: 0
           VLLM_USE_V1: 1
-          # Profiling parameters
-          MODEL_NAME: ${{ inputs.models || 'facebook/opt-125m' }}
-          SERVED_MODEL_NAME: ${{ inputs.models || 'facebook/opt-125m' }}
-          RANDOM_INPUT_LEN: 750
-          RANDOM_OUTPUT_LEN: 75
-          PORT: 8000
-          NUM_PROMPTS: 100
-          DATASET_NAME: random
 
         run: |
           set -eux
@@ -223,13 +209,7 @@ jobs:
             -e VLLM_TORCH_PROFILER_DIR \
             -e CUDA_VISIBLE_DEVICES \
             -e VLLM_USE_V1 \
-            -e MODEL_NAME \
-            -e SERVED_MODEL_NAME \
-            -e RANDOM_INPUT_LEN \
-            -e RANDOM_OUTPUT_LEN \
-            -e PORT \
-            -e NUM_PROMPTS \
-            -e DATASET_NAME \
+            -e DEVICE_NAME \
             -e ON_CPU="${ON_CPU}" \
             --ipc=host \
             --tty \
