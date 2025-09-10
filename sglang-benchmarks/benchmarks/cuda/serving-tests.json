@@ -28,7 +28,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "context_length": 8192
         },
         "client_parameters": {
             "model": "Qwen/Qwen3-30B-A3B",
@@ -49,7 +49,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "context_length": 8192
         },
         "client_parameters": {
             "model": "google/gemma-3-27b-it",
@@ -70,7 +70,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "context_length": 8192
         },
         "client_parameters": {
             "model": "google/gemma-3-4b-it",
@@ -91,7 +91,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 8192
+            "context_length": 8192
         },
         "client_parameters": {
             "model": "Qwen/Qwen3-8B",
@@ -112,7 +112,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 2048
+            "context_length": 2048
         },
         "client_parameters": {
             "model": "facebook/opt-125m",
@@ -132,7 +132,7 @@
             "disable_log_stats": "",
             "disable_log_requests": "",
             "load_format": "dummy",
-            "max_model_len": 2048
+            "context_length": 2048
         },
         "client_parameters": {
             "model": "facebook/opt-125m",
