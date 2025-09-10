@@ -101,5 +101,45 @@
             "random_input_len": 1024,
             "random_output_len": 2048
         }
+    },
+    {
+        "test_name": "serving_opt125m_tp1_sharegpt",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "facebook/opt-125m",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "facebook/opt-125m",
+            "backend": "vllm",
+            "dataset_name": "sharegpt",
+            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200
+        }
+    },
+    {
+        "test_name": "serving_opt125m_tp1_random_in750_out75",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "facebook/opt-125m",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "max_model_len": 8192
+        },
+        "client_parameters": {
+            "model": "facebook/opt-125m",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 750,
+            "random_output_len": 75
+        }
     }
 ]

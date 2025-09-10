@@ -72,5 +72,15 @@
             "num_iters": 15,
             "max_model_len": 8192
         }
+    },
+    {
+        "test_name": "latency_opt125m_tp1",
+        "parameters": {
+            "model": "facebook/opt-125m",
+            "tensor_parallel_size": 1,
+            "load_format": "dummy",
+            "num_iters_warmup": 5,
+            "num_iters": 15
+        }
     }
 ]
