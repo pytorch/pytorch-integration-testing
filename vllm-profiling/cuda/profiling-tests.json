@@ -19,8 +19,8 @@
             "host": "localhost",
             "port": 8000,
             "num_prompts": 100,
-            "ignore_eos": true,
-            "profile": true
+            "ignore_eos": "",
+            "profile": ""
         }
     }
 ]
