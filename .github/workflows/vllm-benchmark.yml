@@ -53,7 +53,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || 'h100' }}
+          RUNNERS: ${{ inputs.runners || '' }}
         run: |
           set -eux
 
