@@ -252,7 +252,7 @@ def generate_benchmark_matrix(
 
                     # Check the skip logic
                     if model in PLATFORM_SKIPS and any(
-                        lambda r: r in runner, PLATFORM_SKIPS[model]
+                        [r in runner for r in PLATFORM_SKIPS[model]]
                     ):
                         continue
 
