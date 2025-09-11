@@ -60,8 +60,9 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
     ]
 )
 
-# Model and runner skip logic, for example, just need to run deepseek-ai/DeepSeek-V3.1
-# on b200 and not h100. This also serves as another knob to tune CI behavior
+# Model and runner skip logic, for example, just need to run DeepSeek on b200
+# and not h100. This also serves as a knob to tune CI behavior. TODO (huydhn):
+# Figure out how to set this in the JSON benchmark configuration instead
 PLATFORM_SKIPS = {
     # Already been covered in both A100 and H100
     "meta-llama/Meta-Llama-3.1-8B-Instruct": [
@@ -113,6 +114,8 @@ PLATFORM_SKIPS = {
         "linux.aws.h100",
     ],
 }
+# Lower case all the model names for consistency
+PLATFORM_SKIPS = {k.lower(): v for k, v in PLATFORM_SKIPS.items()}
 
 
 class ValidateDir(Action):
