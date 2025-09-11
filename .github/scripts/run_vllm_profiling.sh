@@ -3,7 +3,7 @@ set -eux
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common_functions.sh"
+source "${SCRIPT_DIR}/utilities.sh"
 
 print_configuration() {
     echo 'Running vLLM profiling with the following configuration:'

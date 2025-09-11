@@ -11,7 +11,7 @@ set -o pipefail
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common_functions.sh"
+source "${SCRIPT_DIR}/utilities.sh"
 
 # The helper functions and their implementations are referred from the implementation
 # of the run-performance-benchmarks.sh script in the official vllm repo
