@@ -1,37 +1,14 @@
 #!/bin/bash
 set -eux
 
-json2args() {
-    # transforms the JSON string to command line args, and '_' is replaced to '-'
-    # example:
-    # input: { "model": "meta-llama/Llama-2-7b-chat-hf", "tensor_parallel_size": 1 }
-    # output: --model meta-llama/Llama-2-7b-chat-hf --tensor-parallel-size 1
-    local json_string=$1
-    local args=$(
-        echo "$json_string" | jq -r '
-        to_entries |
-        map(
-            if .value == "" then "--" + (.key | gsub("_"; "-"))
-            else "--" + (.key | gsub("_"; "-")) + " " + (.value | tostring)
-            end
-        ) |
-        join(" ")
-        '
-    )
-    echo "$args"
-}
+# Source common functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/common_functions.sh"
 
 print_configuration() {
     echo 'Running vLLM profiling with the following configuration:'
     echo "  Profiler Dir: ${VLLM_TORCH_PROFILER_DIR:-not set}"
     echo "  VLLM_USE_V1: ${VLLM_USE_V1:-1}"
-}
-
-install_dependencies() {
-    echo "Installing required dependencies..."
-    (which curl) || (apt-get update && apt-get install -y curl)
-    (which lsof) || (apt-get update && apt-get install -y lsof)
-    (which jq) || (apt-get update && apt-get -y install jq)
 }
 
 setup_workspace() {
@@ -41,31 +18,6 @@ setup_workspace() {
     echo "Creating profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
     mkdir -p "${VLLM_TORCH_PROFILER_DIR}"
     chmod 755 "${VLLM_TORCH_PROFILER_DIR}"
-}
-
-wait_for_server() {
-    # Wait for vLLM server to start
-    # Return 1 if vLLM server crashes
-    local host_port="${1:-localhost:8000}"
-    timeout 1200 bash -c "
-        until curl -s ${host_port}/v1/models > /dev/null; do
-            sleep 1
-        done" && return 0 || return 1
-}
-
-kill_gpu_processes() {
-    ps -aux
-    lsof -t -i:8000 | xargs -r kill -9
-    pgrep python3 | xargs -r kill -9
-    pgrep VLLM | xargs -r kill -9
-
-    # Wait until GPU memory usage decreases
-    if command -v nvidia-smi; then
-        echo "Waiting for GPU memory to clear..."
-        while [ "$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n 1)" -ge 1000 ]; do
-            sleep 1
-        done
-    fi
 }
 
 start_vllm_server() {
