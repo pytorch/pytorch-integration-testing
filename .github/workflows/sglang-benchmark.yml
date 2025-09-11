@@ -186,20 +186,20 @@ jobs:
           # Verify installations
           echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
 
-      - name: Install CUDA 12.8 Toolkit (nvcc)
+      - name: Install NVCC
         if: env.DEVICE_NAME == 'cuda'
         shell: bash
         run: |
           set -eux
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
-          sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
-          sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
           sudo apt-get update
-          sudo apt-get install -y cuda-toolkit-12-8
-          echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
-          echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-          nvcc --version
+          sudo apt-get install -y wget gnupg
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i cuda-keyring_1.1-1_all.deb
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cuda-toolkit-12-8
+          sudo ln -s /usr/local/cuda-12.8 /usr/local/cuda || true
+          echo "CUDA_HOME=/usr/local/cuda-12.8" >> $GITHUB_ENV
+          echo "/usr/local/cuda-12.8/bin" >> $GITHUB_PATH
 
       - name: Setup benchmark tests
         env:
