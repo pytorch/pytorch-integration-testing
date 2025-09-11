@@ -16,7 +16,7 @@ TP_TO_RUNNER_MAPPING = {
     1: [
         "linux.aws.a100",
         "linux.aws.h100",
-        "linux.rocm.gpu.gfx942.2",  # No single ROCm GPU?
+        "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
         "linux.dgx.b200",
     ],
@@ -29,8 +29,6 @@ TP_TO_RUNNER_MAPPING = {
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.4",
-        # TODO (huydhn): Enable this when Intel's runners are ready
-        # "intel-cpu-emr",
     ],
     8: [
         "linux.aws.h100.8",
@@ -61,6 +59,65 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
         "common_parameters",
     ]
 )
+
+# Model and runner skip logic, for example, just need to run DeepSeek on b200
+# and not h100. This also serves as a knob to tune CI behavior. TODO (huydhn):
+# Figure out how to set this in the JSON benchmark configuration instead
+PLATFORM_SKIPS = {
+    # Already been covered in both A100 and H100
+    "meta-llama/Meta-Llama-3.1-8B-Instruct": [
+        "linux.dgx.b200",
+    ],
+    "meta-llama/Meta-Llama-3.1-70B-Instruct": [
+        "linux.dgx.b200",
+    ],
+    "mistralai/Mixtral-8x7B-Instruct-v0.1": [
+        "linux.dgx.b200",
+    ],
+    "Qwen/Qwen3-8B": [
+        "linux.dgx.b200",
+    ],
+    "google/gemma-3-4b-it": [
+        "linux.dgx.b200",
+    ],
+    # Run some bigger models on B200 to share the load
+    "Qwen/Qwen3-30B-A3B": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+    ],
+    "google/gemma-3-27b-it": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+        "linux.rocm.gpu.gfx942",  # TODO (huydhn): Fail on ROCm
+    ],
+    "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+    ],
+    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+        "linux.rocm.gpu.gfx942",  # TODO (huydhn): Hang on ROCm
+    ],
+    # Run gpt-oss on both H100 and B200
+    "openai/gpt-oss-20b": [
+        "linux.aws.a100",
+    ],
+    "openai/gpt-oss-120b": [
+        "linux.aws.a100",
+    ],
+    # Deepseek can only run on B200
+    "deepseek-ai/DeepSeek-V3.1": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+    ],
+    "deepseek-ai/DeepSeek-R1": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+    ],
+}
+# Lower case all the model names for consistency
+PLATFORM_SKIPS = {k.lower(): v for k, v in PLATFORM_SKIPS.items()}
 
 
 class ValidateDir(Action):
@@ -196,6 +253,12 @@ def generate_benchmark_matrix(
 
                     found_runner = any([r and r.lower() in runner for r in runners])
                     if not found_runner and not use_all_runners:
+                        continue
+
+                    # Check the skip logic
+                    if model in PLATFORM_SKIPS and any(
+                        [r in runner for r in PLATFORM_SKIPS[model]]
+                    ):
                         continue
 
                     benchmark_matrix["include"].append(
