@@ -88,7 +88,7 @@ PLATFORM_SKIPS = {
     "google/gemma-3-27b-it": [
         "linux.aws.a100",
         "linux.aws.h100",
-        "linux.rocm.gpu.gfx942",  # TODO (huydhn): Failed on ROCm
+        "linux.rocm.gpu.gfx942",  # TODO (huydhn): Fail on ROCm
     ],
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
         "linux.aws.a100",
@@ -97,6 +97,7 @@ PLATFORM_SKIPS = {
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": [
         "linux.aws.a100",
         "linux.aws.h100",
+        "linux.rocm.gpu.gfx942",  # TODO (huydhn): Hang on ROCm
     ],
     # Run gpt-oss on both H100 and B200
     "openai/gpt-oss-20b": [
