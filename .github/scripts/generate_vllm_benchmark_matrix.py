@@ -16,7 +16,7 @@ TP_TO_RUNNER_MAPPING = {
     1: [
         "linux.aws.a100",
         "linux.aws.h100",
-        "linux.rocm.gpu.gfx942.2",
+        "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
         "linux.dgx.b200",
     ],
@@ -29,8 +29,6 @@ TP_TO_RUNNER_MAPPING = {
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.4",
-        # TODO (huydhn): Enable this when Intel's runners are ready
-        # "intel-cpu-emr",
     ],
     8: [
         "linux.aws.h100.8",
