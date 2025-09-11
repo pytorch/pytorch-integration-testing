@@ -75,7 +75,7 @@ PLATFORM_SKIPS = {
     ],
     "Qwen/Qwen3-8B": [
         "linux.dgx.b200",
-    ]
+    ],
     "google/gemma-3-4b-it": [
         "linux.dgx.b200",
     ],
@@ -87,7 +87,7 @@ PLATFORM_SKIPS = {
     "google/gemma-3-27b-it": [
         "linux.aws.a100",
         "linux.aws.h100",
-    ]
+    ],
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
         "linux.aws.a100",
         "linux.aws.h100",
@@ -102,7 +102,7 @@ PLATFORM_SKIPS = {
     ],
     "openai/gpt-oss-120b": [
         "linux.aws.a100",
-    ]
+    ],
     # Deepseek can only run on B200
     "deepseek-ai/DeepSeek-V3.1": [
         "linux.aws.a100",
@@ -111,7 +111,7 @@ PLATFORM_SKIPS = {
     "deepseek-ai/DeepSeek-R1": [
         "linux.aws.a100",
         "linux.aws.h100",
-    ,]
+    ],
 }
 
 
@@ -251,7 +251,9 @@ def generate_benchmark_matrix(
                         continue
 
                     # Check the skip logic
-                    if model in PLATFORM_SKIPS and any(lambda r: r in runner, PLATFORM_SKIPS[model]):
+                    if model in PLATFORM_SKIPS and any(
+                        lambda r: r in runner, PLATFORM_SKIPS[model]
+                    ):
                         continue
 
                     benchmark_matrix["include"].append(
