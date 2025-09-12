@@ -19,6 +19,27 @@
         }
     },
     {
+        "test_name": "serving_qwen3_30b_a3b_tp8_random_in1k_out2k",
+        "qps_list": [10],
+        "server_parameters": {
+            "model": "Qwen/Qwen3-30B-A3B",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy",
+            "context_length": 8192
+        },
+        "client_parameters": {
+            "model": "Qwen/Qwen3-30B-A3B",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
         "test_name": "serving_gemma_3_27b_it_tp8_random_in1k_out2k",
         "qps_list": [10],
         "server_parameters": {
@@ -99,6 +120,105 @@
             "num_prompts": 200,
             "random_input_len": 750,
             "random_output_len": 75
+        }
+    },
+    {
+        "test_name": "serving_llama70B_tp4_sharegpt",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+            "backend": "vllm",
+            "dataset_name": "sharegpt",
+            "dataset_path": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200
+        }
+    },
+    {
+        "test_name": "serving_gpt_oss_20b_tp1_random_in5k_out8k",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "openai/gpt-oss-20b",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "openai/gpt-oss-20b",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
+        }
+    },
+    {
+        "test_name": "serving_gpt_oss_120b_tp4_random_in5k_out8k",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "openai/gpt-oss-120b",
+            "tensor_parallel_size": 4,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "openai/gpt-oss-120b",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
+        }
+    },
+    {
+        "test_name": "serving_deepseek_v3_tp8_random_in5k_out8k",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "deepseek-ai/DeepSeek-V3.1",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "deepseek-ai/DeepSeek-V3.1",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
+        }
+    },
+    {
+        "test_name": "serving_deepseek_r1_tp8_random_in5k_out8k",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "deepseek-ai/DeepSeek-R1",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "deepseek-ai/DeepSeek-R1",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
         }
     }
 ]
