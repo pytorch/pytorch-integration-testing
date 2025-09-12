@@ -1,0 +1,25 @@
+[
+    {
+        "test_name": "profiling_opt_125m_tp1_random",
+        "server_parameters": {
+            "model": "facebook/opt-125m",
+            "swap_space": 16,
+            "disable_log_requests": "",
+            "host": "::",
+            "port": 8000,
+            "dtype": "float16"
+        },
+        "client_parameters": {
+            "model": "facebook/opt-125m",
+            "dataset_name": "random",
+            "random_input_len": 750,
+            "random_output_len": 75,
+            "endpoint": "/v1/completions",
+            "host": "localhost",
+            "port": 8000,
+            "num_prompts": 100,
+            "ignore_eos": "",
+            "profile": ""
+        }
+    }
+]
