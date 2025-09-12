@@ -201,9 +201,6 @@ jobs:
           echo "CUDA_HOME=/usr/local/cuda-12.8" >> $GITHUB_ENV
           echo "/usr/local/cuda-12.8/bin" >> $GITHUB_PATH
 
-          uv pip install -p sgl_server_env pip uninstall nvidia-nccl-cu12
-          uv pip install -p sgl_server_env pip install nvidia-nccl-cu12==2.26.2.post1
-
       - name: Setup benchmark tests
         env:
           MODELS: ${{ matrix.models }}
