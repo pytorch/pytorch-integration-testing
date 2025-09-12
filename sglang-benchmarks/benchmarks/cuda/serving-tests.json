@@ -150,7 +150,8 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "dummy",
+            "max_model_len": 16384
         },
         "client_parameters": {
             "model": "openai/gpt-oss-20b",
@@ -170,7 +171,8 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "dummy",
+            "max_model_len": 16384
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",

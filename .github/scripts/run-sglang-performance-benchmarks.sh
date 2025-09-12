@@ -77,9 +77,9 @@ run_serving_tests() {
     # Extract only specific SGLang server parameters
     model_path=$(echo "$server_params" | jq -r '.model_path // .model')
     context_length=$(echo "$server_params" | jq -r '.context_length // 4096')
+    tp=$(echo "$server_params" | jq -r '.tensor_parallel_size // 1')
 
     # check if there is enough resources to run the test
-    tp=$(echo "$server_params" | jq -r '.tp // 1')
     if [ "$ON_CPU" == "1" ]; then
       if [[ $numa_count -lt $tp ]]; then
         echo "Required tensor-parallel-size $tp but only $numa_count NUMA nodes found. Skip testcase $test_name."
