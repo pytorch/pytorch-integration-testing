@@ -75,9 +75,10 @@ run_serving_tests() {
     echo "Running over qps list $qps_list"
 
     # Extract only specific SGLang server parameters
-    model_path=$(echo "$server_params" | jq -r '.model_path')
+    model_path=$(echo "$server_params" | jq -r '.model_path // .model')
     context_length=$(echo "$server_params" | jq -r '.context_length')
-    tp=$(echo "$server_params" | jq -r '.tensor_parallel_size // 1')
+    tp=$(echo "$server_params" | jq -r '.tensor_parallel_size // .tp')
+    load_format=$(echo "$server_params" | jq -r '.load_format')
 
     # check if there is enough resources to run the test
     if [ "$ON_CPU" == "1" ]; then
@@ -100,7 +101,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python -m sglang.launch_server --backend sglang $server_args"
+    server_command="python -m sglang.launch_server --backend sglang --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
 
     # run the server
     echo "Running test case $test_name"
