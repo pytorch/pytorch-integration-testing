@@ -1,3 +1,4 @@
+# TODO: Refactor the workflows to extract the common parts into a GHA reusable module
 name: vLLM Profiling
 
 on:
@@ -14,6 +15,7 @@ on:
         description: vLLM commit (optional, default to the latest commit in the branch that has not yet been benchmarked)
         required: false
         type: string
+      # TODO: add support for profiling on a specific model and runner
   pull_request:
     paths:
       - .github/workflows/vllm-profiling.yml
@@ -39,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runs-on: linux.aws.h100.4
+          - runs-on: linux.aws.a100
             device-name: cuda
     runs-on: ${{ matrix.runs-on }}
     environment: pytorch-x-vllm
