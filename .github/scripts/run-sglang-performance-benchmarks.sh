@@ -75,8 +75,8 @@ run_serving_tests() {
     echo "Running over qps list $qps_list"
 
     # Extract only specific SGLang server parameters
-    model_path=$(echo "$server_params" | jq -r '.model_path // .model')
-    context_length=$(echo "$server_params" | jq -r '.context_length // 4096')
+    model_path=$(echo "$server_params" | jq -r '.model_path')
+    context_length=$(echo "$server_params" | jq -r '.context_length')
     tp=$(echo "$server_params" | jq -r '.tensor_parallel_size // 1')
 
     # check if there is enough resources to run the test
@@ -94,13 +94,13 @@ run_serving_tests() {
 
     # check if server model and client model is aligned
     server_model="$model_path"
-    client_model=$(echo "$client_params" | jq -r '.model // .model_path')
+    client_model=$(echo "$client_params" | jq -r '.model_path')
     if [[ $server_model != "$client_model" ]]; then
       echo "Server model and client model must be the same. Skip testcase $test_name."
       continue
     fi
 
-    server_command="python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python -m sglang.launch_server --backend sglang $server_args"
 
     # run the server
     echo "Running test case $test_name"

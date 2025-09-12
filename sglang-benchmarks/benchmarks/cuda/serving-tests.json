@@ -3,11 +3,8 @@
         "test_name": "serving_llama8B_tp1_sharegpt",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "tp": 1,
             "load_format": "dummy"
         },
         "client_parameters": {
@@ -22,11 +19,8 @@
         "test_name": "serving_qwen3_30b_a3b_tp8_random_in1k_out2k",
         "qps_list": [10],
         "server_parameters": {
-            "model": "Qwen/Qwen3-30B-A3B",
-            "tensor_parallel_size": 8,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "Qwen/Qwen3-30B-A3B",
+            "tp": 8,
             "load_format": "dummy",
             "context_length": 8192
         },
@@ -43,11 +37,8 @@
         "test_name": "serving_gemma_3_27b_it_tp8_random_in1k_out2k",
         "qps_list": [10],
         "server_parameters": {
-            "model": "google/gemma-3-27b-it",
-            "tensor_parallel_size": 8,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "google/gemma-3-27b-it",
+            "tp": 8,
             "load_format": "dummy",
             "context_length": 8192
         },
@@ -64,11 +55,8 @@
         "test_name": "serving_gemma_3_4b_it_tp1_random_in1k_out2k",
         "qps_list": [10],
         "server_parameters": {
-            "model": "google/gemma-3-4b-it",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "google/gemma-3-4b-it",
+            "tp": 1,
             "load_format": "dummy",
             "context_length": 8192
         },
@@ -85,11 +73,8 @@
         "test_name": "serving_opt125m_tp1_sharegpt",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "facebook/opt-125m",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "facebook/opt-125m",
+            "tp": 1,
             "load_format": "dummy",
             "context_length": 2048
         },
@@ -105,11 +90,8 @@
         "test_name": "serving_opt125m_tp1_random_in750_out75",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "facebook/opt-125m",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "facebook/opt-125m",
+            "tp": 1,
             "load_format": "dummy",
             "context_length": 2048
         },
@@ -126,11 +108,8 @@
         "test_name": "serving_llama70B_tp4_sharegpt",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+            "tp": 4,
             "load_format": "dummy"
         },
         "client_parameters": {
@@ -145,13 +124,10 @@
         "test_name": "serving_gpt_oss_20b_tp1_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "openai/gpt-oss-20b",
-            "tensor_parallel_size": 1,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "openai/gpt-oss-20b",
+            "tp": 1,
             "load_format": "dummy",
-            "max_model_len": 16384
+            "context_length": 16384
         },
         "client_parameters": {
             "model": "openai/gpt-oss-20b",
@@ -166,13 +142,10 @@
         "test_name": "serving_gpt_oss_120b_tp4_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "openai/gpt-oss-120b",
-            "tensor_parallel_size": 4,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "openai/gpt-oss-120b",
+            "tp": 4,
             "load_format": "dummy",
-            "max_model_len": 16384
+            "context_length": 16384
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",
@@ -187,11 +160,8 @@
         "test_name": "serving_deepseek_v3_tp8_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "deepseek-ai/DeepSeek-V3.1",
-            "tensor_parallel_size": 8,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "deepseek-ai/DeepSeek-V3.1",
+            "tp": 8,
             "load_format": "dummy"
         },
         "client_parameters": {
@@ -207,11 +177,8 @@
         "test_name": "serving_deepseek_r1_tp8_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "deepseek-ai/DeepSeek-R1",
-            "tensor_parallel_size": 8,
-            "swap_space": 16,
-            "disable_log_stats": "",
-            "disable_log_requests": "",
+            "model_path": "deepseek-ai/DeepSeek-R1",
+            "tp": 8,
             "load_format": "dummy"
         },
         "client_parameters": {
