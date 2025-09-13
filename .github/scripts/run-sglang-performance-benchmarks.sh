@@ -121,10 +121,6 @@ run_serving_tests() {
       server_command="$server_command --load-format $load_format"
     fi
 
-    if [[ -n "$shm_size" && "$shm_size" != "null" ]]; then
-      server_command="$server_command --shm-size $shm_size"
-    fi
-
     # run the server
     echo "Running test case $test_name"
     echo "Server command: $server_command"
@@ -219,6 +215,7 @@ main() {
     export SGLANG_HOST_IP=$(hostname -I | awk '{print $1}')
     # turn off the reporting of the status of each request, to clean up the terminal output
     export SGLANG_LOGGING_LEVEL="WARNING"
+    export NCCL_IB_GID_INDEX=3
 
     # prepare for benchmarking
     ensure_sharegpt_downloaded
