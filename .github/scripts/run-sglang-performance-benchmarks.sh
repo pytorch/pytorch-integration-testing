@@ -215,7 +215,9 @@ main() {
     export SGLANG_HOST_IP=$(hostname -I | awk '{print $1}')
     # turn off the reporting of the status of each request, to clean up the terminal output
     export SGLANG_LOGGING_LEVEL="WARNING"
-    export NCCL_IB_GID_INDEX=3
+    # export NCCL_IB_GID_INDEX=3
+    export NCCL_SOCKET_IFNAME=eth0
+    export NCCL_DEBUG=INFO
 
     # prepare for benchmarking
     ensure_sharegpt_downloaded
