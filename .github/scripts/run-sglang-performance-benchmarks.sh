@@ -216,8 +216,9 @@ main() {
     # turn off the reporting of the status of each request, to clean up the terminal output
     export SGLANG_LOGGING_LEVEL="WARNING"
     # export NCCL_IB_GID_INDEX=3
-    export NCCL_SOCKET_IFNAME=eth0
-    export NCCL_DEBUG=INFO
+    export NCCL_SHM_DISABLE="${NCCL_SHM_DISABLE:-1}"
+    export NCCL_SOCKET_IFNAME="${NCCL_SOCKET_IFNAME:-eth0}"
+    export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
 
     # prepare for benchmarking
     ensure_sharegpt_downloaded
