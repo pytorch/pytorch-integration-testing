@@ -101,7 +101,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python -m sglang.launch_server --backend sglang --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+    server_command="python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
 
     # run the server
     echo "Running test case $test_name"
