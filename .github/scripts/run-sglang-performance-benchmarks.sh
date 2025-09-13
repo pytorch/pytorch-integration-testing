@@ -79,6 +79,7 @@ run_serving_tests() {
     context_length=$(echo "$server_params" | jq -r '.context_length')
     tp=$(echo "$server_params" | jq -r '.tensor_parallel_size // .tp')
     load_format=$(echo "$server_params" | jq -r '.load_format')
+    shm_size=$(echo "$server_params" | jq -r '.shm_size')
 
     # check if there is enough resources to run the test
     if [ "$ON_CPU" == "1" ]; then
@@ -101,7 +102,28 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+    # Build server command dynamically, only adding parameters that exist and are not null
+    server_command="python -m sglang.launch_server"
+
+    if [[ -n "$model_path" && "$model_path" != "null" ]]; then
+      server_command="$server_command --model-path $model_path"
+    fi
+
+    if [[ -n "$context_length" && "$context_length" != "null" ]]; then
+      server_command="$server_command --context-length $context_length"
+    fi
+
+    if [[ -n "$tp" && "$tp" != "null" ]]; then
+      server_command="$server_command --tp $tp"
+    fi
+
+    if [[ -n "$load_format" && "$load_format" != "null" ]]; then
+      server_command="$server_command --load-format $load_format"
+    fi
+
+    if [[ -n "$shm_size" && "$shm_size" != "null" ]]; then
+      server_command="$server_command --shm-size $shm_size"
+    fi
 
     # run the server
     echo "Running test case $test_name"
