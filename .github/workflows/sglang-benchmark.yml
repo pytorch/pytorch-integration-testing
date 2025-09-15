@@ -279,7 +279,7 @@ jobs:
               --benchmark-name "SGLang benchmark" \
               --benchmark-results "${BENCHMARK_RESULTS}" \
               --head-sha "${HEAD_SHA}" \
-              --branch-name main \
+              --head-branch main \
               --device-name "${DEVICE_NAME}" \
               --device-type "${SANITIZED_DEVICE_TYPE}" \
               --model "${SANITIZED_MODELS}"
