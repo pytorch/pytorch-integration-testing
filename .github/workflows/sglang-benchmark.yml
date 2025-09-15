@@ -101,12 +101,12 @@ jobs:
       - name: Get latest tag and its commit hash
         working-directory: sglang-benchmarks/sglang
         run: |
-          latest_tag=$(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags | head -n 1)
-          commit_hash=$(git rev-list -n 1 "$latest_tag")
-          echo "Latest tag: $latest_tag"
-          echo "Commit hash: $commit_hash"
-          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
-          echo "commit_hash=$commit_hash" >> $GITHUB_ENV
+          LATEST_TAG=$(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags | head -n 1)
+          HEAD_SHA=$(git rev-list -n 1 "$LATEST_TAG")
+          echo "Latest tag: $LATEST_TAG"
+          echo "Commit hash: $HEAD_SHA"
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
       - name: Check if the device is supported
         shell: bash
@@ -186,15 +186,21 @@ jobs:
           set -eux
 
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            DOCKER_IMAGE="lmsysorg/sglang:latest"
+            # Use specific B200 image for B200 devices
+            if [[ "${DEVICE_TYPE}" == *"B200"* ]]; then
+              DOCKER_IMAGE="lmsysorg/sglang:${LATEST_TAG}-cu128-b200"
+            else
+              DOCKER_IMAGE="lmsysorg/sglang:latest"
+            fi
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DOCKER_IMAGE="lmsysorg/sglang:v0.5.3rc0-rocm630-mi30x"
+            DOCKER_IMAGE="lmsysorg/sglang:${LATEST_TAG}-rocm630-mi30x"
           else
             echo "SGLang benchmarks require either CUDA or ROCm devices."
             exit 1
           fi
 
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
+          echo "Using Docker image: $DOCKER_IMAGE"
 
       - name: Setup benchmark tests
         env:
@@ -269,9 +275,11 @@ jobs:
           fi
 
           python3 .github/scripts/upload_benchmark_results.py \
-              --repo sglang-benchmarks/sglang \
+              --repo-name sgl-project/sglang \
               --benchmark-name "SGLang benchmark" \
               --benchmark-results "${BENCHMARK_RESULTS}" \
+              --head-sha "${HEAD_SHA}" \
+              --branch-name main \
               --device-name "${DEVICE_NAME}" \
               --device-type "${SANITIZED_DEVICE_TYPE}" \
               --model "${SANITIZED_MODELS}"

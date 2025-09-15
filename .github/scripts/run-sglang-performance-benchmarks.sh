@@ -42,14 +42,24 @@ ensure_sharegpt_downloaded() {
 
 
 ensure_vllm_installed() {
-  if python3 -c "import vllm" >/dev/null 2>&1; then
-    echo "vLLM is already installed."
-  else
-    echo "Installing vLLM..."
-    python3 -m pip install --upgrade pip
-    python3 -m pip install vllm
-  fi
+  echo "Installing vLLM..."
+  python3 -m pip install --upgrade pip
+  python3 -m pip install vllm
 }
+
+# ensure_vllm_installed() {
+#   echo "Installing vLLM..."
+#   python3 -m pip install --upgrade pip
+#   if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+#     echo "Detected ROCm, installing vLLM with bench extras from ROCm wheels"
+#     # Pin to a version that includes the `bench` CLI;
+#     python3 -m pip install "vllm[bench]>=0.9.0" \
+#       --extra-index-url https://download.pytorch.org/whl/rocm6.3
+#   else
+#     echo "Non-ROCm environment, installing vanilla vLLM (same as before)"
+#     python3 -m pip install vllm
+#   fi
+# }
 
 
 run_serving_tests() {
@@ -93,7 +103,7 @@ run_serving_tests() {
     load_format=$(echo "$server_params" | jq -r '.load_format // "dummy"')
 
     # check if there is enough resources to run the test
-    tp=$(echo "$server_params" | jq -r '.tp // 1')
+    tp=$(echo "$server_params" | jq -r '.tp // .tensor_parallel_size // 1')
     if [ "$ON_CPU" == "1" ]; then
       if [[ $numa_count -lt $tp ]]; then
         echo "Required tensor-parallel-size $tp but only $numa_count NUMA nodes found. Skip testcase $test_name."
@@ -147,14 +157,21 @@ run_serving_tests() {
 
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="vllm bench serve \
+      if vllm bench --help >/dev/null 2>&1; then
+        VLLM_BENCH_CMD="vllm bench serve"
+      else
+        # Fallback to the module, which works even when the CLI entrypoint isn't registered
+        VLLM_BENCH_CMD="python3 -m vllm.entrypoints.cli.main bench serve"
+      fi
+
+      client_command="$VLLM_BENCH_CMD \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
         --request-rate $qps \
         --metadata "tensor_parallel_size=$tp" \
         --port 30000 \
-        $client_args "
+        $client_args"
 
       echo "Running test case $test_name with qps $qps"
       echo "Client command: $client_command"
