@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import os
-import json
 import glob
+import json
 import logging
-from logging import warning
+import os
 from argparse import Action, ArgumentParser, Namespace
-from typing import Any, Dict, Optional, List
+from logging import warning
+from typing import Any, Dict, List, Optional
 
 
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +45,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.aws.h100.8": "cuda",
     "linux.dgx.b200": "cuda",
     "linux.dgx.b200.8": "cuda",
+    "linux.rocm.gpu.gfx942.1": "rocm",
     "linux.rocm.gpu.gfx942.2": "rocm",
     "linux.rocm.gpu.gfx942.4": "rocm",
     "linux.rocm.gpu.gfx942.8": "rocm",
