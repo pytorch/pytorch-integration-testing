@@ -90,6 +90,7 @@ run_serving_tests() {
     # Extract only specific SGLang server parameters
     model_path=$(echo "$server_params" | jq -r '.model_path // .model')
     context_length=$(echo "$server_params" | jq -r '.context_length // 4096')
+    load_format=$(echo "$server_params" | jq -r '.load_format // "dummy"')
 
     # check if there is enough resources to run the test
     tp=$(echo "$server_params" | jq -r '.tp // 1')
@@ -113,7 +114,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
 
     # run the server
     echo "Running test case $test_name"

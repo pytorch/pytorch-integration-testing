@@ -21,7 +21,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100
+        default: h100,b200,rocm
   pull_request:
     paths:
       - .github/workflows/sglang-benchmark.yml
@@ -52,7 +52,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || 'h100' }}
+          RUNNERS: ${{ inputs.runners || '' }}
         run: |
           set -eux
 
@@ -97,6 +97,16 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
+
+      - name: Get latest tag and its commit hash
+        working-directory: sglang-benchmarks/sglang
+        run: |
+          latest_tag=$(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags | head -n 1)
+          commit_hash=$(git rev-list -n 1 "$latest_tag")
+          echo "Latest tag: $latest_tag"
+          echo "Commit hash: $commit_hash"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+          echo "commit_hash=$commit_hash" >> $GITHUB_ENV
 
       - name: Check if the device is supported
         shell: bash
