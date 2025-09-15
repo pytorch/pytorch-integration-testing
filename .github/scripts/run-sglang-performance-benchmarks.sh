@@ -41,12 +41,25 @@ ensure_sharegpt_downloaded() {
 }
 
 
+ensure_vllm_installed() {
+  if python3 -c "import vllm" >/dev/null 2>&1; then
+    echo "vLLM is already installed."
+  else
+    echo "Installing vLLM..."
+    python3 -m pip install --upgrade pip
+    python3 -m pip install vllm
+  fi
+}
+
+
 run_serving_tests() {
   # run serving tests using `sglang.bench_serving` command
   # $1: a json file specifying serving test cases
 
   local serving_test_file
   serving_test_file=$1
+
+  ensure_vllm_installed
 
   # Iterate over serving tests
   jq -c '.[]' "$serving_test_file" | while read -r params; do
@@ -100,7 +113,7 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
 
     # run the server
     echo "Running test case $test_name"
@@ -118,15 +131,6 @@ run_serving_tests() {
       kill -9 $server_pid
       continue
     fi
-
-    # Create a new uv environment for vllm client (once per test case)
-    echo "Creating new uv environment for vllm client..."
-    uv venv vllm_client_env
-
-    # Activate the environment and install vllm
-    echo "Installing vllm in the new environment..."
-    source vllm_client_env/bin/activate
-    pip install vllm
 
     # iterate over different QPS
     for qps in $qps_list; do
@@ -176,10 +180,6 @@ run_serving_tests() {
         }')
       echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
     done
-
-    # Deactivate and clean up the environment after all QPS tests
-    deactivate
-    rm -rf vllm_client_env
 
     # clean up
     kill -9 $server_pid
