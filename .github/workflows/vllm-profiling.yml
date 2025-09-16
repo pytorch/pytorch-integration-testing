@@ -214,6 +214,25 @@ jobs:
           )
           docker exec -t "${container_name}" bash -c "cd vllm-profiling && bash ../.github/scripts/run_vllm_profiling.sh"
 
+      - name: Prepare S3 upload metadata
+        id: prepare_s3_upload
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -eux
+
+          UPLOAD_DATE=$(date -u +"%Y-%m-%d")
+          echo "upload-date=${UPLOAD_DATE}" >> "${GITHUB_OUTPUT}"
+          echo "s3-prefix=${REPOSITORY}/${UPLOAD_DATE}/${HEAD_SHA}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload profiling results to S3
+        uses: seemethere/upload-artifact-s3@v5
+        retention-days: 180
+        with:
+          s3-prefix: ${{ steps.prepare_s3_upload.outputs.s3-prefix }}
+          path: vllm-profiling/profiling-results
+          if-no-files-found: warn
+
       - uses: actions/upload-artifact@v4
         with:
           name: profiling-results--${{ env.DEVICE_TYPE }}
