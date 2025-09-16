@@ -217,7 +217,7 @@ jobs:
       - name: Prepare S3 upload metadata
         id: prepare_s3_upload
         env:
-          REPOSITORY: ${{ github.repository }}
+          REPOSITORY: vllm-project/vllm
         run: |
           set -eux
 
