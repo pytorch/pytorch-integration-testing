@@ -227,9 +227,9 @@ jobs:
 
       - name: Upload profiling results to S3
         uses: seemethere/upload-artifact-s3@v5
-        retention-days: 180
         with:
           s3-prefix: ${{ steps.prepare_s3_upload.outputs.s3-prefix }}
+          retention-days: 180
           path: vllm-profiling/profiling-results
           if-no-files-found: warn
 
