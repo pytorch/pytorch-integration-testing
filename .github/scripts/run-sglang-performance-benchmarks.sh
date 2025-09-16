@@ -145,9 +145,15 @@ run_serving_tests() {
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
 
+      if vllm bench serve --help >/dev/null 2>&1; then
+        client_cmd_prefix="vllm bench serve"
+      else
+        client_cmd_prefix="python -m vllm.benchmarks.serve"
+      fi
+
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="vllm bench serve \
+      client_command="$client_cmd_prefix \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
