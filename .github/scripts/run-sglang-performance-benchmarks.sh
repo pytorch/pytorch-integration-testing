@@ -51,14 +51,10 @@ ensure_vllm_installed() {
   echo "Installing vLLM..."
   python3 -m pip install --upgrade pip
   if [[ "$DEVICE_NAME" == "rocm" ]]; then
-    echo "Detected ROCm, installing vLLM with bench extras from ROCm wheels"
-    # Pin to a version that includes the `bench` CLI;
-    python3 -m pip install "vllm[bench]>=0.5.2" \
-      --extra-index-url https://download.pytorch.org/whl/rocm6.3
-  else
-    echo "Non-ROCm environment, installing vanilla vLLM (same as before)"
-    python3 -m pip install vllm
+    echo "Detected ROCm, uninstalling older version of vllm"
+    python3 -m pip uninstall vllm -y
   fi
+  python3 -m pip install vllm
 }
 
 
