@@ -40,21 +40,15 @@ ensure_sharegpt_downloaded() {
   fi
 }
 
-
-# ensure_vllm_installed() {
-#   echo "Installing vLLM..."
-#   python3 -m pip install --upgrade pip
-#   python3 -m pip install vllm
-# }
-
 ensure_vllm_installed() {
   echo "Installing vLLM..."
   python3 -m pip install --upgrade pip
   if [[ "$DEVICE_NAME" == "rocm" ]]; then
-    echo "Detected ROCm, uninstalling older version of vllm"
-    python3 -m pip uninstall vllm -y
+    extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
+    pip install --extra-index-url "${extra_index}" vllm-rocm
+  else
+    python3 -m pip install vllm
   fi
-  python3 -m pip install vllm
 }
 
 
