@@ -44,8 +44,8 @@ ensure_vllm_installed() {
   echo "Installing vLLM..."
   python3 -m pip install --upgrade pip
   if [[ "$DEVICE_NAME" == "rocm" ]]; then
-    extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
-    pip install --extra-index-url "${extra_index}" vllm-rocm
+    python3 -m pip install "vllm-rocm>=0.9" \
+      --extra-index-url https://download.pytorch.org/whl/rocm6.3
   else
     python3 -m pip install vllm
   fi
@@ -145,15 +145,15 @@ run_serving_tests() {
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
 
-      if vllm bench serve --help >/dev/null 2>&1; then
-        client_cmd_prefix="vllm bench serve"
-      else
-        client_cmd_prefix="python -m vllm.benchmarks.serve"
-      fi
+      # if vllm bench serve --help >/dev/null 2>&1; then
+      #   client_cmd_prefix="vllm bench serve"
+      # else
+      #   client_cmd_prefix="python -m vllm.benchmarks.serve"
+      # fi
 
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="$client_cmd_prefix \
+      client_command="vllm bench serve \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
