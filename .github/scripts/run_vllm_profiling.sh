@@ -120,6 +120,7 @@ run_profiling_tests() {
                 ls -la "$test_name_directory" || echo "DEBUG: Directory is empty or inaccessible"
                 find "$test_name_directory" -type f 2>/dev/null | head -10 | while read file; do
                     echo "DEBUG: Found profiling file: ${file}"
+                    rename_profiling_file "$file" "vllm"
                 done
             else
                 echo "DEBUG: Profiling directory does not exist for test $TEST_NAME!"

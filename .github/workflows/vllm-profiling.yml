@@ -223,7 +223,7 @@ jobs:
 
           UPLOAD_DATE=$(date -u +"%Y-%m-%d")
           echo "upload-date=${UPLOAD_DATE}" >> "${GITHUB_OUTPUT}"
-          echo "s3-prefix=${REPOSITORY}/${UPLOAD_DATE}/${HEAD_SHA}" >> "${GITHUB_OUTPUT}"
+          echo "s3-prefix=${UPLOAD_DATE}/${REPOSITORY}/${HEAD_SHA}/${GITHUB_RUN_ID}/${GITHUB_JOB}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload profiling results to S3
         uses: seemethere/upload-artifact-s3@v5
