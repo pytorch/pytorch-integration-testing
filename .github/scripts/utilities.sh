@@ -133,3 +133,46 @@ check_hf_token() {
         echo "HF_TOKEN is set and valid."
     fi
 }
+
+rename_profiling_file() {
+    # Rename profiling files to standardized format
+    # $1: file path to rename
+    # $2: prefix name (e.g., "vllm", "sglang")
+    local file="$1"
+    local prefix_name="$2"
+
+    # Process .pt.trace.json.gz files
+    if [[ "$file" == *.pt.trace.json.gz ]]; then
+        local dir_path=$(dirname "$file")
+        local basename_file=$(basename "$file")
+
+        # Determine new filename based on content
+        local new_filename
+        if [[ "$basename_file" == *".async_llm."* ]]; then
+            new_filename="${prefix_name}.async_llm.pt.trace.json.gz"
+        else
+            new_filename="${prefix_name}.pt.trace.json.gz"
+        fi
+
+        local new_filepath="${dir_path}/${new_filename}"
+
+        # Only rename if the new filename is different
+        if [[ "$file" != "$new_filepath" ]]; then
+            echo "DEBUG: Renaming ${file} to ${new_filepath}"
+            mv "$file" "$new_filepath"
+            if [[ $? -eq 0 ]]; then
+                echo "DEBUG: Successfully renamed to ${new_filepath}"
+                return 0
+            else
+                echo "DEBUG: Failed to rename ${file}"
+                return 1
+            fi
+        else
+            echo "DEBUG: File ${file} already has correct name"
+            return 0
+        fi
+    else
+        echo "DEBUG: Skipping non-profiling file: ${file}"
+        return 0
+    fi
+}

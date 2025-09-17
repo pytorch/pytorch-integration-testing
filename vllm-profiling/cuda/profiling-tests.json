@@ -1,6 +1,6 @@
 [
     {
-        "test_name": "profiling_opt_125m_tp1_random",
+        "test_name": "facebook_opt_125m_tp1_random",
         "server_parameters": {
             "model": "facebook/opt-125m",
             "swap_space": 16,

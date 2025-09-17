@@ -59,6 +59,12 @@ cleanup_server() {
 run_profiling_tests() {
     # run profiling tests using JSON configuration
     local profiling_test_file="$1"
+    local base_profiler_dir="${VLLM_TORCH_PROFILER_DIR:-}"
+
+    if [[ -z "${base_profiler_dir}" ]]; then
+        echo "Error: VLLM_TORCH_PROFILER_DIR is not set."
+        exit 1
+    fi
 
     if [[ ! -f "$profiling_test_file" ]]; then
         echo "Error: Profiling test file $profiling_test_file not found!"
@@ -92,18 +98,29 @@ run_profiling_tests() {
         # Clean up any existing processes first
         kill_gpu_processes
 
+        # Create a profiling sub-directory for each test case to isolate the
+        # generated traces (e.g. using the model name hierarchy)
+        local sanitized_test_name="${TEST_NAME// /_}"
+        local test_name_directory="${base_profiler_dir}/${sanitized_test_name}"
+        mkdir -p "${test_name_directory}"
+        chmod 755 "${test_name_directory}"
+
+        # Override the profiler output directory for this test only
+        export VLLM_TORCH_PROFILER_DIR="${test_name_directory}"
+
         # Run the profiling test
         if start_vllm_server "$server_args"; then
             run_profiling "$client_args"
             cleanup_server
 
             # Debug: Check if profiling files were created
-            echo "DEBUG: Checking profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
-            if [ -d "${VLLM_TORCH_PROFILER_DIR}" ]; then
+            echo "DEBUG: Checking profiling directory: $test_name_directory"
+            if [ -d "$test_name_directory" ]; then
                 echo "DEBUG: Profiling directory exists for test $TEST_NAME"
-                ls -la "${VLLM_TORCH_PROFILER_DIR}" || echo "DEBUG: Directory is empty or inaccessible"
-                find "${VLLM_TORCH_PROFILER_DIR}" -type f 2>/dev/null | head -10 | while read file; do
+                ls -la "$test_name_directory" || echo "DEBUG: Directory is empty or inaccessible"
+                find "$test_name_directory" -type f 2>/dev/null | head -10 | while read file; do
                     echo "DEBUG: Found profiling file: ${file}"
+                    rename_profiling_file "$file" "vllm"
                 done
             else
                 echo "DEBUG: Profiling directory does not exist for test $TEST_NAME!"
@@ -115,6 +132,9 @@ run_profiling_tests() {
             continue
         fi
     done
+
+    # Ensure the profiler directory is restored after processing all tests
+    export VLLM_TORCH_PROFILER_DIR="${base_profiler_dir}"
 }
 
 main() {
