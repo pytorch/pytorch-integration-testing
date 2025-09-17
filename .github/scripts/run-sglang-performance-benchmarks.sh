@@ -144,9 +144,12 @@ run_serving_tests() {
       # Allow callers to override the index URL, but default to the ROCm 6.3
       # index that matches the Docker image we use in CI.
       extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
-      pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple vllm
+      python3 -m pip install --no-cache-dir --upgrade --force-reinstall \
+        --index-url "${extra_index}" \
+        --extra-index-url https://pypi.org/simple \
+        vllm
     else
-      pip install vllm
+      python3 -m pip install vllm
     fi
 
     # iterate over different QPS
