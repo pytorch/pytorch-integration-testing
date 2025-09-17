@@ -114,7 +114,16 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+    server_env_prefix=""
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      # TorchInductor in ROCm containers can be out of sync with the Triton
+      # runtime that ships alongside the Docker image. Disable Dynamo/Inductor
+      # so we fall back to eager mode instead of crashing when the worker
+      # imports the Triton heuristics module.
+      server_env_prefix+="TORCHINDUCTOR_DISABLE=1 TORCHDYNAMO_DISABLE=1 "
+    fi
+
+    server_command="${server_env_prefix}python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
 
     # run the server
     echo "Running test case $test_name"
