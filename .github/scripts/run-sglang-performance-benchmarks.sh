@@ -44,8 +44,8 @@ ensure_vllm_installed() {
   echo "Installing vLLM..."
   python3 -m pip install --upgrade pip
   if [[ "$DEVICE_NAME" == "rocm" ]]; then
-    # extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
-    python3 -m pip install --index-url https://pypi.org/simple vllm-rocm
+    extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
+    python3 -m pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple vllm
   else
     python3 -m pip install vllm
   fi
