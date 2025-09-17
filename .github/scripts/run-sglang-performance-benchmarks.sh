@@ -59,7 +59,7 @@ run_serving_tests() {
   local serving_test_file
   serving_test_file=$1
 
-  ensure_vllm_installed
+  # ensure_vllm_installed
 
   # Iterate over serving tests
   jq -c '.[]' "$serving_test_file" | while read -r params; do
@@ -133,6 +133,22 @@ run_serving_tests() {
       continue
     fi
 
+    echo "Creating new uv environment for vllm client..."
+    uv venv vllm_client_env
+
+    echo "Installing vllm in the new environment..."
+    source vllm_client_env/bin/activate
+
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      # The ROCm wheels for PyTorch and vLLM live on a dedicated index.
+      # Allow callers to override the index URL, but default to the ROCm 6.3
+      # index that matches the Docker image we use in CI.
+      extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
+      pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple vllm
+    else
+      pip install vllm
+    fi
+
     # iterate over different QPS
     for qps in $qps_list; do
       # remove the surrounding single quote from qps
@@ -188,6 +204,10 @@ run_serving_tests() {
       echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
     done
 
+    # Deactivate and clean up the environment after all QPS tests
+    deactivate
+    rm -rf vllm_client_env
+
     # clean up
     kill -9 $server_pid
     kill_gpu_processes 30000
@@ -198,6 +218,8 @@ main() {
     check_gpus
     check_hf_token
     install_dependencies
+
+    pip install uv
 
     # get the current IP address, required by SGLang bench commands
     export SGLANG_HOST_IP=$(hostname -I | awk '{print $1}')
