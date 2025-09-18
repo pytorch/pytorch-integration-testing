@@ -61,10 +61,11 @@ build_vllm_from_source_rocm() {
   fi
 
   # 5) Compile for GPU architectures
+  export VLLM_TARGET_DEVICE=rocm
   export PYTORCH_ROCM_ARCH="gfx90a;gfx942"
 
   # 6) Build & install vLLM into this venv
-  uv run python setup.py develop
+  uv run --active -- python setup.py develop
   cd ..
 }
 
