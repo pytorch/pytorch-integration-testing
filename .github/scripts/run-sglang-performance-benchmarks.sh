@@ -40,15 +40,32 @@ ensure_sharegpt_downloaded() {
   fi
 }
 
-ensure_vllm_installed() {
-  echo "Installing vLLM..."
-  python3 -m pip install --upgrade pip
-  if [[ "$DEVICE_NAME" == "rocm" ]]; then
-    extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
-    python3 -m pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple vllm
-  else
-    python3 -m pip install vllm
+build_vllm_from_source_rocm() {
+  extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
+
+  # 1) Tooling & base deps for building
+  uv pip install --upgrade pip wheel setuptools setuptools_scm
+  uv pip install cmake ninja packaging typing_extensions
+
+  # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
+  uv pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple torch torchvision torchaudio
+
+  # 3) Clone vLLM source
+  rm -rf vllm
+  git clone https://github.com/vllm-project/vllm.git
+  cd vllm
+
+  # 4) Install ROCm-specific Python requirements from the repo
+  if [ -f requirements/rocm.txt ]; then
+    uv pip install -r requirements/rocm.txt
   fi
+
+  # 5) Compile for GPU architectures
+  export PYTORCH_ROCM_ARCH="gfx90a;gfx942"
+
+  # 6) Build & install vLLM into this venv
+  uv run python setup.py develop
+  cd ..
 }
 
 
@@ -58,8 +75,6 @@ run_serving_tests() {
 
   local serving_test_file
   serving_test_file=$1
-
-  # ensure_vllm_installed
 
   # Iterate over serving tests
   jq -c '.[]' "$serving_test_file" | while read -r params; do
@@ -140,14 +155,8 @@ run_serving_tests() {
     source vllm_client_env/bin/activate
 
     if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      # The ROCm wheels for PyTorch and vLLM live on a dedicated index.
-      # Allow callers to override the index URL, but default to the ROCm 6.3
-      # index that matches the Docker image we use in CI.
-      extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
-      uv pip install --no-cache-dir --upgrade --force-reinstall \
-        --index-url "${extra_index}" \
-        --extra-index-url https://pypi.org/simple \
-        vllm
+      # Build vLLM from source in this venv for ROCm
+      build_vllm_from_source_rocm
     else
       uv pip install vllm
     fi
