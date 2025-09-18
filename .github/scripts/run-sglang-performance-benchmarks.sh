@@ -45,7 +45,7 @@ build_vllm_from_source_rocm() {
 
   # 1) Tooling & base deps for building
   uv pip install --upgrade pip wheel setuptools setuptools_scm
-  uv pip install cmake ninja packaging typing_extensions
+  uv pip install numpy cmake ninja packaging typing_extensions
 
   # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
   uv pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple torch torchvision torchaudio
@@ -65,7 +65,7 @@ build_vllm_from_source_rocm() {
   export PYTORCH_ROCM_ARCH="gfx90a;gfx942"
 
   # 6) Build & install vLLM into this venv
-  uv run --active -- python setup.py develop
+  uv run --active -- python3 setup.py develop
   cd ..
 }
 
