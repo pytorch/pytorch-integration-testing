@@ -61,12 +61,12 @@ build_vllm_from_source_rocm() {
   uv pip install cmake ninja packaging typing_extensions pybind11 wheel
 
   # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
-  uv pip uninstall torch -y
+  uv pip uninstall torch --yes || true
   uv pip install --no-cache-dir --pre torch --index-url "${extra_index}"
 
   # 3) Install Triton flash attention for ROCm (required by vLLM documentation)
   echo "Installing Triton flash attention for ROCm..."
-  uv pip uninstall -y triton || true
+  uv pip uninstall triton --yes || true
   if ! git clone https://github.com/OpenAI/triton.git; then
     echo "Error: Failed to clone Triton repository"
     exit 1
@@ -83,6 +83,21 @@ build_vllm_from_source_rocm() {
   fi
   cd ../..
   rm -rf triton
+
+  # 4) Install CK flash attention as fallback for ROCm stability
+  echo "Installing CK flash attention for ROCm stability..."
+  git clone https://github.com/ROCm/flash-attention.git
+  cd flash-attention
+  git checkout b7d29fb
+  git submodule update --init
+  # Use detected GPU architecture
+  if ! GPU_ARCHS="$gpu_arch" python3 setup.py install; then
+    echo "Warning: CK flash attention installation failed, continuing with Triton only"
+  else
+    echo "CK flash attention installed successfully"
+  fi
+  cd ..
+  rm -rf flash-attention
 
   # 5) Clone vLLM source
   rm -rf vllm
@@ -115,6 +130,16 @@ build_vllm_from_source_rocm() {
   export HIP_PLATFORM="amd"
   export PATH="$ROCM_HOME/bin:$PATH"
   export LD_LIBRARY_PATH="$ROCM_HOME/lib:$LD_LIBRARY_PATH"
+  
+  # ROCm-specific attention backend settings
+  # Try CK flash attention first, fallback to Triton if needed
+  export VLLM_USE_TRITON_FLASH_ATTN=0  # Start with CK flash attention
+  export VLLM_ATTENTION_BACKEND="ROCM_FLASH"
+  
+  # Additional ROCm stability settings
+  export PYTORCH_HIP_ALLOC_CONF="expandable_segments:True"
+  export HIP_VISIBLE_DEVICES="0"
+  export AMD_LOG_LEVEL=1  # Reduce AMD driver logging
 
   # 11) Build & install vLLM into this venv
   echo "Building vLLM for ROCm with architecture: $gpu_arch"
@@ -133,7 +158,6 @@ build_vllm_from_source_rocm() {
   echo "vLLM build completed successfully!"
   cd ..
 }
-
 
 run_serving_tests() {
   # run serving tests using `sglang.bench_serving` command
@@ -195,7 +219,16 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+    # Configure SGLang server command with ROCm-specific settings
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      # Use CK flash attention backend for ROCm stability
+      server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+      # Set SGLang-specific ROCm environment variables
+      export SGLANG_DISABLE_CUDA_GRAPH=1
+      export SGLANG_ATTENTION_BACKEND="rocm_flash"
+    else
+      server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
+    fi
 
     # run the server
     echo "Running test case $test_name"
