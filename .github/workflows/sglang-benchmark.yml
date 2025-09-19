@@ -188,12 +188,12 @@ jobs:
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             # Use specific B200 image for B200 devices
             if [[ "${DEVICE_TYPE}" == *"B200"* ]]; then
-              DOCKER_IMAGE="lmsysorg/sglang:${LATEST_TAG}-cu128-b200"
+              DOCKER_IMAGE="lmsysorg/sglang:v0.5.3rc0-cu128-b200"
             else
               DOCKER_IMAGE="lmsysorg/sglang:latest"
             fi
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DOCKER_IMAGE="lmsysorg/sglang:${LATEST_TAG}-rocm630-mi30x"
+            DOCKER_IMAGE="lmsysorg/sglang:v0.5.3rc0-rocm630-mi30x"
           else
             echo "SGLang benchmarks require either CUDA or ROCm devices."
             exit 1
