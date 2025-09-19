@@ -56,17 +56,17 @@ build_vllm_from_source_rocm() {
   
   extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
 
-  # 1) Tooling & base deps for building
+  # Tooling & base deps for building
   uv pip install --upgrade pip
   uv pip install cmake ninja packaging typing_extensions pybind11 wheel
 
-  # 2) Install ROCm PyTorch that matches the container ROCm
+  # Install ROCm PyTorch that matches the container ROCm
   uv pip uninstall torch || true
   uv pip uninstall torchvision || true
   uv pip uninstall torchaudio || true
   uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
 
-  # 3) Install Triton flash attention for ROCm
+  # Install Triton flash attention for ROCm
   echo "Installing Triton flash attention for ROCm..."
   uv pip uninstall triton || true
   if ! git clone https://github.com/OpenAI/triton.git; then
@@ -86,46 +86,31 @@ build_vllm_from_source_rocm() {
   cd ../..
   rm -rf triton
 
-  # 4) Install CK flash attention as fallback for ROCm stability
-  # echo "Installing CK flash attention for ROCm stability..."
-  # git clone https://github.com/ROCm/flash-attention.git
-  # cd flash-attention
-  # git checkout b7d29fb
-  # git submodule update --init
-  # # Use detected GPU architecture
-  # if ! GPU_ARCHS="$gpu_arch" python3 setup.py install; then
-  #   echo "Warning: CK flash attention installation failed, continuing with Triton only"
-  # else
-  #   echo "CK flash attention installed successfully"
-  # fi
-  # cd ..
-  # rm -rf flash-attention
-
-  # 5) Clone vLLM source
+  # Clone vLLM source
   rm -rf vllm
   git clone https://github.com/vllm-project/vllm.git
   cd vllm
 
-  # 6) Build & install AMD SMI
+  # Build & install AMD SMI
   uv pip install /opt/rocm/share/amd_smi
 
-  # 7) Install additional dependencies
+  # Install additional dependencies
   uv pip install --upgrade numba \
     scipy \
     huggingface-hub[cli,hf_transfer] \
     setuptools_scm
   uv pip install "numpy<2"
 
-  # 8) Install ROCm-specific Python requirements from the repo
+  # Install ROCm-specific Python requirements from the repo
   if [ -f requirements/rocm.txt ]; then
     uv pip install -r requirements/rocm.txt
   fi
 
-  # 9) Detect GPU architecture dynamically
+  # Detect GPU architecture dynamically
   gpu_arch=$(rocminfo | grep gfx | head -1 | awk '{print $2}' || echo "gfx90a")
   echo "Detected GPU architecture: $gpu_arch"
   
-  # 10) Set ROCm environment variables
+  # Set ROCm environment variables
   export VLLM_TARGET_DEVICE=rocm
   export PYTORCH_ROCM_ARCH="$gpu_arch"
   export ROCM_HOME="/opt/rocm"
@@ -133,24 +118,19 @@ build_vllm_from_source_rocm() {
   export PATH="$ROCM_HOME/bin:$PATH"
   export LD_LIBRARY_PATH="$ROCM_HOME/lib:$LD_LIBRARY_PATH"
   
-  # ROCm-specific attention backend settings
-  # Try CK flash attention first, fallback to Triton if needed
-  # export VLLM_USE_TRITON_FLASH_ATTN=0  # Start with CK flash attention
-  # export VLLM_ATTENTION_BACKEND="ROCM_FLASH"
-  
   # Additional ROCm stability settings
   export PYTORCH_HIP_ALLOC_CONF="expandable_segments:True"
   export HIP_VISIBLE_DEVICES="0"
   export AMD_LOG_LEVEL=1  # Reduce AMD driver logging
 
-  # 11) Build & install vLLM into this venv
+  # Build & install vLLM into this venv
   echo "Building vLLM for ROCm with architecture: $gpu_arch"
   if ! python3 setup.py develop; then
     echo "Error: Failed to build vLLM from source"
     exit 1
   fi
   
-  # 12) Verify vLLM installation
+  # Verify vLLM installation
   echo "Verifying vLLM installation..."
   if ! python3 -c "import vllm; print(f'vLLM version: {vllm.__version__}')"; then
     echo "Error: vLLM installation verification failed"

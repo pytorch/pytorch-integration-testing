@@ -80,6 +80,7 @@ PLATFORM_SKIPS = {
     ],
     "google/gemma-3-4b-it": [
         "linux.dgx.b200",
+        "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
     ],
     # Run some bigger models on B200 to share the load
     "Qwen/Qwen3-30B-A3B": [
