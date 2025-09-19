@@ -75,10 +75,17 @@ build_vllm_from_source_rocm() {
   export ROCM_HOME="/opt/rocm"
   export HIP_PLATFORM="amd"
   export HIP_VISIBLE_DEVICES="0"
+  export HIPCC="/opt/rocm/bin/hipcc"
+  export HSA_OVERRIDE_GFX_VERSION="11.0.0"
   
   # 6) Ensure ROCm tools are available in PATH
   export PATH="/opt/rocm/bin:$PATH"
   export LD_LIBRARY_PATH="/opt/rocm/lib:$LD_LIBRARY_PATH"
+  
+  # 7) Clear any CUDA-related environment variables that might interfere
+  unset CUDA_HOME
+  unset CUDA_PATH
+  unset CUDA_VISIBLE_DEVICES
 
   # 7) Build & install vLLM into this venv
   
@@ -91,15 +98,47 @@ build_vllm_from_source_rocm() {
   # Try alternative installation methods for ROCm
   echo "Attempting to install vLLM for ROCm..."
   
-  # Method 1: Try pip install with ROCm support
-  if uv pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
-    echo "Successfully installed vLLM via pip"
+  # Uninstall any existing vLLM to avoid conflicts
+  uv pip uninstall vllm -y || true
+  
+  # Method 1: Try to install ROCm-specific vLLM wheel if available
+  echo "Trying to install ROCm-specific vLLM wheel..."
+  if uv pip install vllm-rocm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
+    echo "Successfully installed vLLM ROCm wheel"
   else
-    echo "Pip install failed, trying setup.py develop..."
-    
-    # Method 2: Try setup.py develop with explicit ROCm environment
-    VLLM_TARGET_DEVICE=rocm python3 setup.py develop
+    echo "ROCm wheel not available, trying regular vLLM with ROCm index..."
+    if uv pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
+      echo "Successfully installed vLLM with ROCm index"
+    else
+      echo "Pip install failed, building from source..."
+      
+      # Method 2: Build from source with proper ROCm environment
+      echo "Building vLLM from source for ROCm..."
+      VLLM_TARGET_DEVICE=rocm python3 setup.py develop
+    fi
   fi
+  
+  # Verify vLLM installation and ROCm support
+  echo "Verifying vLLM ROCm installation..."
+  python3 -c "
+import vllm
+print(f'vLLM version: {vllm.__version__}')
+try:
+    from vllm._rocm_C import *
+    print('✓ ROCm C extensions imported successfully')
+except ImportError as e:
+    print(f'✗ ROCm C extensions import failed: {e}')
+try:
+    import torch
+    print(f'PyTorch version: {torch.__version__}')
+    print(f'PyTorch ROCm version: {torch.version.hip}')
+    if torch.cuda.is_available():
+        print('CUDA is available (unexpected for ROCm)')
+    else:
+        print('CUDA is not available (expected for ROCm)')
+except Exception as e:
+    print(f'PyTorch check failed: {e}')
+"
   
   cd ..
 }
@@ -208,16 +247,9 @@ run_serving_tests() {
 
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
-
-      if vllm bench serve --help >/dev/null 2>&1; then
-        client_cmd_prefix="vllm bench serve"
-      else
-        client_cmd_prefix="python -m vllm.benchmarks.serve"
-      fi
-
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="$client_cmd_prefix \
+      client_command="vllm bench serve \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
