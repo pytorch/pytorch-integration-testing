@@ -202,8 +202,29 @@ run_serving_tests() {
       continue
     fi
 
-    # Build the server command with ROCm-specific optimizations for DeepSeek models
+    # Build the server command
     server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format --dtype $dtype"
+    
+    # Add model-specific compatibility flags
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      # DeepSeek models on ROCm
+      if [[ "$model_path" == *"DeepSeek"* ]]; then
+        echo "Detected DeepSeek model on ROCm, adding AMD-recommended compatibility flags"
+        # Set AMD-recommended environment variables for ROCm performance
+        export DEBUG_HIP_BLOCK_SYNC=1024
+        export GPU_FORCE_BLIT_COPY_SIZE=6
+        # Use AMD's official configuration for DeepSeek models on ROCm
+        server_command="$server_command --disable-radix-cache --trust-remote-code"
+      fi
+      
+      # GPT-OSS models on ROCm - disable AITER to avoid GEMM errors
+      if [[ "$model_path" == *"gpt-oss"* ]]; then
+        echo "Detected GPT-OSS model on ROCm, disabling AITER to avoid GEMM compatibility issues"
+        export SGLANG_USE_AITER=0
+        # Use triton attention backend for better compatibility
+        server_command="$server_command --attention-backend triton --trust-remote-code"
+      fi
+    fi
     # run the server
     echo "Running test case $test_name"
     echo "Server command: $server_command"
