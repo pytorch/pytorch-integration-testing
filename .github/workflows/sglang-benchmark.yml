@@ -98,11 +98,6 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Get commit hash for Docker image selection
-        working-directory: sglang-benchmarks/sglang
-        run: |
-          # We'll get the commit hash after determining the available Docker image
-          echo "HEAD_SHA=placeholder" >> $GITHUB_ENV
 
       - name: Check if the device is supported
         shell: bash

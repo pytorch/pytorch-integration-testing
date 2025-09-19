@@ -40,7 +40,7 @@ ensure_sharegpt_downloaded() {
   fi
 }
 
-build_vllm_from_source_rocm() {
+build_vllm_from_source_for_rocm() {
   echo "Starting vLLM build for ROCm..."
   
   # Validate ROCm installation
@@ -178,6 +178,7 @@ run_serving_tests() {
     model_path=$(echo "$server_params" | jq -r '.model_path // .model')
     context_length=$(echo "$server_params" | jq -r '.context_length // 4096')
     load_format=$(echo "$server_params" | jq -r '.load_format // "dummy"')
+    dtype=$(echo "$server_params" | jq -r '.dtype // "auto"')
 
     # check if there is enough resources to run the test
     tp=$(echo "$server_params" | jq -r '.tp // .tensor_parallel_size // 1')
@@ -201,8 +202,8 @@ run_serving_tests() {
       continue
     fi
 
-    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
-
+    # Build the server command with ROCm-specific optimizations for DeepSeek models
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format --dtype $dtype"
     # run the server
     echo "Running test case $test_name"
     echo "Server command: $server_command"
@@ -227,7 +228,7 @@ run_serving_tests() {
     source vllm_client_env/bin/activate
 
     if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      build_vllm_from_source_rocm
+      build_vllm_from_source_for_rocm
     else
       uv pip install vllm
     fi
@@ -253,7 +254,7 @@ run_serving_tests() {
         --request-rate $qps \
         --metadata "tensor_parallel_size=$tp" \
         --port 30000 \
-        $client_args"
+        $client_args "
 
       echo "Running test case $test_name with qps $qps"
       echo "Client command: $client_command"
