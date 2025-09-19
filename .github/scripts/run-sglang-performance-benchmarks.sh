@@ -40,6 +40,106 @@ ensure_sharegpt_downloaded() {
   fi
 }
 
+build_vllm_from_source_for_rocm() {
+  echo "Starting vLLM build for ROCm..."
+  
+  # Validate ROCm installation
+  if ! command -v rocminfo &> /dev/null; then
+    echo "Error: rocminfo not found. Please ensure ROCm is properly installed."
+    exit 1
+  fi
+  
+  if [ ! -d "/opt/rocm" ]; then
+    echo "Error: ROCm installation directory /opt/rocm not found."
+    exit 1
+  fi
+  
+  extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
+
+  # Tooling & base deps for building
+  uv pip install --upgrade pip
+  uv pip install cmake ninja packaging typing_extensions pybind11 wheel
+
+  # Install ROCm PyTorch that matches the container ROCm
+  uv pip uninstall torch || true
+  uv pip uninstall torchvision || true
+  uv pip uninstall torchaudio || true
+  uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
+
+  # Install Triton flash attention for ROCm
+  echo "Installing Triton flash attention for ROCm..."
+  uv pip uninstall triton || true
+  if ! git clone https://github.com/OpenAI/triton.git; then
+    echo "Error: Failed to clone Triton repository"
+    exit 1
+  fi
+  cd triton
+  if ! git checkout e5be006; then
+    echo "Error: Failed to checkout Triton commit e5be006"
+    exit 1
+  fi
+  cd python
+  if ! uv pip install .; then
+    echo "Error: Failed to install Triton"
+    exit 1
+  fi
+  cd ../..
+  rm -rf triton
+
+  # Clone vLLM source
+  rm -rf vllm
+  git clone https://github.com/vllm-project/vllm.git
+  cd vllm
+
+  # Build & install AMD SMI
+  uv pip install /opt/rocm/share/amd_smi
+
+  # Install additional dependencies
+  uv pip install --upgrade numba \
+    scipy \
+    huggingface-hub[cli,hf_transfer] \
+    setuptools_scm
+  uv pip install "numpy<2"
+
+  # Install ROCm-specific Python requirements from the repo
+  if [ -f requirements/rocm.txt ]; then
+    uv pip install -r requirements/rocm.txt
+  fi
+
+  # Detect GPU architecture dynamically
+  gpu_arch=$(rocminfo | grep gfx | head -1 | awk '{print $2}' || echo "gfx90a")
+  echo "Detected GPU architecture: $gpu_arch"
+  
+  # Set ROCm environment variables
+  export VLLM_TARGET_DEVICE=rocm
+  export PYTORCH_ROCM_ARCH="$gpu_arch"
+  export ROCM_HOME="/opt/rocm"
+  export HIP_PLATFORM="amd"
+  export PATH="$ROCM_HOME/bin:$PATH"
+  export LD_LIBRARY_PATH="$ROCM_HOME/lib:$LD_LIBRARY_PATH"
+  
+  # Additional ROCm stability settings
+  export PYTORCH_HIP_ALLOC_CONF="expandable_segments:True"
+  export HIP_VISIBLE_DEVICES="0"
+  export AMD_LOG_LEVEL=1  # Reduce AMD driver logging
+
+  # Build & install vLLM into this venv
+  echo "Building vLLM for ROCm with architecture: $gpu_arch"
+  if ! python3 setup.py develop; then
+    echo "Error: Failed to build vLLM from source"
+    exit 1
+  fi
+  
+  # Verify vLLM installation
+  echo "Verifying vLLM installation..."
+  if ! python3 -c "import vllm; print(f'vLLM version: {vllm.__version__}')"; then
+    echo "Error: vLLM installation verification failed"
+    exit 1
+  fi
+  
+  echo "vLLM build completed successfully!"
+  cd ..
+}
 
 run_serving_tests() {
   # run serving tests using `sglang.bench_serving` command
@@ -74,12 +174,11 @@ run_serving_tests() {
     qps_list=$(echo "$qps_list" | jq -r '.[] | @sh')
     echo "Running over qps list $qps_list"
 
-    # Extract only specific SGLang server parameters
+    # Extract special parameters that need mapping or special handling
     model_path=$(echo "$server_params" | jq -r '.model_path // .model')
-    context_length=$(echo "$server_params" | jq -r '.context_length // 4096')
+    tp=$(echo "$server_params" | jq -r '.tp // .tensor_parallel_size // 1')
 
     # check if there is enough resources to run the test
-    tp=$(echo "$server_params" | jq -r '.tp // 1')
     if [ "$ON_CPU" == "1" ]; then
       if [[ $numa_count -lt $tp ]]; then
         echo "Required tensor-parallel-size $tp but only $numa_count NUMA nodes found. Skip testcase $test_name."
@@ -95,13 +194,28 @@ run_serving_tests() {
     # check if server model and client model is aligned
     server_model="$model_path"
     client_model=$(echo "$client_params" | jq -r '.model // .model_path')
-    if [[ $server_model != "$client_model" ]]; then
+    if [[ $server_model != "$client_model" ]] && [[ $server_model != *"gpt-oss"* ]]; then
       echo "Server model and client model must be the same. Skip testcase $test_name."
       continue
     fi
 
-    server_command="python -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp"
-
+    # Remove the special parameters that we'll handle manually
+    server_params_filtered=$(echo "$server_params" | jq 'del(.model, .model_path, .tensor_parallel_size, .tp)')
+    
+    # Use the json2args utility to convert the filtered params to command line arguments
+    server_args=$(json2args "$server_params_filtered")
+    
+    # Build the server command with manually mapped parameters and auto-parsed ones
+    server_command="python3 -m sglang.launch_server --model-path $model_path --tp $tp $server_args"
+    
+    # Model-specific environment variables (command-line flags can be added to JSON directly)
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      # GPT-OSS models on ROCm - set environment variables
+      if [[ "$model_path" == *"gpt-oss"* ]]; then
+        echo "Detected GPT-OSS model on ROCm, setting compatibility environment variables"
+        export SGLANG_USE_AITER=0
+      fi
+    fi
     # run the server
     echo "Running test case $test_name"
     echo "Server command: $server_command"
@@ -119,14 +233,17 @@ run_serving_tests() {
       continue
     fi
 
-    # Create a new uv environment for vllm client (once per test case)
     echo "Creating new uv environment for vllm client..."
     uv venv vllm_client_env
 
-    # Activate the environment and install vllm
     echo "Installing vllm in the new environment..."
     source vllm_client_env/bin/activate
-    pip install vllm
+
+    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
+      build_vllm_from_source_for_rocm
+    else
+      uv pip install vllm
+    fi
 
     # iterate over different QPS
     for qps in $qps_list; do
@@ -191,6 +308,8 @@ main() {
     check_gpus
     check_hf_token
     install_dependencies
+
+    pip install uv
 
     # get the current IP address, required by SGLang bench commands
     export SGLANG_HOST_IP=$(hostname -I | awk '{print $1}')

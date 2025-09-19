@@ -106,10 +106,12 @@
         "test_name": "serving_gpt_oss_20b_tp1_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "openai/gpt-oss-20b",
+            "model": "lmsys/gpt-oss-20b-bf16",
             "tensor_parallel_size": 1,
             "load_format": "dummy",
-            "context_length": 16384
+            "context_length": 16384,
+            "attention_backend": "triton",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "openai/gpt-oss-20b",
@@ -124,49 +126,15 @@
         "test_name": "serving_gpt_oss_120b_tp4_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
-            "model": "openai/gpt-oss-120b",
+            "model": "lmsys/gpt-oss-120b-bf16",
             "tensor_parallel_size": 4,
             "load_format": "dummy",
-            "context_length": 16384
+            "context_length": 16384,
+            "attention_backend": "triton",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 5250,
-            "random_output_len": 8250
-        }
-    },
-    {
-        "test_name": "serving_deepseek_v3_tp8_random_in5k_out8k",
-        "qps_list": [1, 4, 16, "inf"],
-        "server_parameters": {
-            "model": "deepseek-ai/DeepSeek-V3.1",
-            "tensor_parallel_size": 8,
-            "load_format": "dummy",
-            "context_length": 16384
-        },
-        "client_parameters": {
-            "model": "deepseek-ai/DeepSeek-V3.1",
-            "backend": "vllm",
-            "dataset_name": "random",
-            "num_prompts": 200,
-            "random_input_len": 5250,
-            "random_output_len": 8250
-        }
-    },
-    {
-        "test_name": "serving_deepseek_r1_tp8_random_in5k_out8k",
-        "qps_list": [1, 4, 16, "inf"],
-        "server_parameters": {
-            "model": "deepseek-ai/DeepSeek-R1",
-            "tensor_parallel_size": 8,
-            "load_format": "dummy",
-            "context_length": 16384
-        },
-        "client_parameters": {
-            "model": "deepseek-ai/DeepSeek-R1",
             "backend": "vllm",
             "dataset_name": "random",
             "num_prompts": 200,
