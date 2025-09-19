@@ -41,105 +41,96 @@ ensure_sharegpt_downloaded() {
 }
 
 build_vllm_from_source_rocm() {
+  echo "Starting vLLM build for ROCm..."
+  
+  # Validate ROCm installation
+  if ! command -v rocminfo &> /dev/null; then
+    echo "Error: rocminfo not found. Please ensure ROCm is properly installed."
+    exit 1
+  fi
+  
+  if [ ! -d "/opt/rocm" ]; then
+    echo "Error: ROCm installation directory /opt/rocm not found."
+    exit 1
+  fi
+  
   extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
 
   # 1) Tooling & base deps for building
   uv pip install --upgrade pip
-  uv pip install cmake ninja packaging typing_extensions
+  uv pip install cmake ninja packaging typing_extensions pybind11 wheel
 
   # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
-  uv pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple torch torchvision torchaudio
+  uv pip uninstall torch -y
+  uv pip install --no-cache-dir --pre torch --index-url "${extra_index}"
 
-  # 3) Clone vLLM source
+  # 3) Install Triton flash attention for ROCm (required by vLLM documentation)
+  echo "Installing Triton flash attention for ROCm..."
+  uv pip uninstall -y triton || true
+  if ! git clone https://github.com/OpenAI/triton.git; then
+    echo "Error: Failed to clone Triton repository"
+    exit 1
+  fi
+  cd triton
+  if ! git checkout e5be006; then
+    echo "Error: Failed to checkout Triton commit e5be006"
+    exit 1
+  fi
+  cd python
+  if ! uv pip install .; then
+    echo "Error: Failed to install Triton"
+    exit 1
+  fi
+  cd ../..
+  rm -rf triton
+
+  # 5) Clone vLLM source
   rm -rf vllm
   git clone https://github.com/vllm-project/vllm.git
   cd vllm
 
-  # Build & install AMD SMI
+  # 6) Build & install AMD SMI
   uv pip install /opt/rocm/share/amd_smi
 
+  # 7) Install additional dependencies
   uv pip install --upgrade numba \
     scipy \
     huggingface-hub[cli,hf_transfer] \
     setuptools_scm
   uv pip install "numpy<2"
 
-  # 4) Install ROCm-specific Python requirements from the repo
+  # 8) Install ROCm-specific Python requirements from the repo
   if [ -f requirements/rocm.txt ]; then
     uv pip install -r requirements/rocm.txt
   fi
 
-  # 5) Set up ROCm environment variables for vLLM detection
+  # 9) Detect GPU architecture dynamically
+  gpu_arch=$(rocminfo | grep gfx | head -1 | awk '{print $2}' || echo "gfx90a")
+  echo "Detected GPU architecture: $gpu_arch"
+  
+  # 10) Set ROCm environment variables
   export VLLM_TARGET_DEVICE=rocm
-  export PYTORCH_ROCM_ARCH="gfx90a;gfx942"
+  export PYTORCH_ROCM_ARCH="$gpu_arch"
   export ROCM_HOME="/opt/rocm"
   export HIP_PLATFORM="amd"
-  export HIP_VISIBLE_DEVICES="0"
-  export HIPCC="/opt/rocm/bin/hipcc"
-  export HSA_OVERRIDE_GFX_VERSION="11.0.0"
-  
-  # 6) Ensure ROCm tools are available in PATH
-  export PATH="/opt/rocm/bin:$PATH"
-  export LD_LIBRARY_PATH="/opt/rocm/lib:$LD_LIBRARY_PATH"
-  
-  # 7) Clear any CUDA-related environment variables that might interfere
-  unset CUDA_HOME
-  unset CUDA_PATH
-  unset CUDA_VISIBLE_DEVICES
+  export PATH="$ROCM_HOME/bin:$PATH"
+  export LD_LIBRARY_PATH="$ROCM_HOME/lib:$LD_LIBRARY_PATH"
 
-  # 7) Build & install vLLM into this venv
-  
-  # Check if ROCm is properly detected
-  echo "Checking ROCm installation..."
-  which hipcc || echo "hipcc not found in PATH"
-  which rocminfo || echo "rocminfo not found in PATH"
-  rocminfo || echo "rocminfo failed"
-  
-  # Try alternative installation methods for ROCm
-  echo "Attempting to install vLLM for ROCm..."
-  
-  # Uninstall any existing vLLM to avoid conflicts
-  uv pip uninstall vllm -y || true
-  
-  # Method 1: Try to install ROCm-specific vLLM wheel if available
-  echo "Trying to install ROCm-specific vLLM wheel..."
-  if uv pip install vllm-rocm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
-    echo "Successfully installed vLLM ROCm wheel"
-  else
-    echo "ROCm wheel not available, trying regular vLLM with ROCm index..."
-    if uv pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
-      echo "Successfully installed vLLM with ROCm index"
-    else
-      echo "Pip install failed, building from source..."
-      
-      # Method 2: Build from source with proper ROCm environment
-      echo "Building vLLM from source for ROCm..."
-      VLLM_TARGET_DEVICE=rocm python3 setup.py develop
-    fi
+  # 11) Build & install vLLM into this venv
+  echo "Building vLLM for ROCm with architecture: $gpu_arch"
+  if ! python3 setup.py develop; then
+    echo "Error: Failed to build vLLM from source"
+    exit 1
   fi
   
-  # Verify vLLM installation and ROCm support
-  echo "Verifying vLLM ROCm installation..."
-  python3 -c "
-import vllm
-print(f'vLLM version: {vllm.__version__}')
-try:
-    from vllm._rocm_C import *
-    print('✓ ROCm C extensions imported successfully')
-except ImportError as e:
-    print(f'✗ ROCm C extensions import failed: {e}')
-try:
-    import torch
-    print(f'PyTorch version: {torch.__version__}')
-    print(f'PyTorch ROCm version: {torch.version.hip}')
-    if torch.cuda.is_available():
-        print('CUDA is available (unexpected for ROCm)')
-    else:
-        print('CUDA is not available (expected for ROCm)')
-except Exception as e:
-    print(f'PyTorch check failed: {e}')
-"
+  # 12) Verify vLLM installation
+  echo "Verifying vLLM installation..."
+  if ! python3 -c "import vllm; print(f'vLLM version: {vllm.__version__}')"; then
+    echo "Error: vLLM installation verification failed"
+    exit 1
+  fi
   
+  echo "vLLM build completed successfully!"
   cd ..
 }
 
@@ -247,9 +238,16 @@ run_serving_tests() {
 
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
+
+      if vllm bench serve --help >/dev/null 2>&1; then
+        client_cmd_prefix="vllm bench serve"
+      else
+        client_cmd_prefix="python -m vllm.benchmarks.serve"
+      fi
+
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="vllm bench serve \
+      client_command="$client_cmd_prefix \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
