@@ -197,7 +197,7 @@ run_serving_tests() {
     # check if server model and client model is aligned
     server_model="$model_path"
     client_model=$(echo "$client_params" | jq -r '.model // .model_path')
-    if [[ $server_model != "$client_model" ]]; then
+    if [[ $server_model != "$client_model" ]] && [[ $server_model != *"gpt-oss"* ]]; then
       echo "Server model and client model must be the same. Skip testcase $test_name."
       continue
     fi
