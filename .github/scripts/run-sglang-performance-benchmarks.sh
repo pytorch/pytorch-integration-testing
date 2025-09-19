@@ -60,13 +60,13 @@ build_vllm_from_source_rocm() {
   uv pip install --upgrade pip
   uv pip install cmake ninja packaging typing_extensions pybind11 wheel
 
-  # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
+  # 2) Install ROCm PyTorch that matches the container ROCm
   uv pip uninstall torch || true
   uv pip uninstall torchvision || true
   uv pip uninstall torchaudio || true
   uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
 
-  # 3) Install Triton flash attention for ROCm (required by vLLM documentation)
+  # 3) Install Triton flash attention for ROCm
   echo "Installing Triton flash attention for ROCm..."
   uv pip uninstall triton || true
   if ! git clone https://github.com/OpenAI/triton.git; then
@@ -87,19 +87,19 @@ build_vllm_from_source_rocm() {
   rm -rf triton
 
   # 4) Install CK flash attention as fallback for ROCm stability
-  echo "Installing CK flash attention for ROCm stability..."
-  git clone https://github.com/ROCm/flash-attention.git
-  cd flash-attention
-  git checkout b7d29fb
-  git submodule update --init
-  # Use detected GPU architecture
-  if ! GPU_ARCHS="$gpu_arch" python3 setup.py install; then
-    echo "Warning: CK flash attention installation failed, continuing with Triton only"
-  else
-    echo "CK flash attention installed successfully"
-  fi
-  cd ..
-  rm -rf flash-attention
+  # echo "Installing CK flash attention for ROCm stability..."
+  # git clone https://github.com/ROCm/flash-attention.git
+  # cd flash-attention
+  # git checkout b7d29fb
+  # git submodule update --init
+  # # Use detected GPU architecture
+  # if ! GPU_ARCHS="$gpu_arch" python3 setup.py install; then
+  #   echo "Warning: CK flash attention installation failed, continuing with Triton only"
+  # else
+  #   echo "CK flash attention installed successfully"
+  # fi
+  # cd ..
+  # rm -rf flash-attention
 
   # 5) Clone vLLM source
   rm -rf vllm
@@ -247,22 +247,7 @@ run_serving_tests() {
     source vllm_client_env/bin/activate
 
     if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      # build_vllm_from_source_rocm
-      uv pip uninstall torch || true
-      uv pip uninstall torchvision || true
-      uv pip uninstall torchaudio || true
-
-      # Install all together from ROCm index
-      uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
-
-      # Install compatible transformers
-      uv pip install "transformers>=4.45.0,<5.0.0"
-
-      # Install vLLM without dependencies to avoid conflicts
-      uv pip install --no-deps vllm
-
-      # Install remaining compatible dependencies
-      uv pip install tokenizers>=0.19.1 psutil ray>=2.9
+      build_vllm_from_source_rocm
     else
       uv pip install vllm
     fi
