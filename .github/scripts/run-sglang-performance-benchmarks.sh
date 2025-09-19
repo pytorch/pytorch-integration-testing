@@ -61,14 +61,14 @@ build_vllm_from_source_rocm() {
   uv pip install cmake ninja packaging typing_extensions pybind11 wheel
 
   # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
-  uv pip uninstall torch -- --yes || true
-  uv pip uninstall torchvision -- --yes || true
-  uv pip uninstall torchaudio -- --yes || true
+  uv pip uninstall --yes torch || true
+  uv pip uninstall --yes torchvision || true
+  uv pip uninstall --yes torchaudio || true
   uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
 
   # 3) Install Triton flash attention for ROCm (required by vLLM documentation)
   echo "Installing Triton flash attention for ROCm..."
-  uv pip uninstall triton -- --yes || true
+  uv pip uninstall --yes triton || true
   if ! git clone https://github.com/OpenAI/triton.git; then
     echo "Error: Failed to clone Triton repository"
     exit 1
@@ -135,8 +135,8 @@ build_vllm_from_source_rocm() {
   
   # ROCm-specific attention backend settings
   # Try CK flash attention first, fallback to Triton if needed
-  export VLLM_USE_TRITON_FLASH_ATTN=0  # Start with CK flash attention
-  export VLLM_ATTENTION_BACKEND="ROCM_FLASH"
+  # export VLLM_USE_TRITON_FLASH_ATTN=0  # Start with CK flash attention
+  # export VLLM_ATTENTION_BACKEND="ROCM_FLASH"
   
   # Additional ROCm stability settings
   export PYTORCH_HIP_ALLOC_CONF="expandable_segments:True"
