@@ -221,16 +221,7 @@ run_serving_tests() {
       continue
     fi
 
-    # Configure SGLang server command with ROCm-specific settings
-    if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      # Use CK flash attention backend for ROCm stability
-      server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
-      # Set SGLang-specific ROCm environment variables
-      export SGLANG_DISABLE_CUDA_GRAPH=1
-      export SGLANG_ATTENTION_BACKEND="rocm_flash"
-    else
-      server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
-    fi
+    server_command="python3 -m sglang.launch_server --model-path $model_path --context-length $context_length --tp $tp --load-format $load_format"
 
     # run the server
     echo "Running test case $test_name"
@@ -256,8 +247,22 @@ run_serving_tests() {
     source vllm_client_env/bin/activate
 
     if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      # Build vLLM from source in this venv for ROCm
-      build_vllm_from_source_rocm
+      # build_vllm_from_source_rocm
+      uv pip uninstall torch || true
+      uv pip uninstall torchvision || true
+      uv pip uninstall torchaudio || true
+
+      # Install all together from ROCm index
+      uv pip install --no-cache-dir --pre torch torchvision torchaudio --index-url "${extra_index}"
+
+      # Install compatible transformers
+      uv pip install "transformers>=4.45.0,<5.0.0"
+
+      # Install vLLM without dependencies to avoid conflicts
+      uv pip install --no-deps vllm
+
+      # Install remaining compatible dependencies
+      uv pip install tokenizers>=0.19.1 psutil ray>=2.9
     else
       uv pip install vllm
     fi
@@ -274,15 +279,9 @@ run_serving_tests() {
       new_test_name=$test_name"_qps_"$qps
       echo " new test name $new_test_name"
 
-      if vllm bench serve --help >/dev/null 2>&1; then
-        client_cmd_prefix="vllm bench serve"
-      else
-        client_cmd_prefix="python -m vllm.benchmarks.serve"
-      fi
-
       # pass the tensor parallel size to the client so that it can be displayed
       # on the benchmark dashboard
-      client_command="$client_cmd_prefix \
+      client_command="vllm bench serve \
         --save-result \
         --result-dir $RESULTS_FOLDER \
         --result-filename ${new_test_name}.json \
