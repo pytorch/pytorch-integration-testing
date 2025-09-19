@@ -98,15 +98,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Get latest tag and its commit hash
+      - name: Get commit hash for Docker image selection
         working-directory: sglang-benchmarks/sglang
         run: |
-          LATEST_TAG=$(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags | head -n 1)
-          HEAD_SHA=$(git rev-list -n 1 "$LATEST_TAG")
-          echo "Latest tag: $LATEST_TAG"
-          echo "Commit hash: $HEAD_SHA"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          # We'll get the commit hash after determining the available Docker image
+          echo "HEAD_SHA=placeholder" >> $GITHUB_ENV
 
       - name: Check if the device is supported
         shell: bash
@@ -181,26 +177,52 @@ jobs:
           registry-type: public
 
       - name: Select SGLang Docker image
+        working-directory: sglang-benchmarks/sglang
         shell: bash
         run: |
           set -eux
 
+          # Determine image suffix based on device
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            # Use specific B200 image for B200 devices
             if [[ "${DEVICE_TYPE}" == *"B200"* ]]; then
-              DOCKER_IMAGE="lmsysorg/sglang:v0.5.3rc0-cu128-b200"
+              IMAGE_SUFFIX="-cu128-b200"
             else
-              DOCKER_IMAGE="lmsysorg/sglang:latest"
+              IMAGE_SUFFIX=""
             fi
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DOCKER_IMAGE="lmsysorg/sglang:v0.5.3rc0-rocm630-mi30x"
+            IMAGE_SUFFIX="-rocm630-mi30x"
           else
             echo "SGLang benchmarks require either CUDA or ROCm devices."
             exit 1
           fi
 
+          # Find the newest tag with available Docker image
+          SELECTED_TAG=""
+          for tag in $(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags); do
+            candidate_image="lmsysorg/sglang:${tag}${IMAGE_SUFFIX}"
+            echo "Checking: $candidate_image"
+            
+            if docker manifest inspect "$candidate_image" >/dev/null 2>&1; then
+              SELECTED_TAG="$tag"
+              DOCKER_IMAGE="$candidate_image"
+              HEAD_SHA=$(git rev-list -n 1 "$tag")
+              echo "Found available image: $candidate_image"
+              break
+            fi
+          done
+          
+          # Fallback to latest if no tagged version found
+          if [[ -z "$SELECTED_TAG" ]]; then
+            echo "No tagged images found, using latest"
+            DOCKER_IMAGE="lmsysorg/sglang:latest${IMAGE_SUFFIX}"
+            HEAD_SHA=$(git rev-parse HEAD)
+            SELECTED_TAG="latest"
+          fi
+
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
-          echo "Using Docker image: $DOCKER_IMAGE"
+          echo "HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+          echo "LATEST_TAG=$SELECTED_TAG" >> "$GITHUB_ENV"
+          echo "Using: $DOCKER_IMAGE (tag: $SELECTED_TAG)"
 
       - name: Setup benchmark tests
         env:
