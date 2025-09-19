@@ -109,7 +109,9 @@
             "model": "lmsys/gpt-oss-20b-bf16",
             "tensor_parallel_size": 1,
             "load_format": "dummy",
-            "context_length": 16384
+            "context_length": 16384,
+            "attention_backend": "triton",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "openai/gpt-oss-20b",
@@ -127,7 +129,9 @@
             "model": "lmsys/gpt-oss-120b-bf16",
             "tensor_parallel_size": 4,
             "load_format": "dummy",
-            "context_length": 16384
+            "context_length": 16384,
+            "attention_backend": "triton",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "openai/gpt-oss-120b",
@@ -146,7 +150,8 @@
             "tensor_parallel_size": 8,
             "load_format": "dummy",
             "context_length": 16384,
-            "dtype": "float16"
+            "disable_radix_cache": "",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "deepseek-ai/DeepSeek-V3.1",
@@ -165,7 +170,8 @@
             "tensor_parallel_size": 8,
             "load_format": "dummy",
             "context_length": 16384,
-            "dtype": "float16"
+            "disable_radix_cache": "",
+            "trust_remote_code": ""
         },
         "client_parameters": {
             "model": "deepseek-ai/DeepSeek-R1",
