@@ -81,7 +81,26 @@ build_vllm_from_source_rocm() {
   export LD_LIBRARY_PATH="/opt/rocm/lib:$LD_LIBRARY_PATH"
 
   # 7) Build & install vLLM into this venv
-  python3 setup.py develop
+  
+  # Check if ROCm is properly detected
+  echo "Checking ROCm installation..."
+  which hipcc || echo "hipcc not found in PATH"
+  which rocminfo || echo "rocminfo not found in PATH"
+  rocminfo || echo "rocminfo failed"
+  
+  # Try alternative installation methods for ROCm
+  echo "Attempting to install vLLM for ROCm..."
+  
+  # Method 1: Try pip install with ROCm support
+  if uv pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.3; then
+    echo "Successfully installed vLLM via pip"
+  else
+    echo "Pip install failed, trying setup.py develop..."
+    
+    # Method 2: Try setup.py develop with explicit ROCm environment
+    VLLM_TARGET_DEVICE=rocm python3 setup.py develop
+  fi
+  
   cd ..
 }
 
