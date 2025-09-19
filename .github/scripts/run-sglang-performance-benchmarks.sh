@@ -210,13 +210,6 @@ run_serving_tests() {
     
     # Model-specific environment variables (command-line flags can be added to JSON directly)
     if [[ "${DEVICE_NAME:-}" == "rocm" ]]; then
-      # DeepSeek models on ROCm - set environment variables
-      if [[ "$model_path" == *"DeepSeek"* ]]; then
-        echo "Detected DeepSeek model on ROCm, setting AMD-recommended environment variables"
-        export DEBUG_HIP_BLOCK_SYNC=1024
-        export GPU_FORCE_BLIT_COPY_SIZE=6
-      fi
-      
       # GPT-OSS models on ROCm - set environment variables
       if [[ "$model_path" == *"gpt-oss"* ]]; then
         echo "Detected GPT-OSS model on ROCm, setting compatibility environment variables"
