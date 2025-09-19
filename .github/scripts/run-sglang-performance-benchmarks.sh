@@ -44,8 +44,8 @@ build_vllm_from_source_rocm() {
   extra_index="${PYTORCH_ROCM_INDEX_URL:-https://download.pytorch.org/whl/rocm6.3}"
 
   # 1) Tooling & base deps for building
-  uv pip install --upgrade pip wheel setuptools_scm
-  uv pip install numpy cmake ninja packaging typing_extensions
+  uv pip install --upgrade pip
+  uv pip install cmake ninja packaging typing_extensions
 
   # 2) Install ROCm PyTorch that matches the container ROCm (override via $PYTORCH_ROCM_INDEX_URL if needed)
   uv pip install --index-url "${extra_index}" --extra-index-url https://pypi.org/simple torch torchvision torchaudio
@@ -55,16 +55,32 @@ build_vllm_from_source_rocm() {
   git clone https://github.com/vllm-project/vllm.git
   cd vllm
 
+  # Build & install AMD SMI
+  uv pip install /opt/rocm/share/amd_smi
+
+  uv pip install --upgrade numba \
+    scipy \
+    huggingface-hub[cli,hf_transfer] \
+    setuptools_scm
+  uv pip install "numpy<2"
+
   # 4) Install ROCm-specific Python requirements from the repo
   if [ -f requirements/rocm.txt ]; then
     uv pip install -r requirements/rocm.txt
   fi
 
-  # 5) Compile for GPU architectures
+  # 5) Set up ROCm environment variables for vLLM detection
   export VLLM_TARGET_DEVICE=rocm
   export PYTORCH_ROCM_ARCH="gfx90a;gfx942"
+  export ROCM_HOME="/opt/rocm"
+  export HIP_PLATFORM="amd"
+  export HIP_VISIBLE_DEVICES="0"
+  
+  # 6) Ensure ROCm tools are available in PATH
+  export PATH="/opt/rocm/bin:$PATH"
+  export LD_LIBRARY_PATH="/opt/rocm/lib:$LD_LIBRARY_PATH"
 
-  # 6) Build & install vLLM into this venv
+  # 7) Build & install vLLM into this venv
   python3 setup.py develop
   cd ..
 }
