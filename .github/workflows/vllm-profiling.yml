@@ -179,6 +179,7 @@ jobs:
           VLLM_TORCH_PROFILER_DIR: /tmp/workspace/vllm-profiling/profiling-results
           CUDA_VISIBLE_DEVICES: 0
           VLLM_USE_V1: 1
+          REPOSITORY: vllm-project/vllm
 
         run: |
           set -eux
@@ -188,6 +189,9 @@ jobs:
           else
             ON_CPU=0
           fi
+
+          # Prepare S3 path components
+          UPLOAD_DATE=$(date -u +"%Y-%m-%d")
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
@@ -203,6 +207,11 @@ jobs:
             -e VLLM_USE_V1 \
             -e DEVICE_NAME \
             -e ON_CPU="${ON_CPU}" \
+            -e S3_UPLOAD_DATE="${UPLOAD_DATE}" \
+            -e S3_REPOSITORY="${REPOSITORY}" \
+            -e S3_HEAD_SHA="${HEAD_SHA}" \
+            -e S3_GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
+            -e S3_GITHUB_JOB="${GITHUB_JOB}" \
             --ipc=host \
             --tty \
             --detach \
@@ -214,21 +223,10 @@ jobs:
           )
           docker exec -t "${container_name}" bash -c "cd vllm-profiling && bash ../.github/scripts/run_vllm_profiling.sh"
 
-      - name: Prepare S3 upload metadata
-        id: prepare_s3_upload
-        env:
-          REPOSITORY: vllm-project/vllm
-        run: |
-          set -eux
-
-          UPLOAD_DATE=$(date -u +"%Y-%m-%d")
-          echo "upload-date=${UPLOAD_DATE}" >> "${GITHUB_OUTPUT}"
-          echo "s3-prefix=${UPLOAD_DATE}/${REPOSITORY}/${HEAD_SHA}/${GITHUB_RUN_ID}/${GITHUB_JOB}" >> "${GITHUB_OUTPUT}"
-
       - name: Upload profiling results to S3
         uses: seemethere/upload-artifact-s3@v5
         with:
-          s3-prefix: ${{ steps.prepare_s3_upload.outputs.s3-prefix }}
+          s3-prefix: ""
           retention-days: 180
           path: vllm-profiling/profiling-results
           if-no-files-found: warn
