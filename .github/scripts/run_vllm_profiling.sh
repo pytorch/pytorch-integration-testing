@@ -71,13 +71,6 @@ run_profiling_tests() {
         exit 1
     fi
 
-    # Get S3 path components from environment
-    local s3_date="${S3_UPLOAD_DATE:-}"
-    local s3_repo="${S3_REPOSITORY:-}"
-    local s3_sha="${S3_HEAD_SHA:-}"
-    local s3_run_id="${S3_GITHUB_RUN_ID:-}"
-    local s3_job="${S3_GITHUB_JOB:-}"
-
     # Iterate over profiling tests
     jq -c '.[]' "$profiling_test_file" | while read -r params; do
         # Get the test name
@@ -112,31 +105,17 @@ run_profiling_tests() {
         local sanitized_model_name="${MODEL_NAME//\//_}"
         
         # Build the directory path following S3 structure
-        local model_name_directory="${base_profiler_dir}"
-        
-        # Check if all S3 path components are available
-        if [[ -n "${s3_date}" && -n "${s3_repo}" && -n "${s3_sha}" && -n "${s3_run_id}" && -n "${s3_job}" ]]; then
-            # Build the complete S3 path structure
-            model_name_directory="${model_name_directory}/${s3_date}/${s3_repo}/${sanitized_model_name}/${s3_sha}/${s3_run_id}/${s3_job}"
-        else
-            # Error out if any S3 variable is missing
-            echo "ERROR: Required S3 path variables are missing. Cannot proceed with profiling."
-            echo "Missing variables:"
-            [[ -z "${s3_date}" ]] && echo "  - S3_UPLOAD_DATE"
-            [[ -z "${s3_repo}" ]] && echo "  - S3_REPOSITORY"
-            [[ -z "${s3_sha}" ]] && echo "  - S3_HEAD_SHA"
-            [[ -z "${s3_run_id}" ]] && echo "  - S3_GITHUB_RUN_ID"
-            [[ -z "${s3_job}" ]] && echo "  - S3_GITHUB_JOB"
-            echo "Please ensure all required environment variables are set."
-            exit 1
-        fi
-        
-        echo "Creating profiling directory: ${model_name_directory}"
-        mkdir -p "${model_name_directory}"
-        chmod 755 "${model_name_directory}"
+        local profiler_directory="${base_profiler_dir}"\
+        "/${S3_UPLOAD_DATE}/${S3_REPOSITORY}"\
+        "/${sanitized_model_name}"\
+        "/${DEVICE_NAME}/${DEVICE_TYPE}/${TEST_NAME}"\
+        "/${S3_HEAD_SHA}/${S3_GITHUB_RUN_ID}/${S3_GITHUB_JOB}"
+        echo "Creating profiling directory: ${profiler_directory}"
+        mkdir -p "${profiler_directory}"
+        chmod 755 "${profiler_directory}"
 
         # Override the profiler output directory for this test only
-        export VLLM_TORCH_PROFILER_DIR="${model_name_directory}"
+        export VLLM_TORCH_PROFILER_DIR="${profiler_directory}"
 
         # Run the profiling test
         if start_vllm_server "$server_args"; then
@@ -144,11 +123,11 @@ run_profiling_tests() {
             cleanup_server
 
             # Debug: Check if profiling files were created
-            echo "DEBUG: Checking profiling directory: $model_name_directory"
-            if [ -d "$model_name_directory" ]; then
+            echo "DEBUG: Checking profiling directory: $profiler_directory"
+            if [ -d "$profiler_directory" ]; then
                 echo "DEBUG: Profiling directory exists for model $MODEL_NAME"
-                ls -la "$model_name_directory" || echo "DEBUG: Directory is empty or inaccessible"
-                find "$model_name_directory" -type f 2>/dev/null | head -10 | while read file; do
+                ls -la "$profiler_directory" || echo "DEBUG: Directory is empty or inaccessible"
+                find "$profiler_directory" -type f 2>/dev/null | head -10 | while read file; do
                     echo "DEBUG: Found profiling file: ${file}"
                     rename_profiling_file "$file" "vllm"
                 done

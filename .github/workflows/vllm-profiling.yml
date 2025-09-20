@@ -205,7 +205,6 @@ jobs:
             -e VLLM_TORCH_PROFILER_DIR \
             -e CUDA_VISIBLE_DEVICES \
             -e VLLM_USE_V1 \
-            -e DEVICE_NAME \
             -e ON_CPU="${ON_CPU}" \
             -e S3_UPLOAD_DATE="${UPLOAD_DATE}" \
             -e S3_REPOSITORY="${REPOSITORY}" \
