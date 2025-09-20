@@ -106,8 +106,6 @@ run_profiling_tests() {
         
         # Build the directory path following S3 structure
         local profiler_directory="${base_profiler_dir}"
-        profiler_directory+="/${S3_UPLOAD_DATE}"
-        profiler_directory+="/${S3_REPOSITORY}"
         profiler_directory+="/${sanitized_model_name}"
         profiler_directory+="/${DEVICE_NAME}"
         profiler_directory+="/${DEVICE_TYPE}"
