@@ -108,7 +108,8 @@ run_profiling_tests() {
         # Create a profiling sub-directory for each test case to isolate the
         # generated traces using the S3 path structure
         MODEL_NAME=$(echo "$server_params" | jq -r '.model')
-        local sanitized_model_name="${MODEL_NAME// /_}"
+        # Sanitize model name: Replace / with _
+        local sanitized_model_name="${MODEL_NAME//\//_}"
         
         # Build the directory path following S3 structure
         local model_name_directory="${base_profiler_dir}"
