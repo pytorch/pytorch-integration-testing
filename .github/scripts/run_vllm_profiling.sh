@@ -105,11 +105,16 @@ run_profiling_tests() {
         local sanitized_model_name="${MODEL_NAME//\//_}"
         
         # Build the directory path following S3 structure
-        local profiler_directory="${base_profiler_dir}"\
-        "/${S3_UPLOAD_DATE}/${S3_REPOSITORY}"\
-        "/${sanitized_model_name}"\
-        "/${DEVICE_NAME}/${DEVICE_TYPE}/${TEST_NAME}"\
-        "/${S3_HEAD_SHA}/${S3_GITHUB_RUN_ID}/${S3_GITHUB_JOB}"
+        local profiler_directory="${base_profiler_dir}"
+        profiler_directory+="/${S3_UPLOAD_DATE}"
+        profiler_directory+="/${S3_REPOSITORY}"
+        profiler_directory+="/${sanitized_model_name}"
+        profiler_directory+="/${DEVICE_NAME}"
+        profiler_directory+="/${DEVICE_TYPE}"
+        profiler_directory+="/${TEST_NAME}"
+        profiler_directory+="/${S3_HEAD_SHA}"
+        profiler_directory+="/${S3_GITHUB_RUN_ID}"
+        profiler_directory+="/${S3_GITHUB_JOB}"
         echo "Creating profiling directory: ${profiler_directory}"
         mkdir -p "${profiler_directory}"
         chmod 755 "${profiler_directory}"
