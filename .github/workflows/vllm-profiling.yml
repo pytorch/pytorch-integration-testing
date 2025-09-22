@@ -201,8 +201,10 @@ jobs:
             -e VLLM_TORCH_PROFILER_DIR \
             -e CUDA_VISIBLE_DEVICES \
             -e VLLM_USE_V1 \
-            -e DEVICE_NAME \
             -e ON_CPU="${ON_CPU}" \
+            -e S3_HEAD_SHA="${HEAD_SHA}" \
+            -e S3_GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
+            -e S3_GITHUB_JOB="${GITHUB_JOB}" \
             --ipc=host \
             --tty \
             --detach \
@@ -223,7 +225,7 @@ jobs:
 
           UPLOAD_DATE=$(date -u +"%Y-%m-%d")
           echo "upload-date=${UPLOAD_DATE}" >> "${GITHUB_OUTPUT}"
-          echo "s3-prefix=${UPLOAD_DATE}/${REPOSITORY}/${HEAD_SHA}/${GITHUB_RUN_ID}/${GITHUB_JOB}" >> "${GITHUB_OUTPUT}"
+          echo "s3-prefix=${UPLOAD_DATE}/${REPOSITORY}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload profiling results to S3
         uses: seemethere/upload-artifact-s3@v5

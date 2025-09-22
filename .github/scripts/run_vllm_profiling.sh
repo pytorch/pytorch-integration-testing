@@ -99,14 +99,26 @@ run_profiling_tests() {
         kill_gpu_processes
 
         # Create a profiling sub-directory for each test case to isolate the
-        # generated traces (e.g. using the model name hierarchy)
-        local sanitized_test_name="${TEST_NAME// /_}"
-        local test_name_directory="${base_profiler_dir}/${sanitized_test_name}"
-        mkdir -p "${test_name_directory}"
-        chmod 755 "${test_name_directory}"
+        # generated traces using the S3 path structure
+        MODEL_NAME=$(echo "$server_params" | jq -r '.model')
+        # Sanitize model name: Replace / with _
+        local sanitized_model_name="${MODEL_NAME//\//_}"
+        
+        # Build the directory path following S3 structure
+        local profiler_directory="${base_profiler_dir}"
+        profiler_directory+="/${sanitized_model_name}"
+        profiler_directory+="/${DEVICE_NAME}"
+        profiler_directory+="/${DEVICE_TYPE}"
+        profiler_directory+="/${TEST_NAME}"
+        profiler_directory+="/${S3_HEAD_SHA}"
+        profiler_directory+="/${S3_GITHUB_RUN_ID}"
+        profiler_directory+="/${S3_GITHUB_JOB}"
+        echo "Creating profiling directory: ${profiler_directory}"
+        mkdir -p "${profiler_directory}"
+        chmod 755 "${profiler_directory}"
 
         # Override the profiler output directory for this test only
-        export VLLM_TORCH_PROFILER_DIR="${test_name_directory}"
+        export VLLM_TORCH_PROFILER_DIR="${profiler_directory}"
 
         # Run the profiling test
         if start_vllm_server "$server_args"; then
@@ -114,21 +126,21 @@ run_profiling_tests() {
             cleanup_server
 
             # Debug: Check if profiling files were created
-            echo "DEBUG: Checking profiling directory: $test_name_directory"
-            if [ -d "$test_name_directory" ]; then
-                echo "DEBUG: Profiling directory exists for test $TEST_NAME"
-                ls -la "$test_name_directory" || echo "DEBUG: Directory is empty or inaccessible"
-                find "$test_name_directory" -type f 2>/dev/null | head -10 | while read file; do
+            echo "DEBUG: Checking profiling directory: $profiler_directory"
+            if [ -d "$profiler_directory" ]; then
+                echo "DEBUG: Profiling directory exists for model $MODEL_NAME"
+                ls -la "$profiler_directory" || echo "DEBUG: Directory is empty or inaccessible"
+                find "$profiler_directory" -type f 2>/dev/null | head -10 | while read file; do
                     echo "DEBUG: Found profiling file: ${file}"
                     rename_profiling_file "$file" "vllm"
                 done
             else
-                echo "DEBUG: Profiling directory does not exist for test $TEST_NAME!"
+                echo "DEBUG: Profiling directory does not exist for model $MODEL_NAME!"
             fi
 
-            echo "Profiling test $TEST_NAME completed successfully."
+            echo "Profiling test $MODEL_NAME completed successfully."
         else
-            echo "Failed to start vLLM server for test $TEST_NAME."
+            echo "Failed to start vLLM server for test $MODEL_NAME."
             continue
         fi
     done
