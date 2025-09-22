@@ -21,7 +21,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100
+        default: h100,b200,rocm
   pull_request:
     paths:
       - .github/workflows/sglang-benchmark.yml
@@ -52,7 +52,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || 'h100' }}
+          RUNNERS: ${{ inputs.runners || '' }}
         run: |
           set -eux
 
@@ -98,8 +98,6 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
 
       - name: Check if the device is supported
         shell: bash
@@ -173,33 +171,53 @@ jobs:
         with:
           registry-type: public
 
-      - name: Install SGLang
-        working-directory: sglang-benchmarks
+      - name: Select SGLang Docker image
+        working-directory: sglang-benchmarks/sglang
         shell: bash
         run: |
           set -eux
-          uv venv sgl_server_env
 
-          # Install SGLang from source
-          uv pip install -p sgl_server_env -e "$(pwd)/sglang/python[all]" boto3 psutil gitpython sentencepiece
+          # Determine image suffix based on device
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            if [[ "${DEVICE_TYPE}" == *"B200"* ]]; then
+              IMAGE_SUFFIX="-cu128-b200"
+            else
+              IMAGE_SUFFIX=""
+            fi
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            IMAGE_SUFFIX="-rocm630-mi30x"
+          else
+            echo "SGLang benchmarks require either CUDA or ROCm devices."
+            exit 1
+          fi
 
-          # Verify installations
-          echo "$(pwd)/sgl_server_env/bin" >> $GITHUB_PATH
+          # Find the newest tag with available Docker image
+          SELECTED_TAG=""
+          for tag in $(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags); do
+            candidate_image="lmsysorg/sglang:${tag}${IMAGE_SUFFIX}"
+            echo "Checking: $candidate_image"
+            
+            if docker manifest inspect "$candidate_image" >/dev/null 2>&1; then
+              SELECTED_TAG="$tag"
+              DOCKER_IMAGE="$candidate_image"
+              HEAD_SHA=$(git rev-list -n 1 "$tag")
+              echo "Found available image: $candidate_image"
+              break
+            fi
+          done
+          
+          # Fallback to latest if no tagged version found
+          if [[ -z "$SELECTED_TAG" ]]; then
+            echo "No tagged images found, using latest"
+            DOCKER_IMAGE="lmsysorg/sglang:latest${IMAGE_SUFFIX}"
+            HEAD_SHA=$(git rev-parse HEAD)
+            SELECTED_TAG="latest"
+          fi
 
-      - name: Install NVCC #TODO: Use docker image (nvidia/cuda:12.8.1-devel-ubuntu22.04) instead of locally specifying the variables
-        if: env.DEVICE_NAME == 'cuda'
-        shell: bash
-        run: |
-          set -eux
-          sudo apt-get update
-          sudo apt-get install -y wget gnupg
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-          sudo dpkg -i cuda-keyring_1.1-1_all.deb
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends cuda-toolkit-12-8
-          sudo ln -s /usr/local/cuda-12.8 /usr/local/cuda || true
-          echo "CUDA_HOME=/usr/local/cuda-12.8" >> $GITHUB_ENV
-          echo "/usr/local/cuda-12.8/bin" >> $GITHUB_PATH
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
+          echo "HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+          echo "LATEST_TAG=$SELECTED_TAG" >> "$GITHUB_ENV"
+          echo "Using: $DOCKER_IMAGE (tag: $SELECTED_TAG)"
 
       - name: Setup benchmark tests
         env:
@@ -222,13 +240,39 @@ jobs:
           find sglang-benchmarks/benchmarks/tests -type f -exec cat {} \; || echo "No test files to display"
 
       - name: Run SGLang benchmark
-        working-directory: sglang-benchmarks/benchmarks
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
-          bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+
+          container_name=$(docker run \
+            ${GPU_FLAG:-} \
+            -e HF_TOKEN \
+            -e DEVICE_NAME \
+            -e DEVICE_TYPE \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --ipc=host \
+            --tty \
+            --detach \
+            --security-opt seccomp=unconfined \
+            --shm-size=32g \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            "${DOCKER_IMAGE}"
+          )
+
+          docker exec -t "${container_name}" bash -c "cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
+
+      - name: Authenticate with AWS
+        # AWS CUDA runners already have access to the bucket via its runner IAM role
+        if: env.DEVICE_NAME == 'rocm' || contains(env.DEVICE_TYPE, 'B200')
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
+          # The max duration enforced by the server side
+          role-duration-seconds: 18000
+          aws-region: us-east-1
 
       - name: Upload the benchmark results
         if: always()
@@ -258,9 +302,11 @@ jobs:
           fi
 
           python3 .github/scripts/upload_benchmark_results.py \
-              --repo sglang-benchmarks/sglang \
+              --repo-name sgl-project/sglang \
               --benchmark-name "SGLang benchmark" \
               --benchmark-results "${BENCHMARK_RESULTS}" \
+              --head-sha "${HEAD_SHA}" \
+              --head-branch main \
               --device-name "${DEVICE_NAME}" \
               --device-type "${SANITIZED_DEVICE_TYPE}" \
               --model "${SANITIZED_MODELS}"
