@@ -105,5 +105,27 @@
             "num_iters": 15,
             "max_model_len": 8192
         }
+    },
+    {
+        "test_name": "latency_gemma_3_27b_it_tp8",
+        "parameters": {
+            "model": "google/gemma-3-27b-it",
+            "tensor_parallel_size": 8,
+            "load_format": "dummy",
+            "num_iters_warmup": 5,
+            "num_iters": 15,
+            "max_model_len": 8192
+        }
+    },
+    {
+        "test_name": "latency_qwen3_30b_a3b_tp8",
+        "parameters": {
+            "model": "Qwen/Qwen3-30B-A3B",
+            "tensor_parallel_size": 8,
+            "load_format": "dummy",
+            "num_iters_warmup": 5,
+            "num_iters": 15,
+            "max_model_len": 8192
+        }
     }
 ]
