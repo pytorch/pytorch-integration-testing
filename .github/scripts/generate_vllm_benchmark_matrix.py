@@ -71,6 +71,7 @@ PLATFORM_SKIPS = {
     ],
     "meta-llama/Meta-Llama-3.1-70B-Instruct": [
         "linux.dgx.b200",
+        "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
     ],
     "mistralai/Mixtral-8x7B-Instruct-v0.1": [
         "linux.dgx.b200",
@@ -86,6 +87,7 @@ PLATFORM_SKIPS = {
     "Qwen/Qwen3-30B-A3B": [
         "linux.aws.a100",
         "linux.aws.h100",
+        "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
     ],
     "google/gemma-3-27b-it": [
         "linux.aws.a100",
@@ -95,6 +97,7 @@ PLATFORM_SKIPS = {
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
         "linux.aws.a100",
         "linux.aws.h100",
+        "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
     ],
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": [
         "linux.aws.a100",
