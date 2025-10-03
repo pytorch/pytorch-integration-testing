@@ -116,6 +116,10 @@ PLATFORM_SKIPS = {
         "linux.aws.a100",
         "linux.aws.h100",
     ],
+    "deepseek-ai/DeepSeek-V3.2-Exp": [
+        "linux.aws.a100",
+        "linux.aws.h100",
+    ],
     "deepseek-ai/DeepSeek-R1": [
         "linux.aws.a100",
         "linux.aws.h100",
