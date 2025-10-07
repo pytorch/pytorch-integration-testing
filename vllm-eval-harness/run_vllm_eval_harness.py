@@ -1,3 +1,4 @@
+import json
 import os
 import glob
 import lm_eval
@@ -6,6 +7,10 @@ from logging import warning, info
 from argparse import Action, ArgumentParser, Namespace
 import torch
 from typing import Dict, Any, List, Optional
+
+
+# See lm-eval docs for the list of acceptable values
+LM_EVAL_MODEL_SOURCE = os.environ.get("LM_EVAL_MODEL_SOURCE", "vllm")
 
 
 class ValidateDir(Action):
@@ -49,9 +54,43 @@ def parse_args() -> Any:
     return parser.parse_args()
 
 
+def convert_to_pytorch_benchmark_format(
+    model_name: str, tp_size: int, results: Dict[str, Any]
+) -> List[Any]:
+    records = []
+    configs = results.get("configs", {})
+
+    for task_name, metrics in results.get("results", {}).items():
+        for metric_name, metric_value in metrics.items():
+            if type(metric_value) is str:
+                continue
+
+            record = {
+                "benchmark": {
+                    "name": "vLLM lm-eval harness",
+                    "extra_info": {
+                        "args": {
+                            "tensor_parallel_size": tp_size,
+                        },
+                        "configs": configs.get(task_name, {}),
+                    },
+                },
+                "model": {
+                    "name": model_name,
+                },
+                "metric": {
+                    "name": metric_name,
+                    "benchmark_values": [metric_value],
+                },
+            }
+            records.append(record)
+
+    return records
+
+
 def run(
     model_name: str, tasks: List[str], tp_size: int, config: Dict[str, Any]
-) -> None:
+) -> Dict[str, Any]:
     trust_remote_code = config.get("trust_remote_code", False)
     max_model_len = config.get("max_model_len", 8192)
 
@@ -62,21 +101,23 @@ def run(
         f"trust_remote_code={trust_remote_code},"
         f"max_model_len={max_model_len}"
     )
-    print(model_args)
-    results = lm_eval.simple_evaluate(
-        model="vllm",
+    info(f"Evaluating {model_name} with {model_args}")
+    return lm_eval.simple_evaluate(
+        model=LM_EVAL_MODEL_SOURCE,
         model_args=model_args,
         tasks=tasks,
         num_fewshot=config["num_fewshot"],
         limit=config["limit"],
         batch_size="auto",
     )
-    print(results)
 
 
 def run_lm_eval(configs_dir: str, models: List[str], tasks: List[str]) -> None:
     device_name = torch.cuda.get_device_name().lower()
     device_count = torch.cuda.device_count()
+
+    results_dir = os.path.join(configs_dir, "results")
+    os.makedirs(results_dir, exist_ok=True)
 
     for file in glob.glob(f"{configs_dir}/**/*.yml", recursive=True):
         with open(file) as f:
@@ -111,7 +152,7 @@ def run_lm_eval(configs_dir: str, models: List[str], tasks: List[str]) -> None:
                 )
                 continue
 
-            selected_tasks.push(task_name)
+            selected_tasks.append(task_name)
             if not tp_size:
                 tp_size = tp
             assert tp_size == tp
@@ -120,7 +161,18 @@ def run_lm_eval(configs_dir: str, models: List[str], tasks: List[str]) -> None:
             info(f"Skip {model_name} from {file}: no task")
             continue
 
-        run(model_name, selected_tasks, tp_size, config)
+        results = run(model_name, selected_tasks, tp_size, config)
+        results_pytorch_format = convert_to_pytorch_benchmark_format(
+            model_name, tp_size, results
+        )
+
+        results_file = os.path.splitext(os.path.basename(file))[0]
+        # Dump the results from lm-eval
+        with open(os.path.join(results_dir, f"{results_file}_lm_eval.json"), "w") as f:
+            json.dump(results, f, indent=2)
+        # Dump the results that can be uploaded to PyTorch OSS benchmark infra
+        with open(os.path.join(results_dir, f"{results_file}_pytorch.json"), "w") as f:
+            json.dump(results_pytorch_format, f, indent=2)
 
 
 def main() -> None:
