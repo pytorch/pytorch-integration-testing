@@ -79,7 +79,8 @@ def run_lm_eval(configs_dir: str, models: List[str], tasks: List[str]) -> None:
     device_count = torch.cuda.device_count()
 
     for file in glob.glob(f"{configs_dir}/**/*.yml", recursive=True):
-        config = yaml.safe_load(file)
+        with open(file) as f:
+            config = yaml.safe_load(f)
         # Check the model name
         model_name = config.get("model_name", "").lower()
         if models and model_name not in models:
@@ -125,7 +126,7 @@ def run_lm_eval(configs_dir: str, models: List[str], tasks: List[str]) -> None:
 def main() -> None:
     args = parse_args()
     models = [m.strip().lower() for m in args.models.split(",") if m.strip()]
-    tasks = [m.strip().lower() for m in args.runners.split(",") if m.strip()]
+    tasks = [m.strip().lower() for m in args.tasks.split(",") if m.strip()]
     run_lm_eval(args.configs_dir, models, tasks)
 
 
