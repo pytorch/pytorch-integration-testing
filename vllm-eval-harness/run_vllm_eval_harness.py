@@ -92,7 +92,7 @@ def run(
     model_name: str, tasks: List[str], tp_size: int, config: Dict[str, Any]
 ) -> Dict[str, Any]:
     trust_remote_code = config.get("trust_remote_code", False)
-    max_model_len = config.get("max_model_len", 8192)
+    max_model_len = config.get("max_model_len", "auto")
 
     model_args = (
         f"pretrained={model_name},"
