@@ -22,6 +22,10 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
@@ -81,6 +85,10 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
@@ -110,6 +118,10 @@ def test_generate_benchmark_matrix():
         """\
 {
   "include": [
+    {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
     {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
@@ -146,6 +158,10 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
@@ -172,6 +188,10 @@ def test_generate_benchmark_matrix():
         """\
 {
   "include": [
+    {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
     {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
@@ -225,7 +245,7 @@ def test_generate_benchmark_matrix():
 
     # Select multiple runners
     models = []
-    runners = ["h100", "spr"]
+    runners = ["h100", "spr", "m7g"]
     output = json.dumps(
         generate_benchmark_matrix(BENCHMARK_CONFIG_DIRS, models, runners), indent=2
     )
@@ -234,6 +254,10 @@ def test_generate_benchmark_matrix():
         """\
 {
   "include": [
+    {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
     {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
@@ -356,7 +380,7 @@ def test_generate_benchmark_matrix():
         "meta-llama/meta-llama-3.1-8b-instruct",
         "mistralai/mixtral-8x7b-instruct-v0.1",
     ]
-    runners = ["rocm", "spr"]
+    runners = ["rocm", "spr", "m7g"]
     output = json.dumps(
         generate_benchmark_matrix(BENCHMARK_CONFIG_DIRS, models, runners), indent=2
     )
@@ -365,6 +389,10 @@ def test_generate_benchmark_matrix():
         """\
 {
   "include": [
+    {
+      "runner": "linux.arm64.m7g.4xlarge",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
     {
       "runner": "linux.24xl.spr-metal",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
