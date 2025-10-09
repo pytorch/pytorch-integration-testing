@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,gnr,b200,gaudi3
+        default: h100,rocm,spr,gnr,m7g,b200,gaudi3
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -112,8 +112,17 @@ jobs:
           elif command -v hl-smi; then
             DEVICE_NAME=hpu
             hl-smi
-          else
-            DEVICE_NAME=cpu
+          else 
+            arch=$(uname -m)
+
+            case "$arch" in
+              aarch64|arm64)
+                DEVICE_NAME=arm64-cpu
+                ;;
+              *)
+                DEVICE_NAME=cpu
+                ;;
+            esac
             lscpu
           fi
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
@@ -132,6 +141,8 @@ jobs:
             DEVICE_TYPE="Intel Gaudi3 "$(hl-smi -q | grep "Product Name" | head -n 1 | awk -F ':' '{print $2}' | sed 's/^ *//')
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
             DEVICE_TYPE="$(lscpu | grep "Model name" | sed -E 's/.*Model name:[[:space:]]*//; s/Intel\(R\)//g; s/\(R\)//g; s/\(TM\)//g; s/CPU//g; s/Processor//g; s/[[:space:]]+/ /g; s/^ //; s/ $//; s/ /_/g')_$(awk -F: '/Core\(s\) per socket/ {c=$2} /Socket\(s\)/ {s=$2} END {gsub(/ /,"",c); gsub(/ /,"",s); printf "%sc", c*s}' < <(lscpu))"
+          elif [[ "${DEVICE_NAME}" == "arm64-cpu" ]]; then
+            DEVICE_TYPE=$(lscpu | grep 'Vendor ID' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
@@ -172,6 +183,8 @@ jobs:
             DOCKER_IMAGE_SUFFIX=-hpu
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
             DOCKER_IMAGE_SUFFIX=-cpu
+          elif [[ "${DEVICE_NAME}" == "arm64-cpu" ]]; then
+            DOCKER_IMAGE_SUFFIX=-arm64-cpu
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
@@ -284,11 +297,13 @@ jobs:
         run: |
           set -eux
 
-          if [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            ON_CPU=1
-          else
-            ON_CPU=0
-          fi
+          ON_ARM64_CPU=0
+          ON_CPU=0
+
+          case "$DEVICE_NAME" in
+            cpu)       ON_CPU=1 ;;
+            arm64-cpu) ON_ARM64_CPU=1 ;;
+          esac
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
@@ -301,6 +316,7 @@ jobs:
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
+            -e ON_ARM64_CPU="${ON_ARM64_CPU}" \
             --ipc=host \
             --tty \
             --detach \
