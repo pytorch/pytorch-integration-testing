@@ -239,19 +239,19 @@ jobs:
 
           pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
-          rm .buildkite/nightly-benchmarks/tests/*.json
+          rm .buildkite/performance-benchmarks/tests/*.json
           popd
 
           # Set the list of benchmarks we want to cover in this runner
           python3 .github/scripts/setup_vllm_benchmark.py \
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
-            --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/nightly-benchmarks/tests \
+            --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/performance-benchmarks/tests \
             --models "${MODELS}" \
             --device "${DEVICE_NAME}"
 
           pushd vllm-benchmarks/vllm
-          ls -lah .buildkite/nightly-benchmarks/tests
-          find .buildkite/nightly-benchmarks/tests -type f -exec cat {} \;
+          ls -lah .buildkite/performance-benchmarks/tests
+          find .buildkite/performance-benchmarks/tests -type f -exec cat {} \;
           popd
 
       - name: Run vLLM benchmark
@@ -292,7 +292,7 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
-          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
+          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
