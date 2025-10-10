@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,b200
+        default: h100,rocm,spr,b200,m7g
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -104,8 +104,17 @@ jobs:
           elif command -v rocm-smi; then
             DEVICE_NAME=rocm
             rocm-smi
-          else
-            DEVICE_NAME=cpu
+          else 
+            arch=$(uname -m)
+
+            case "$arch" in
+              aarch64|arm64)
+                DEVICE_NAME=arm64-cpu
+                ;;
+              *)
+                DEVICE_NAME=cpu
+                ;;
+            esac
             lscpu
           fi
           echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
@@ -120,7 +129,7 @@ jobs:
             DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
-          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+          elif [[ "${DEVICE_NAME}" == "cpu" || "${DEVICE_NAME}" == "arm64-cpu" ]]; then
             DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
@@ -157,6 +166,8 @@ jobs:
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
             DOCKER_IMAGE_SUFFIX=-cpu
+          elif [[ "${DEVICE_NAME}" == "arm64-cpu" ]]; then
+            DOCKER_IMAGE_SUFFIX=-arm64-cpu
           fi
           echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
           echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
@@ -266,8 +277,12 @@ jobs:
         run: |
           set -eux
 
+          ON_ARM64_CPU=0
+
           if [[ "${DEVICE_NAME}" == "cpu" ]]; then
             ON_CPU=1
+          elif [[ "${DEVICE_NAME}" == "arm64-cpu" ]]; then
+            ON_ARM64_CPU=1
           else
             ON_CPU=0
           fi
@@ -283,6 +298,7 @@ jobs:
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
+            -e ON_ARM64_CPU="${ON_ARM64_CPU}" \
             --ipc=host \
             --tty \
             --detach \
