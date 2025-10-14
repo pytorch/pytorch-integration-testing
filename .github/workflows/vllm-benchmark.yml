@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,gnr,b200
+        default: h100,rocm,spr,gnr,b200,gaudi3
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -104,6 +104,9 @@ jobs:
           elif command -v rocm-smi; then
             DEVICE_NAME=rocm
             rocm-smi
+          elif command -v hl-smi; then
+            DEVICE_NAME=hpu
+            hl-smi
           else
             DEVICE_NAME=cpu
             lscpu
@@ -120,6 +123,8 @@ jobs:
             DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
           elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
+            DEVICE_TYPE=$(hl-smi -q | grep "Product Name" | head -n 1 | awk -F ':' '{print $2}' | sed 's/^ *//')
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
             DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
           fi
@@ -133,6 +138,9 @@ jobs:
           if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
+          elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
+            grep -v "^torch==" .github/scripts/requirements.txt > /tmp/requirements_no_torch.txt
+            pip install -r /tmp/requirements_no_torch.txt
           else
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/cu128
@@ -155,6 +163,8 @@ jobs:
           DOCKER_IMAGE_SUFFIX=""
           if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
+          elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
+            DOCKER_IMAGE_SUFFIX=-hpu
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
             DOCKER_IMAGE_SUFFIX=-cpu
           fi
