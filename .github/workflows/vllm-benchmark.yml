@@ -198,34 +198,83 @@ jobs:
 
           if [[ -z "${HEAD_SHA}" ]]; then
             pushd vllm
-            # Looking back the latest 100 commits is enough
-            for i in {0..99}
-            do
-              # Check if the image is there, if it doesn't then check an older one
-              # because the commit is too recent
-              HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
-
-              # No Docker image available yet because the commit is too recent
-              if ! docker manifest inspect "${DOCKER_IMAGE}"; then
-                continue
+            
+            # Special handling for HPU: use vllm-gaudi compatible commit
+            # 
+            # Problem: VLLM_STABLE_COMMIT might change between when CI builds the image
+            # and when this benchmark runs (every 12 hours), causing image tag mismatches.
+            # 
+            # Solution: Query git history of VLLM_STABLE_COMMIT file to find the most recent
+            # compatible vLLM commit that has an actual Docker image built by CI.
+            if [[ "${DEVICE_NAME}" == "hpu" ]]; then
+              echo "HPU device detected - finding compatible vLLM commit from vllm-gaudi history"
+              
+              # Clone only the last-good-commit-for-vllm-gaudi branch (lightweight, single file)
+              git clone --depth 50 --single-branch --branch vllm/last-good-commit-for-vllm-gaudi \
+                https://github.com/vllm-project/vllm-gaudi.git /tmp/vllm-gaudi
+              pushd /tmp/vllm-gaudi
+              
+              # Get the last 30 commits - each commit represents a VLLM_STABLE_COMMIT update
+              # This gives us a history of compatible vLLM versions
+              CANDIDATE_COMMITS=$(git log -30 --pretty=format:"%H")
+              popd
+              
+              # Try each candidate commit (newest to oldest) until we find an existing image
+              FOUND_IMAGE=0
+              for VLLM_GAUDI_COMMIT in ${CANDIDATE_COMMITS}; do
+                # Get the vLLM commit from this version of the branch
+                CANDIDATE_VLLM_COMMIT=$(curl -s "https://raw.githubusercontent.com/vllm-project/vllm-gaudi/${VLLM_GAUDI_COMMIT}/VLLM_STABLE_COMMIT" | tr -d '\n')
+                
+                if [[ -z "${CANDIDATE_VLLM_COMMIT}" ]]; then
+                  continue
+                fi
+                
+                DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${CANDIDATE_VLLM_COMMIT}${DOCKER_IMAGE_SUFFIX}"
+                echo "Checking if image exists: ${DOCKER_IMAGE}"
+                
+                if docker manifest inspect "${DOCKER_IMAGE}" > /dev/null 2>&1; then
+                  echo "Found existing HPU image for vLLM commit: ${CANDIDATE_VLLM_COMMIT}"
+                  HEAD_SHA="${CANDIDATE_VLLM_COMMIT}"
+                  FOUND_IMAGE=1
+                  break
+                fi
+              done
+              
+              if [[ ${FOUND_IMAGE} == 0 ]]; then
+                echo "ERROR: No HPU Docker image found in the last 20 versions of VLLM_STABLE_COMMIT"
+                echo "This likely means ci-infra hasn't successfully built any HPU images yet"
+                exit 1
               fi
+            else
+              # For non-HPU devices: Looking back the latest 100 commits
+              for i in {0..99}
+              do
+                # Check if the image is there, if it doesn't then check an older one
+                # because the commit is too recent
+                HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+                DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
 
-              NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
-              aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+                # No Docker image available yet because the commit is too recent
+                if ! docker manifest inspect "${DOCKER_IMAGE}"; then
+                  continue
+                fi
 
-              if [[ ${NOT_EXIST} == "1" ]]; then
-                echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
-                break
-              fi
-            done
+                NOT_EXIST=0
+                S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
+                aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
+
+                if [[ ${NOT_EXIST} == "1" ]]; then
+                  echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
+                  break
+                fi
+              done
+            fi
             popd
           fi
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
-          # Print the benchmark commit for rereference
+          # Print the benchmark commit for reference
           echo "### Run benchmark on [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Setup CUDA GPU_FLAG for docker run
