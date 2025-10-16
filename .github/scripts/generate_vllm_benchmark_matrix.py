@@ -18,6 +18,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
+        "linux.arm64.m7g.4xlarge",
         "linux.dgx.b200",
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
@@ -50,6 +51,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.4": "rocm",
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
+    "linux.arm64.m7g.4xlarge": "cpu",
 }
 
 # All the different names vLLM uses to refer to their benchmark configs
@@ -198,8 +200,8 @@ def generate_benchmark_matrix(
 ) -> Dict[str, Any]:
     """
     Parse all the JSON files in vLLM benchmark configs directory to get the
-    model name and tensor parallel size (aka number of GPUs or CPU NUMA nodes)
-    """
+    model name and tensor parallel size (aka number of GPUs, CPU NUMA nodes - Intel
+    or CPUs - ARM)"""
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
