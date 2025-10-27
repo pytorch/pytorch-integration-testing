@@ -140,7 +140,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_12b_it_fp8",
+        "test_name": "latency_gemma3_12b_it_fp8_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-FP8",
             "load_format": "dummy",
@@ -149,7 +149,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_12b_it_int4",
+        "test_name": "latency_gemma3_12b_it_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-INT4",
             "load_format": "dummy",
@@ -158,7 +158,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_12b_it_awq_int4",
+        "test_name": "latency_gemma3_12b_it_awq_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
             "load_format": "dummy",
@@ -167,7 +167,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_27b_it_fp8",
+        "test_name": "latency_gemma3_27b_it_fp8_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-FP8",
             "load_format": "dummy",
@@ -176,7 +176,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_27b_it_int4",
+        "test_name": "latency_gemma3_27b_it_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-INT4",
             "load_format": "dummy",
@@ -185,7 +185,7 @@
         }
     },
     {
-        "test_name": "latency_gemma3_27b_it_awq_int4",
+        "test_name": "latency_gemma3_27b_it_awq_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
             "load_format": "dummy",

@@ -552,5 +552,125 @@
             "random_input_len": 5250,
             "random_output_len": 8250
         }
+    },
+    {
+        "test_name": "serving_gemma3_12b_it_fp8_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-12b-it-FP8",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-12b-it-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma3_12b_it_int4_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-12b-it-INT4",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-12b-it-INT4",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma3_12b_it_awq_int4_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma3_27b_it_fp8_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-27b-it-FP8",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-27b-it-FP8",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma3_27b_it_int4_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-27b-it-INT4",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-27b-it-INT4",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
+    },
+    {
+        "test_name": "serving_gemma3_27b_it_awq_int4_torchao",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
+            "tensor_parallel_size": 1,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 1024,
+            "random_output_len": 2048
+        }
     }
 ]
