@@ -156,6 +156,7 @@
         "test_name": "throughput_gemma3_12b_it_fp8_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-FP8",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
@@ -166,6 +167,7 @@
         "test_name": "throughput_gemma3_12b_it_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-INT4",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
@@ -176,6 +178,7 @@
         "test_name": "throughput_gemma3_12b_it_awq_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
@@ -186,6 +189,7 @@
         "test_name": "throughput_gemma3_27b_it_fp8_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-FP8",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
@@ -196,6 +200,7 @@
         "test_name": "throughput_gemma3_27b_it_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-INT4",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
@@ -206,6 +211,7 @@
         "test_name": "throughput_gemma3_27b_it_awq_int4_torchao",
         "parameters": {
             "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
+            "quantization": "torchao",
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
             "num_prompts": 200,
