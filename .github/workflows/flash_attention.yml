@@ -59,6 +59,7 @@ jobs:
 
             nvidia-smi
 
+            cat /workspace/README.md  >> /tmp/workspace/fa4_output.txt
             echo ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
             ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
             echo ls /usr/local/cuda/lib64  >> /tmp/workspace/fa4_output.txt
@@ -66,7 +67,9 @@ jobs:
             which python  >> /tmp/workspace/fa4_output.txt
             which nvcc  >> /tmp/workspace/fa4_output.txt
             #echo CUDA_HOME $CUDA_HOME  >> /tmp/workspace/fa4_output.txt
-            echo LD_LIBRARY_PATH $LD_LIBRARY_PATH  >> /tmp/workspace/fa4_output.txt
+            #echo LD_LIBRARY_PATH $LD_LIBRARY_PATH  >> /tmp/workspace/fa4_output.txt
+            #python -c "import torch; print(torch.cuda.is_available())"
+            #python -c "import torch; print(torch.cuda.device_count())"
 
             python setup.py install
             pip install -e flash_attn/cute/
