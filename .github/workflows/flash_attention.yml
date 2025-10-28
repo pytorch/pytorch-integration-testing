@@ -59,14 +59,14 @@ jobs:
             nvidia-smi
 
             export CUDA_HOME=/usr/local/cuda
-            echo ls /opt/conda/lib/python*
-            ls /opt/conda/lib/python*
-            echo ls /opt/conda/lib/python*/site-packages/
-            ls /opt/conda/lib/python*/site-packages/
             echo pip list
             pip list
             echo pip debug
             pip debug
+            which -a python            
+            which -a python3
+            echo ls /usr/local/bin
+            ls /usr/local/bin
             
             python setup.py install
             pip install -e flash_attn/cute/
