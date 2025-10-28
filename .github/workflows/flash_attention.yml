@@ -57,11 +57,15 @@ jobs:
             pushd fa4
 
             nvidia-smi
-            echo "$ ls /usr/local/cuda"  >> /tmp/workspace/fa4_output.txt
+
+            ls /usr/local/cuda
+            ls /usr/local/cuda/lib64
+            ls /opt/conda/envs
+            which python
+            which nvcc
+
             ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
-            echo "$ ls /usr/local/cuda/lib64"  >> /tmp/workspace/fa4_output.txt
             ls /usr/local/cuda/lib64  >> /tmp/workspace/fa4_output.txt
-            echo "$ ls /opt/conda/envs"  >> /tmp/workspace/fa4_output.txt
             ls /opt/conda/envs  >> /tmp/workspace/fa4_output.txt
             which python  >> /tmp/workspace/fa4_output.txt
             which nvcc  >> /tmp/workspace/fa4_output.txt
@@ -79,6 +83,6 @@ jobs:
           "
 
           # Display results in GitHub step summary
-          if [ -f fa4_output.txt ]; then
-            cat fa4_output.txt >> $GITHUB_STEP_SUMMARY
+          if [ -f /tmp/workspace/fa4_output.txt ]; then
+            cat /tmp/workspace/fa4_output.txt >> $GITHUB_STEP_SUMMARY
           fi
