@@ -67,7 +67,12 @@ jobs:
             which -a python3
             echo ls /usr/local/bin
             ls /usr/local/bin
-            
+            echo "===> /usr/bin/python3 --version"
+            /usr/bin/python3 --version
+            echo "===> /bin/python3 --version"
+            /bin/python3 --version
+
+            pip install torch
             python setup.py install
             pip install -e flash_attn/cute/
             
