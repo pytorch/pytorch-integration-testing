@@ -58,12 +58,16 @@ jobs:
 
             nvidia-smi
 
+            echo ls /usr/local/cuda
             ls /usr/local/cuda
+            echo ls /usr/local/cuda/lib64
             ls /usr/local/cuda/lib64
+            echo ls /opt/conda/envs
             ls /opt/conda/envs
             which python
             which nvcc
-
+            conda env list
+            
             ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
             ls /usr/local/cuda/lib64  >> /tmp/workspace/fa4_output.txt
             ls /opt/conda/envs  >> /tmp/workspace/fa4_output.txt
