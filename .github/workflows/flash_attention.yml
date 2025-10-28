@@ -58,22 +58,16 @@ jobs:
 
             nvidia-smi
 
-            echo ls /usr/local/cuda
-            ls /usr/local/cuda
-            echo ls /usr/local/cuda/lib64
-            ls /usr/local/cuda/lib64
-            echo ls /opt/conda/envs
-            ls /opt/conda/envs
-            which python
-            which nvcc
-            conda env list
+            export CUDA_HOME=/usr/local/cuda
+            echo ls /opt/conda/lib/python*
+            ls /opt/conda/lib/python*
+            echo ls /opt/conda/lib/python*/site-packages/
+            ls /opt/conda/lib/python*/site-packages/
+            echo pip list
+            pip list
+            echo pip debug
+            pip debug
             
-            ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
-            ls /usr/local/cuda/lib64  >> /tmp/workspace/fa4_output.txt
-            ls /opt/conda/envs  >> /tmp/workspace/fa4_output.txt
-            which python  >> /tmp/workspace/fa4_output.txt
-            which nvcc  >> /tmp/workspace/fa4_output.txt
-
             python setup.py install
             pip install -e flash_attn/cute/
             
