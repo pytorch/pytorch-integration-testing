@@ -56,11 +56,19 @@ jobs:
           docker exec -t "${container_name}" bash -c "
             set -x
             pushd fa4
+
+            nvidia-smi
+
+            echo $CUDA_HOME
+            echo $LD_LIBRARY_PATH
+            ls /usr/local/cuda
+            ls /usr/local/cuda/lib64
+            python -c "import torch; print(torch.cuda.is_available())"
+            python -c "import torch; print(torch.cuda.device_count())"
+
             python setup.py install
             pip install -e flash_attn/cute/
             
-            nvidia-smi
-
             echo '<h1>B200' >> /tmp/workspace/fa4_output.txt
             nvidia-smi -q -d POWER | grep 'Current Power Limit' | head -1 | cut  -d : -f 2 >> /tmp/workspace/fa4_output.txt
             echo '</h1>' >> /tmp/workspace/fa4_output.txt
