@@ -57,12 +57,12 @@ jobs:
             pushd fa4
 
             nvidia-smi
-
-            cat /workspace/README.md  >> /tmp/workspace/fa4_output.txt
             echo "$ ls /usr/local/cuda"  >> /tmp/workspace/fa4_output.txt
             ls /usr/local/cuda  >> /tmp/workspace/fa4_output.txt
             echo "$ ls /usr/local/cuda/lib64"  >> /tmp/workspace/fa4_output.txt
             ls /usr/local/cuda/lib64  >> /tmp/workspace/fa4_output.txt
+            echo "$ ls /opt/conda/envs"  >> /tmp/workspace/fa4_output.txt
+            ls /opt/conda/envs  >> /tmp/workspace/fa4_output.txt
             which python  >> /tmp/workspace/fa4_output.txt
             which nvcc  >> /tmp/workspace/fa4_output.txt
 
