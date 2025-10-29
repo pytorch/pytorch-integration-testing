@@ -564,7 +564,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-12b-it-FP8",
@@ -586,7 +586,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-12b-it-INT4",
@@ -608,7 +608,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
@@ -630,7 +630,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-27b-it-FP8",
@@ -652,7 +652,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-27b-it-INT4",
@@ -674,7 +674,7 @@
             "swap_space": 16,
             "disable_log_stats": "",
             "disable_log_requests": "",
-            "load_format": "dummy"
+            "load_format": "auto"
         },
         "client_parameters": {
             "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
