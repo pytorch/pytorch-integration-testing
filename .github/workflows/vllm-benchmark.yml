@@ -293,7 +293,7 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            docker exec -t "${container_name}" bash -c "uv pip install --system --pre torchao --index-url https://download.pytorch.org/whl/nightly/cu128"
+            docker exec -t "${container_name}" bash -c "uv pip install --system --pre torchao fbgemm-gpu-genai --index-url https://download.pytorch.org/whl/nightly/cu128"
           fi
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh"
 
