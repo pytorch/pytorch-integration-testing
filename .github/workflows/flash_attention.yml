@@ -45,6 +45,7 @@ jobs:
             --ulimit stack=67108864 \
             --tty \
             --detach \
+            --privileged \
             --security-opt seccomp=unconfined \
             --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
@@ -58,17 +59,6 @@ jobs:
 
             nvidia-smi
 
-            export CUDA_HOME=/usr/local/cuda
-            echo pip list
-            pip list
-            echo pip debug
-            pip debug
-            which -a python            
-            which -a python3
-            echo ls /usr/local/bin
-            ls /usr/local/bin
-
-            pip install torch
             python setup.py install
             pip install -e flash_attn/cute/
             
