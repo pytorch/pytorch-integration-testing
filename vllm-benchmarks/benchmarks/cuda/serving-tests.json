@@ -494,7 +494,7 @@
         }
      },
      {
-        "test_name": "serving_deepseek_v3_tp8_random_in5k_out8k",
+        "test_name": "serving_deepseek_v3_1_tp8_random_in5k_out8k",
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "deepseek-ai/DeepSeek-V3.1",
@@ -506,6 +506,26 @@
         },
         "client_parameters": {
             "model": "deepseek-ai/DeepSeek-V3.1",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "num_prompts": 200,
+            "random_input_len": 5250,
+            "random_output_len": 8250
+        }
+    },
+    {
+        "test_name": "serving_deepseek_v3_2_tp8_random_in5k_out8k",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_parameters": {
+            "model": "deepseek-ai/DeepSeek-V3.2-Exp",
+            "tensor_parallel_size": 8,
+            "swap_space": 16,
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "deepseek-ai/DeepSeek-V3.2-Exp",
             "backend": "vllm",
             "dataset_name": "random",
             "num_prompts": 200,

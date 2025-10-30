@@ -2,8 +2,8 @@ name: vLLM Benchmark
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # Run every 12 hours
+    - cron: '0 */12 * * *'
   workflow_dispatch:
     inputs:
       vllm_branch:
@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,b200
+        default: h100,rocm,spr,gnr,b200
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
