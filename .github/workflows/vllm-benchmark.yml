@@ -263,6 +263,8 @@ jobs:
           # vLLM-related environment variables
           ENGINE_VERSION: v1
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
+          # Test
+          VLLM_USE_STANDALONE_COMPILE: 1
         run: |
           set -eux
 
@@ -282,6 +284,7 @@ jobs:
             -e HF_TOKEN \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            -e VLLM_USE_STANDALONE_COMPILE \
             -e ON_CPU="${ON_CPU}" \
             --ipc=host \
             --tty \

@@ -141,6 +141,18 @@
         }
     },
     {
+        "test_name": "throughput_gemma_3n-e2b_tp1",
+        "parameters": {
+            "model": "google/gemma-3n-E2B-it",
+            "tensor_parallel_size": 1,
+            "load_format": "dummy",
+            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
+            "num_prompts": 200,
+            "backend": "vllm",
+            "max_model_len": 8192
+        }
+    },
+    {
         "test_name": "throughput_qwen3_30b_a3b_tp8",
         "parameters": {
             "model": "Qwen/Qwen3-30B-A3B",
