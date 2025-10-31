@@ -50,7 +50,7 @@ def parse_args() -> Any:
     parser.add_argument(
         "--to-benchmark-configs-dir",
         type=str,
-        default=".buildkite/nightly-benchmarks/tests",
+        default=".buildkite/performance-benchmarks/tests",
         action=ValidateDir,
         help="a subset of vLLM benchmark configs to run on this runner",
         required=True,

@@ -18,6 +18,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
+        "linux.24xl.gnr",
         "linux.dgx.b200",
     ],
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
@@ -25,6 +26,7 @@ TP_TO_RUNNER_MAPPING = {
     2: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.2",
+        "linux.24xl.gnr",
     ],
     4: [
         "linux.aws.h100.4",
@@ -50,6 +52,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.4": "rocm",
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
+    "linux.24xl.gnr": "cpu",
 }
 
 # All the different names vLLM uses to refer to their benchmark configs
@@ -72,6 +75,7 @@ PLATFORM_SKIPS = {
     "meta-llama/Meta-Llama-3.1-70B-Instruct": [
         "linux.dgx.b200",
         "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
+        "linux.24xl.gnr",
     ],
     "mistralai/Mixtral-8x7B-Instruct-v0.1": [
         "linux.dgx.b200",
@@ -88,40 +92,49 @@ PLATFORM_SKIPS = {
         "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
+        "linux.24xl.gnr",
     ],
     "google/gemma-3-27b-it": [
         "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942",  # TODO (huydhn): Fail on ROCm
+        "linux.24xl.gnr",
     ],
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
         "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
+        "linux.24xl.gnr",
     ],
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": [
         "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942",  # TODO (huydhn): Hang on ROCm
+        "linux.24xl.gnr",
     ],
     # Run gpt-oss on both H100 and B200
     "openai/gpt-oss-20b": [
         "linux.aws.a100",
+        "linux.24xl.gnr",
     ],
     "openai/gpt-oss-120b": [
         "linux.aws.a100",
+        "linux.24xl.gnr",
     ],
     # Deepseek can only run on B200
     "deepseek-ai/DeepSeek-V3.1": [
         "linux.aws.a100",
         "linux.aws.h100",
+        "linux.24xl.gnr",
     ],
     "deepseek-ai/DeepSeek-V3.2-Exp": [
         "linux.aws.a100",
         "linux.aws.h100",
+        "linux.24xl.gnr",
     ],
     "deepseek-ai/DeepSeek-R1": [
         "linux.aws.a100",
+        "linux.24xl.gnr",
         "linux.aws.h100",
     ],
 }
