@@ -558,7 +558,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-12b-it-FP8",
-            "tokenizer": "google/gemma-2-12b-it",
+            "tokenizer": "google/gemma-3-12b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
@@ -580,7 +580,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-12b-it-INT4",
-            "tokenizer": "google/gemma-2-12b-it",
+            "tokenizer": "google/gemma-3-12b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
@@ -602,7 +602,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-12b-it-AWQ-INT4",
-            "tokenizer": "google/gemma-2-12b-it",
+            "tokenizer": "google/gemma-3-12b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
@@ -624,7 +624,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-27b-it-FP8",
-            "tokenizer": "google/gemma-2-27b-it",
+            "tokenizer": "google/gemma-3-27b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
@@ -646,7 +646,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-27b-it-INT4",
-            "tokenizer": "google/gemma-2-27b-it",
+            "tokenizer": "google/gemma-3-27b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
@@ -668,7 +668,7 @@
         "qps_list": [1, 4, 16, "inf"],
         "server_parameters": {
             "model": "pytorch/gemma-3-27b-it-AWQ-INT4",
-            "tokenizer": "google/gemma-2-27b-it",
+            "tokenizer": "google/gemma-3-27b-it",
             "quantization": "torchao",
             "tensor_parallel_size": 1,
             "swap_space": 16,
