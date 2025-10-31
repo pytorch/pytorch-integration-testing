@@ -292,7 +292,7 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
-          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
+          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && pip install torchao && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
