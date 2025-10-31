@@ -214,6 +214,7 @@ jobs:
               echo "HPU device detected - finding compatible vLLM commit from vllm-gaudi history"
               
               # Clone only the last-good-commit-for-vllm-gaudi branch (lightweight, single file)
+              rm -rf /tmp/vllm-gaudi | true
               git clone --depth 50 --single-branch --branch vllm/last-good-commit-for-vllm-gaudi \
                 https://github.com/vllm-project/vllm-gaudi.git /tmp/vllm-gaudi
               pushd /tmp/vllm-gaudi
