@@ -75,6 +75,10 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Fix workspace permissions
+        run: |
+          sudo -n chown -R $USER:$USER $GITHUB_WORKSPACE || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
