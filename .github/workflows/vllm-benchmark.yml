@@ -303,7 +303,10 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
-          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && pip install torchao fbgemm-gpu-genai && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            docker exec -t "${container_name}" bash -c "pip install torchao fbgemm-gpu-genai"
+          fi
+          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
