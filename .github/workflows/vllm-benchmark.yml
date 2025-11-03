@@ -303,6 +303,9 @@ jobs:
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            docker exec -t "${container_name}" bash -c "pip install torchao fbgemm-gpu-genai"
+          fi
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
