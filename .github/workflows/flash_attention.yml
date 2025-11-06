@@ -45,6 +45,7 @@ jobs:
             --ulimit stack=67108864 \
             --tty \
             --detach \
+            --privileged \
             --security-opt seccomp=unconfined \
             --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
@@ -54,13 +55,12 @@ jobs:
 
           # Build and run FlashAttention CuTe DSL
           docker exec -t "${container_name}" bash -c "
-            set -x
+            nvidia-smi
+
             pushd fa4
             python setup.py install
             pip install -e flash_attn/cute/
             
-            nvidia-smi
-
             echo '<h1>B200' >> /tmp/workspace/fa4_output.txt
             nvidia-smi -q -d POWER | grep 'Current Power Limit' | head -1 | cut  -d : -f 2 >> /tmp/workspace/fa4_output.txt
             echo '</h1>' >> /tmp/workspace/fa4_output.txt
