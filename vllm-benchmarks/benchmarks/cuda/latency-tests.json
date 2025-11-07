@@ -138,5 +138,45 @@
             "num_iters": 15,
             "max_model_len": 8192
         }
+    },
+    {
+        "test_name": "latency_gemma3_12b_it_fp8_torchao",
+        "parameters": {
+            "model": "pytorch/gemma-3-12b-it-FP8",
+            "quantization": "torchao",
+            "load_format": "auto",
+            "num_iters_warmup": 5,
+            "num_iters": 15
+        }
+    },
+    {
+        "test_name": "latency_gemma3_12b_it_int4_torchao",
+        "parameters": {
+            "model": "pytorch/gemma-3-12b-it-INT4",
+            "quantization": "torchao",
+            "load_format": "auto",
+            "num_iters_warmup": 5,
+            "num_iters": 15
+        }
+    },
+    {
+        "test_name": "latency_gemma3_27b_it_fp8_torchao",
+        "parameters": {
+            "model": "pytorch/gemma-3-27b-it-FP8",
+            "quantization": "torchao",
+            "load_format": "auto",
+            "num_iters_warmup": 5,
+            "num_iters": 15
+        }
+    },
+    {
+        "test_name": "latency_gemma3_27b_it_int4_torchao",
+        "parameters": {
+            "model": "pytorch/gemma-3-27b-it-INT4",
+            "quantization": "torchao",
+            "load_format": "auto",
+            "num_iters_warmup": 5,
+            "num_iters": 15
+        }
     }
 ]
