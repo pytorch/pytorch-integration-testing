@@ -18,7 +18,14 @@ from json.decoder import JSONDecodeError
 
 import boto3
 import psutil
-import torch
+
+try:
+    import torch
+
+    torch_available = True
+except ImportError:
+    torch_available = False
+
 from git import Repo
 
 logging.basicConfig(level=logging.INFO)
@@ -162,7 +169,7 @@ def get_benchmark_metadata(
 
 
 def get_runner_info(device_name: str, device_type: str) -> Dict[str, Any]:
-    if torch.cuda.is_available():
+    if torch_available and torch.cuda.is_available():
         if torch.version.hip:
             name = "rocm"
         elif torch.version.cuda:
