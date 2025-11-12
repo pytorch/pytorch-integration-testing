@@ -130,7 +130,7 @@ jobs:
           elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
             DEVICE_TYPE="Intel Gaudi3 "$(hl-smi -q | grep "Product Name" | head -n 1 | awk -F ':' '{print $2}' | sed 's/^ *//')
           elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
+            DEVICE_TYPE="$(lscpu | grep "Model name" | sed -E 's/.*Model name:[[:space:]]*//; s/Intel\(R\)//g; s/\(R\)//g; s/\(TM\)//g; s/CPU//g; s/Processor//g; s/[[:space:]]+/ /g; s/^ //; s/ $//; s/ /_/g')_$(awk -F: '/Core\(s\) per socket/ {c=$2} /Socket\(s\)/ {s=$2} END {gsub(/ /,"",c); gsub(/ /,"",s); printf "%sc", c*s}' < <(lscpu))"
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
