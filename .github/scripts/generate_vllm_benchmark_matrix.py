@@ -29,11 +29,13 @@ TP_TO_RUNNER_MAPPING = {
         "linux.rocm.gpu.gfx942.2",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
+        "linux.dgx.b200.8",
     ],
     4: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.4",
         "linux.hpu.gaudi3.8",
+        "linux.dgx.b200.8",
     ],
     8: [
         "linux.aws.h100.8",
