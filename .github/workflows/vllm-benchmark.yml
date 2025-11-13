@@ -195,7 +195,7 @@ jobs:
         if: env.DEVICE_NAME == 'hpu' || contains(matrix.runner, 'gnr')
         run: |
           set -eux
-          docker image prune -a || true
+          docker image prune -a -f || true
 
       - name: Check for last benchmark commit
         working-directory: vllm-benchmarks
