@@ -37,6 +37,7 @@ jobs:
   profiling:
     name: Run vLLM profiling
     needs: set-parameters
+    if: ${{ !github.event.pull_request.head.repo.fork && github.repository_owner == 'pytorch' }}
     strategy:
       fail-fast: false
       matrix:

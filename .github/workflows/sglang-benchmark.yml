@@ -65,6 +65,7 @@ jobs:
   benchmarks:
     name: Run SGLang benchmarks
     needs: set-parameters
+    if: ${{ !github.event.pull_request.head.repo.fork && github.repository_owner == 'pytorch' }}
     strategy:
       matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
       fail-fast: false
