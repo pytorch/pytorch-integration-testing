@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,gnr,m7g,b200,gaudi3
+        default: h100,rocm,spr,m7g,b200,gaudi3
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
@@ -157,6 +157,9 @@ jobs:
           elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
             grep -v "^torch==" .github/scripts/requirements.txt > /tmp/requirements_no_torch.txt
             pip install -r /tmp/requirements_no_torch.txt
+          elif [[ "${DEVICE_NAME}" == *cpu* ]]; then
+            pip install -r .github/scripts/requirements.txt \
+              --extra-index-url https://download.pytorch.org/whl/cpu
           else
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/cu128
