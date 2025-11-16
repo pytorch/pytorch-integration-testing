@@ -269,13 +269,9 @@ def generate_benchmark_matrix(
                     continue
                 model = benchmark_config["model"].lower()
 
-                # Dedup
-                if model in selected_models:
-                    continue
-                # and only choose the selected model:
+                # and only choose the selected model
                 if models and model not in models:
                     continue
-                selected_models.append(model)
 
                 if "tensor_parallel_size" in benchmark_config:
                     tp = benchmark_config["tensor_parallel_size"]
@@ -284,6 +280,11 @@ def generate_benchmark_matrix(
                 else:
                     tp = 8
                 assert tp in TP_TO_RUNNER_MAPPING
+
+                # Dedup, it turns out that a model can be benchmarked at different tp
+                if f"{model}:{tp}" in selected_models:
+                    continue
+                selected_models.append(f"{model}:{tp}")
 
                 for runner in TP_TO_RUNNER_MAPPING[tp]:
                     # Wrong platform

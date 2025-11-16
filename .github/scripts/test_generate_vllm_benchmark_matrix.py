@@ -34,6 +34,10 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/llama-3.1-8b-instruct"
     },
     {
+      "runner": "linux.24xl.gnr",
+      "models": "meta-llama/llama-3.1-8b-instruct"
+    },
+    {
       "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
@@ -167,6 +171,38 @@ def test_generate_benchmark_matrix():
     },
     {
       "runner": "linux.dgx.b200",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
       "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
@@ -406,6 +442,22 @@ def test_generate_benchmark_matrix():
     {
       "runner": "linux.aws.h100",
       "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -477,6 +529,22 @@ def test_generate_benchmark_matrix():
     {
       "runner": "linux.aws.h100",
       "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -540,6 +608,22 @@ def test_generate_benchmark_matrix():
     {
       "runner": "linux.aws.h100",
       "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -602,6 +686,22 @@ def test_generate_benchmark_matrix():
     },
     {
       "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
       "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
