@@ -40,16 +40,17 @@ concurrency:
 
 jobs:
   set-parameters:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: linux.4xlarge
     outputs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
 
       - name: Set parameters
         id: set-parameters
@@ -65,6 +66,8 @@ jobs:
             --benchmark-configs-dir vllm-benchmarks/benchmarks \
             --models "${MODELS}" \
             --runners "${RUNNERS}"
+
+          sleep 7200
 
   benchmarks:
     name: Run vLLM benchmarks
