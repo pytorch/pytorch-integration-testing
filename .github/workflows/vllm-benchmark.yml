@@ -154,12 +154,9 @@ jobs:
           if [[ "${DEVICE_NAME}" == "rocm" ]]; then
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/rocm6.3
-          elif [[ "${DEVICE_NAME}" == "hpu" ]]; then
+          elif [[ "${DEVICE_NAME}" == "hpu" ]] || [[ "${DEVICE_NAME}" == *cpu* ]]; then
             grep -v "^torch==" .github/scripts/requirements.txt > /tmp/requirements_no_torch.txt
             pip install -r /tmp/requirements_no_torch.txt
-          elif [[ "${DEVICE_NAME}" == *cpu* ]]; then
-            pip install -r .github/scripts/requirements.txt \
-              --extra-index-url https://download.pytorch.org/whl/cpu
           else
             pip install -r .github/scripts/requirements.txt \
               --extra-index-url https://download.pytorch.org/whl/cu128
