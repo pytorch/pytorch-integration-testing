@@ -288,7 +288,7 @@ def generate_benchmark_matrix(
                 for runner in TP_TO_RUNNER_MAPPING[tp]:
                     # Wrong platform
                     if (
-              benchmark_matrix          runner not in RUNNER_TO_PLATFORM_MAPPING
+                        runner not in RUNNER_TO_PLATFORM_MAPPING
                         or RUNNER_TO_PLATFORM_MAPPING[runner] != platform
                     ):
                         continue
