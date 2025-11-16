@@ -60,7 +60,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
     "linux.24xl.gnr": "cpu",
-    "linux.arm64.m7g.4xlarge": "cpu",
+    "linux.arm64.m7g.4xlarge": "arm64-cpu",
     "linux.hpu.gaudi3.8": "hpu",
 }
 
