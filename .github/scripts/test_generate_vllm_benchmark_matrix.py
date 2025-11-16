@@ -27,6 +27,18 @@ def test_generate_benchmark_matrix():
     },
     {
       "runner": "linux.24xl.spr-metal",
+      "models": "meta-llama/llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.24xl.gnr",
+      "models": "meta-llama/llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.24xl.gnr",
+      "models": "meta-llama/llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -42,32 +54,184 @@ def test_generate_benchmark_matrix():
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "linux.dgx.b200.8",
+      "models": "qwen/qwen3-30b-a3b"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "google/gemma-3-27b-it"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
       "models": "meta-llama/llama-4-scout-17b-16e-instruct"
     },
     {
-      "runner": "linux.aws.h100.8",
+      "runner": "linux.dgx.b200.8",
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.aws.h100",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
+      "runner": "linux.aws.h100.4",
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "deepseek-ai/deepseek-v3.1"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "deepseek-ai/deepseek-v3.2-exp"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.a100",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
+    },
+    {
+      "runner": "linux.hpu.gaudi3.8",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.4",
+      "runner": "linux.hpu.gaudi3.8",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
+    },
+    {
+      "runner": "linux.hpu.gaudi3.8",
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+    },
+    {
+      "runner": "linux.rocm.gpu.gfx942.1",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
       "runner": "linux.rocm.gpu.gfx942.2",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.4",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
+      "runner": "linux.rocm.gpu.gfx942.1",
+      "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "runner": "linux.rocm.gpu.gfx942.1",
+      "models": "facebook/opt-125m"
     }
   ]
 }""",
@@ -89,7 +253,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.24xl.spr-metal",
+      "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -97,7 +261,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.hpu.gaudi3.8",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -123,7 +291,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.24xl.spr-metal",
+      "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -131,16 +299,16 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.8",
+      "runner": "linux.dgx.b200.8",
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.hpu.gaudi3.8",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "runner": "linux.rocm.gpu.gfx942.1",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
 }""",
@@ -162,7 +330,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.24xl.spr-metal",
+      "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -170,7 +338,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.hpu.gaudi3.8",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -193,7 +365,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.24xl.spr-metal",
+      "runner": "linux.aws.a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -201,7 +373,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.hpu.gaudi3.8",
+      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+    },
+    {
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -232,12 +408,56 @@ def test_generate_benchmark_matrix():
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
+      "runner": "linux.aws.h100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
       "runner": "linux.aws.h100.4",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
       "runner": "linux.aws.h100.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -260,7 +480,7 @@ def test_generate_benchmark_matrix():
     },
     {
       "runner": "linux.24xl.spr-metal",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/llama-3.1-8b-instruct"
     },
     {
       "runner": "linux.aws.h100",
@@ -275,12 +495,56 @@ def test_generate_benchmark_matrix():
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
+      "runner": "linux.aws.h100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
       "runner": "linux.aws.h100.4",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
       "runner": "linux.aws.h100.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -310,12 +574,56 @@ def test_generate_benchmark_matrix():
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
+      "runner": "linux.aws.h100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
       "runner": "linux.aws.h100.4",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
       "runner": "linux.aws.h100.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -345,12 +653,56 @@ def test_generate_benchmark_matrix():
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
+      "runner": "linux.aws.h100",
+      "models": "google/gemma-3-4b-it"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "qwen/qwen3-8b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "openai/gpt-oss-20b"
+    },
+    {
       "runner": "linux.aws.h100.4",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
+      "models": "openai/gpt-oss-120b"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "facebook/opt-125m"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100",
+      "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
       "runner": "linux.aws.h100.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "models": "pytorch/gemma-3-12b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-12b-it-int4"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-fp8"
+    },
+    {
+      "runner": "linux.aws.h100.8",
+      "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
 }""",
@@ -394,11 +746,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.24xl.spr-metal",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -421,7 +769,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
@@ -440,7 +788,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.rocm.gpu.gfx942.2",
+      "runner": "linux.rocm.gpu.gfx942.1",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]
