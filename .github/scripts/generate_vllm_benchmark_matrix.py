@@ -60,7 +60,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
     "linux.24xl.gnr": "cpu",
-    "linux.arm64.m7g.4xlarge": "cpu",
+    "linux.arm64.m7g.4xlarge": "arm64-cpu",
     "linux.hpu.gaudi3.8": "hpu",
 }
 
@@ -77,6 +77,9 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
 # and not h100. This also serves as a knob to tune CI behavior. TODO (huydhn):
 # Figure out how to set this in the JSON benchmark configuration instead
 PLATFORM_SKIPS = {
+    "meta-llama/Llama-3.1-8B-Instruct": [
+        "linux.24xl.spr-metal",  # Timed out
+    ],
     # Already been covered in both A100 and H100
     "meta-llama/Meta-Llama-3.1-8B-Instruct": [
         "linux.dgx.b200",
@@ -272,7 +275,7 @@ def generate_benchmark_matrix(
                 # Dedup
                 if model in selected_models:
                     continue
-                # and only choose the selected model:
+                # and only choose the selected model
                 if models and model not in models:
                     continue
                 selected_models.append(model)
@@ -324,6 +327,7 @@ def main() -> None:
         models,
         runners,
     )
+    print(benchmark_matrix)
     set_output("benchmark_matrix", benchmark_matrix)
 
 
