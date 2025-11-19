@@ -28,7 +28,7 @@ on:
         # TODO (huydhn): Remove aarch64 CPU benchmark running on m7g until the change
         # from https://github.com/vllm-project/vllm/pull/26494#issuecomment-3537415441
         # is resolved and merged
-        default: h100,rocm,spr,b200,gaudi3
+        default: h100,rocm,spr,gnr,b200,gaudi3
   pull_request:
     paths:
       - .github/workflows/vllm-benchmark.yml
