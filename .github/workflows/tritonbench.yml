@@ -1,0 +1,51 @@
+name: TritonBench
+
+on:
+  schedule:
+    # Run every 12 hours
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+    benchmarks:
+      description: |
+        A comma-separated list of benchmarks from tritonbench/benchmarks (optional, default to run nightly)
+      required: false
+      type: string
+    runners:
+      description: |
+        A comma-separated list of runners from .github/scripts/genenerate_tritonbench_matrix.py to run the benchmark (optional, default to run b200)
+      required: true
+      type: string
+      default: b200
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
+  cancel-in-progress: true
+
+
+jobs:
+  set-parameters:
+    runs-on: ubuntu-latest
+    outputs:
+      benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set parameters
+        id: set-parameters
+        shell: bash
+        env:
+          BENCHMARKS: ${{ inputs.benchmarks || '' }}
+          RUNNERS: ${{ inputs.runners || '' }}
+        run: |
+          set -eux
+
+          # The generated matrix is grouped by benchmark and runner
+          python .github/scripts/generate_tritonbench_matrix.py \
+            --benchmarks "${BENCHMARKS}" \
+            --runners "${RUNNERS}"
+
