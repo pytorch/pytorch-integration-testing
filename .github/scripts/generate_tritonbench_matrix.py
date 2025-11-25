@@ -67,10 +67,22 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
+    if not runners:
+        runners = list(RUNNER_TO_PLATFORM_MAPPING.keys())
+    else:
+        runner_args = runners.copy()
+        runners = []
+        for k, v in RUNNER_TO_PLATFORM_MAPPING.items():
+            for r in runner_args:
+                if r.lower() in k:
+                    runners.append(k)
+
+    if not benchmarks:
+        benchmarks = TRITONBENCH_BENCHMARKS
 
     # Gather all possible benchmarks
-    for runner in RUNNER_TO_PLATFORM_MAPPING:
-        for benchmark in TRITONBENCH_BENCHMARKS:
+    for runner in runners:
+        for benchmark in benchmarks:
             benchmark_matrix["include"].append(
                 {
                     "runner": runner,
@@ -85,7 +97,9 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
 
 def main() -> None:
     args = parse_args()
-    benchmark_matrix = generate_benchmark_matrix(args.benchmarks, args.runners)
+    benchmarks = [b.strip().lower() for b in args.benchmarks.split(",") if b.strip()]
+    runners = [r.strip().lower() for r in args.runners.split(",") if r.strip()]
+    benchmark_matrix = generate_benchmark_matrix(benchmarks, runners)
     print(benchmark_matrix)
     set_output("benchmark_matrix", benchmark_matrix)
 

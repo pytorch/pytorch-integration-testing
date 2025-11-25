@@ -7,10 +7,10 @@ from generate_tritonbench_matrix import generate_benchmark_matrix
 
 def test_generate_benchmark_matrix():
     # All combinations, no duplication
-    models = []
+    benchmarks = []
     runners = []
     output = json.dumps(
-        generate_benchmark_matrix(), indent=2
+        generate_benchmark_matrix(benchmarks, runners), indent=2
     )
     assert_expected_inline(
         output,
