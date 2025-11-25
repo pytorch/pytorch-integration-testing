@@ -129,7 +129,7 @@ jobs:
         if: env.DEVICE_NAME == 'cuda'
         run: |
           echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
-      
+
       - name: Select TritonBench Docker image
         shell: bash
         run: |
@@ -171,7 +171,11 @@ jobs:
 
           docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
             set -eux && cd /workspace/tritonbench && 
-            bash .ci/tritonbench/run-benchmark.sh ${{ }} --conda-env ${{ env.CONDA_ENV }} "
+            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} "
+          
+          docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
+            set -eux && cd /workspace/tritonbench && mv .benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results
+          "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
