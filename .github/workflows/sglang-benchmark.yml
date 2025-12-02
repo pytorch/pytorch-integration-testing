@@ -313,7 +313,7 @@ jobs:
             echo "⚠️ No benchmark results found in ${BENCHMARK_RESULTS}" >> $GITHUB_STEP_SUMMARY
           fi
 
-          python3 .github/scripts/_results.py \
+          python3 .github/scripts/upload_benchmark_results.py \
               --repo-name sgl-project/sglang \
               --benchmark-name "SGLang benchmark" \
               --benchmark-results "${BENCHMARK_RESULTS}" \
