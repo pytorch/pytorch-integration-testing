@@ -363,6 +363,8 @@ jobs:
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
           ls -lah "${BENCHMARK_RESULTS}"
 
+          echo "## workflow info: ${WORKFLOW_RUN_ID} ${RUN_ATTEMPT} ${JOB_ID}"
+
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
           SANITIZED_MODELS="${MODELS//\//_}"
 
