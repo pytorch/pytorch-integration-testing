@@ -288,7 +288,7 @@ jobs:
           MODELS: ${{ matrix.models }}
           WORKFLOW_RUN_ID: ${{ github.run_id }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
-          JOB_ID: ${{ steps.get-job-id.outputs.job-id || '0' }}
+          JOB_ID: ${{ steps.get-job-id.outputs.job-id }}
         run: |
           set -eux
 
