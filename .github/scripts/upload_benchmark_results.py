@@ -162,9 +162,9 @@ def get_benchmark_metadata(
         "repo": repo_name,
         "head_branch": head_branch,
         "head_sha": head_sha,
-        "workflow_id": os.getenv("GITHUB_RUN_ID", timestamp),
-        "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT", 1),
-        "job_id": os.getenv("GITHUB_JOB", timestamp),
+        "workflow_id": os.getenv("WORKFLOW_RUN_ID", timestamp),
+        "run_attempt": os.getenv("RUN_ATTEMPT", 1),
+        "job_id": os.getenv("JOB_ID", timestamp),
     }
 
 
