@@ -103,7 +103,7 @@ jobs:
 
       - name: Get workflow job id
         id: get-job-id
-        uses: pytorch/test-infra/.github/actions/get-workflow-job-id@main
+        uses: pytorch/test-infra/.github/actions/get-workflow-job-id@36562d6c43fa914f7bdef67ce23e5c31f1387b2e
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

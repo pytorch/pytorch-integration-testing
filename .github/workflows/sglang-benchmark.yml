@@ -99,6 +99,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Get workflow job id
+        id: get-job-id
+        uses: pytorch/test-infra/.github/actions/get-workflow-job-id@36562d6c43fa914f7bdef67ce23e5c31f1387b2e
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if the device is supported
         shell: bash
@@ -274,12 +279,6 @@ jobs:
           # The max duration enforced by the server side
           role-duration-seconds: 18000
           aws-region: us-east-1
-
-      - name: Get workflow job id
-        id: get-job-id
-        uses: pytorch/test-infra/.github/actions/get-workflow-job-id@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload the benchmark results
         if: always()
