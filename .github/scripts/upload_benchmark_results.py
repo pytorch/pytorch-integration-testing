@@ -151,16 +151,19 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
         # We couldn't find the branch name
         return repo_name, "main", hexsha, committed_date
 
-
 def get_benchmark_metadata(
     repo_name: str, head_branch: str, head_sha: str, timestamp: int, benchmark_name
 ) -> Dict[str, Any]:
+    local_branch = os.getenv("RUN_LOCAL_BRANCH","")
+    branch_name = head_branch
+    if local_branch and local_branch != "main":
+        branch_name = f"{head_branch}({local_branch})"
     return {
         "timestamp": timestamp,
         "schema_version": "v3",
         "name": benchmark_name,
         "repo": repo_name,
-        "head_branch": head_branch,
+        "head_branch": branch_name,
         "head_sha": head_sha,
         "workflow_id": os.getenv("WORKFLOW_RUN_ID", timestamp),
         "run_attempt": os.getenv("RUN_ATTEMPT", 1),
@@ -325,7 +328,6 @@ def upload(
 
 def main() -> None:
     args = parse_args()
-
     if args.repo:
         if args.head_branch or args.head_sha:
             warning("No need to set --head-branch and --head-sha when using --repo")
