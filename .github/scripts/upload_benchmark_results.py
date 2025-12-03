@@ -155,7 +155,7 @@ def get_benchmark_metadata(
     repo_name: str, head_branch: str, head_sha: str, timestamp: int, benchmark_name
 ) -> Dict[str, Any]:
 
-    # combine run branch name with the foreign branch name if it's not main or
+    # combine run branch name with the foreign branch name if it's not main
     local_branch = os.getenv("RUN_LOCAL_BRANCH","")
     branch_name = head_branch
     if local_branch and local_branch != "main":
