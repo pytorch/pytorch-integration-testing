@@ -145,7 +145,7 @@ jobs:
           fi
 
           CONDA_ENV="triton-main"
-          DOCKER_IMAGE="meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
+          DOCKER_IMAGE="ghcr.io/meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
           echo "CONDA_ENV=$CONDA_ENV" >> "$GITHUB_ENV"
           echo "Using docker image: $DOCKER_IMAGE "
@@ -171,12 +171,9 @@ jobs:
           )
 
           docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
-            set -eux && cd /workspace/tritonbench && 
-            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} "
-          
-          docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
-            set -eux && cd /workspace/tritonbench && mv .benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results
-          "
+            set -eux && cd /workspace/tritonbench && \
+            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
+            mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
@@ -199,15 +196,15 @@ jobs:
       - name: Upload result to Scribe
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${TRITONBENCH_SIDE_A_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results/${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/upload/scribe.py --json ${latest_result_json}
 
       - name: Rewrite Tritonbench result json to ClickHouse style
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${TRITONBENCH_SIDE_A_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results/${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
-                --output clickhouse-results/result-${TRITONBENCH_SIDE_A_ENV}.json
+                --output clickhouse-results/result-${CONDA_ENV}.json
 
       - name: Upload result to ClickHouse
         uses: pytorch/test-infra/.github/actions/upload-benchmark-results@main
