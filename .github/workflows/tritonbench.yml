@@ -144,9 +144,10 @@ jobs:
             exit 1
           fi
 
+          CONDA_ENV="triton-main"
           DOCKER_IMAGE="meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
-          echo "CONDA_ENV=triton-main" >> "$GITHUB_ENV"
+          echo "CONDA_ENV=$CONDA_ENV" >> "$GITHUB_ENV"
           echo "Using docker image: $DOCKER_IMAGE "
           echo "Using conda env: $CONDA_ENV "
 
