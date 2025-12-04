@@ -99,6 +99,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Get workflow job id
+        id: get-job-id
+        uses: pytorch/test-infra/.github/actions/get-workflow-job-id@36562d6c43fa914f7bdef67ce23e5c31f1387b2e
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if the device is supported
         shell: bash
@@ -197,7 +202,7 @@ jobs:
           for tag in $(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags); do
             candidate_image="lmsysorg/sglang:${tag}${IMAGE_SUFFIX}"
             echo "Checking: $candidate_image"
-            
+
             if docker manifest inspect "$candidate_image" >/dev/null 2>&1; then
               SELECTED_TAG="$tag"
               DOCKER_IMAGE="$candidate_image"
@@ -206,7 +211,7 @@ jobs:
               break
             fi
           done
-          
+
           # Fallback to latest if no tagged version found
           if [[ -z "$SELECTED_TAG" ]]; then
             echo "No tagged images found, using latest"
@@ -280,11 +285,17 @@ jobs:
         env:
           BENCHMARK_RESULTS: sglang-benchmarks/benchmarks/results
           MODELS: ${{ matrix.models }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          JOB_ID: ${{ steps.get-job-id.outputs.job-id }}
+          RUN_LOCAL_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
         run: |
           set -eux
 
           sudo chown -R ${UID} "${BENCHMARK_RESULTS}" || true
           ls -lah "${BENCHMARK_RESULTS}" || echo "Results directory not found"
+
+          echo "## workflow info: ${WORKFLOW_RUN_ID} ${RUN_ATTEMPT} ${JOB_ID}"
 
           SANITIZED_DEVICE_TYPE=$(echo "${DEVICE_TYPE// /_}" | sed "s/[^[:alnum:].-]/_/g")
           SANITIZED_MODELS="${MODELS//\//_}"
