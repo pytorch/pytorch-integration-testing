@@ -127,6 +127,14 @@ jobs:
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
+      - name: Install dependencies
+        shell: bash
+        working-directory: triton-benchmarks/tritonbench
+        run: |
+          set -eux
+
+          pip install -r .ci/upload/requirements.txt
+
       - name: Setup CUDA GPU_FLAG for docker run
         if: env.DEVICE_NAME == 'cuda'
         run: |
