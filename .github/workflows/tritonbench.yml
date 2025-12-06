@@ -183,7 +183,7 @@ jobs:
           docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
             set -eux && cd /workspace/tritonbench && \
             bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
-            sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results "
+            sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }}  "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
@@ -199,21 +199,21 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tritonbench-results
-          path: triton-benchmarks/tritonbench/results
+          name: tritonbench-${{ matrix.runner }}-benchmark-single
+          path: triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }}
           retention-days: 30
   
       - name: Upload result to Scribe
         if:  ${{ env.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN != '' }}
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/upload/scribe.py --json ${latest_result_json}
 
       - name: Rewrite Tritonbench result json to ClickHouse style
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
                 --output clickhouse-results/result-${CONDA_ENV}.json
 
