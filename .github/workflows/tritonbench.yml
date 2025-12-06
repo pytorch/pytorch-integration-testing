@@ -63,6 +63,8 @@ jobs:
       matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
       fail-fast: false
     runs-on: ${{ matrix.runner }}
+    env:
+      TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
     environment: pytorch-x-vllm
     permissions:
       id-token: write
@@ -194,6 +196,7 @@ jobs:
           retention-days: 30
   
       - name: Upload result to Scribe
+        if:  ${{ env.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN != '' }}
         working-directory: triton-benchmarks/tritonbench
         run: |
           latest_result_json=$(find ./results/${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
