@@ -173,7 +173,7 @@ jobs:
           docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
             set -eux && cd /workspace/tritonbench && \
             bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
-            mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results "
+            sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
