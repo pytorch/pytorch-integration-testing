@@ -66,6 +66,7 @@ jobs:
     env:
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
       JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
+      RUNNER_TYPE: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     permissions:
       id-token: write
