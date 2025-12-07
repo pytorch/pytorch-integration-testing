@@ -187,7 +187,7 @@ jobs:
             set -eux && cd /workspace/tritonbench && \
             bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
             sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} && \
-            sudo chmod 777 /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} "
+            sudo chmod -R 777 /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} "
 
           # post-process result.json
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
