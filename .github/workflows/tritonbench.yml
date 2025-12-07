@@ -65,6 +65,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
+      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
     environment: pytorch-x-vllm
     permissions:
       id-token: write
@@ -205,7 +206,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tritonbench-${{ matrix.runner }}-benchmark-single
+          name: ${{ env.JOB_NAME }}
           path: triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }}
           retention-days: 30
   
