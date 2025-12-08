@@ -63,6 +63,10 @@ jobs:
       matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
       fail-fast: false
     runs-on: ${{ matrix.runner }}
+    env:
+      TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
+      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
+      RUNNER_TYPE: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     permissions:
       id-token: write
@@ -125,6 +129,14 @@ jobs:
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
+      - name: Install dependencies
+        shell: bash
+        working-directory: triton-benchmarks/tritonbench
+        run: |
+          set -eux
+
+          pip install -r .ci/upload/requirements.txt
+
       - name: Setup CUDA GPU_FLAG for docker run
         if: env.DEVICE_NAME == 'cuda'
         run: |
@@ -144,13 +156,15 @@ jobs:
             exit 1
           fi
 
-          DOCKER_IMAGE="meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
+          CONDA_ENV="triton-main"
+          DOCKER_IMAGE="ghcr.io/meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
-          echo "CONDA_ENV=triton-main" >> "$GITHUB_ENV"
+          echo "CONDA_ENV=$CONDA_ENV" >> "$GITHUB_ENV"
           echo "Using docker image: $DOCKER_IMAGE "
           echo "Using conda env: $CONDA_ENV "
 
       - name: Run TritonBench benchmark
+        working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
 
@@ -170,12 +184,15 @@ jobs:
           )
 
           docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
-            set -eux && cd /workspace/tritonbench && 
-            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} "
-          
-          docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
-            set -eux && cd /workspace/tritonbench && mv .benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results
-          "
+            set -eux && cd /workspace/tritonbench && \
+            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
+            sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} && \
+            sudo chmod -R 777 /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} "
+
+          # post-process result.json
+          latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
+          python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
+            --add-github-env --output ${latest_result_json}
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
@@ -191,22 +208,23 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tritonbench-results
-          path: triton-benchmarks/tritonbench/results
+          name: ${{ env.JOB_NAME }}
+          path: triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }}
           retention-days: 30
   
       - name: Upload result to Scribe
+        if:  ${{ env.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN != '' }}
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${TRITONBENCH_SIDE_A_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/upload/scribe.py --json ${latest_result_json}
 
       - name: Rewrite Tritonbench result json to ClickHouse style
         working-directory: triton-benchmarks/tritonbench
         run: |
-          latest_result_json=$(find ./results/${TRITONBENCH_SIDE_A_ENV} -name "result.json"  | sort -r | head -n 1)
+          latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
-                --output clickhouse-results/result-${TRITONBENCH_SIDE_A_ENV}.json
+                --output clickhouse-results/result-${CONDA_ENV}.json
 
       - name: Upload result to ClickHouse
         uses: pytorch/test-infra/.github/actions/upload-benchmark-results@main
