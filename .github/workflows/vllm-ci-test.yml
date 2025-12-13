@@ -42,10 +42,10 @@ jobs:
     environment: pytorch-x-vllm
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout vLLM repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: vllm-project/vllm
           path: vllm
