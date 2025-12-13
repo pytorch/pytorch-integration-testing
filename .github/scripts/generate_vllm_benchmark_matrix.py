@@ -19,7 +19,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
         "linux.24xl.gnr",
-        "linux.arm64.m7g.4xlarge",
+        # "linux.arm64.m7g.4xlarge",  # TODO (huydhn): This is not working yet
         "linux.dgx.b200",
         "linux.hpu.gaudi3.8",
     ],
@@ -60,7 +60,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
     "linux.24xl.gnr": "cpu",
-    "linux.arm64.m7g.4xlarge": "arm64-cpu",
+    # "linux.arm64.m7g.4xlarge": "arm64-cpu",  # TODO (huydhn): This is not working yet
     "linux.hpu.gaudi3.8": "hpu",
 }
 
@@ -254,7 +254,10 @@ def generate_benchmark_matrix(
     # Gather all possible benchmarks
     for platform in sorted(platforms):
         selected_models = []
-        for file in glob.glob(f"{benchmark_configs_dir}/{platform}/*.json"):
+        # Only need to parse serving config because all models need it and it
+        # always has the tensor_parallel_size field that is used to find the
+        # right runner
+        for file in glob.glob(f"{benchmark_configs_dir}/{platform}/*serving*.json"):
             with open(file) as f:
                 try:
                     configs = json.load(f)
