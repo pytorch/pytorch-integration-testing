@@ -254,9 +254,9 @@ def generate_benchmark_matrix(
     # Gather all possible benchmarks
     for platform in sorted(platforms):
         selected_models = []
-        # Only need to parse serving config because all models need it and it
-        # always has the tensor_parallel_size field that is used to find the
-        # right runner
+        # Only need to parse serving config because it has all the models and
+        # their tensor_parallel_size field. The latter is used to find the runner
+        # with the right capacity
         for file in glob.glob(f"{benchmark_configs_dir}/{platform}/*serving*.json"):
             with open(file) as f:
                 try:
