@@ -144,6 +144,8 @@ jobs:
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
+          git branch
+          ls -l .ci/tritonbench
           bash ./ci/tritonbench/setup-env.sh
 
       - name: Run TritonBench
