@@ -64,6 +64,9 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     env:
+      WORKSPACE: "/workspace"
+      SETUP_SCRIPT: "/workspace/setup-instance.sh"
+      CONDA_ENV: "triton-main"
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
       JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
       RUNNER_TYPE: ${{ matrix.runner }}
@@ -134,60 +137,21 @@ jobs:
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
-
           pip install -r .ci/upload/requirements.txt
 
-      - name: Setup CUDA GPU_FLAG for docker run
-        if: env.DEVICE_NAME == 'cuda'
-        run: |
-          echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
-
-      - name: Select TritonBench Docker image
-        shell: bash
+      - name: Install TritonBench
+        working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
-          # Determine image suffix based on device
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            IMAGE_SUFFIX="latest"
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            IMAGE_SUFFIX="rocm-latest"
-          else
-            echo "TritonBench requires either CUDA or ROCm devices."
-            exit 1
-          fi
+          bash ./ci/tritonbench/setup-env.sh
 
-          CONDA_ENV="triton-main"
-          DOCKER_IMAGE="ghcr.io/meta-pytorch/tritonbench:${IMAGE_SUFFIX}"
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
-          echo "CONDA_ENV=$CONDA_ENV" >> "$GITHUB_ENV"
-          echo "Using docker image: $DOCKER_IMAGE "
-          echo "Using conda env: $CONDA_ENV "
-
-      - name: Run TritonBench benchmark
+      - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
 
-          container_name=$(docker run \
-            ${GPU_FLAG:-} \
-            -e DEVICE_NAME \
-            -e DEVICE_TYPE \
-            -e CONDA_ENV \
-            --ipc=host \
-            --tty \
-            --detach \
-            --security-opt seccomp=unconfined \
-            --shm-size=32g \
-            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-            -w /tmp/workspace \
-            "${DOCKER_IMAGE}"
-          )
-
-          docker exec -t -w /tmp/workspace "${container_name}" bash -c " \
-            set -eux && cd /workspace/tritonbench && \
-            bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }} &&  \
-            sudo mv /workspace/tritonbench/.benchmarks /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} && \
-            sudo chmod -R 777 /tmp/workspace/triton-benchmarks/tritonbench/results-${{ env.CONDA_ENV }} "
+          bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }}
+          mv .benchmarks results-${{ env.CONDA_ENV }}
 
           # post-process result.json
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
@@ -233,8 +197,3 @@ jobs:
           dry-run: false
           schema-version: v3
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Kill the container
-        if: always()
-        run: |
-          docker kill "${TRITONBENCH_CONTAINER_ID}" || true
