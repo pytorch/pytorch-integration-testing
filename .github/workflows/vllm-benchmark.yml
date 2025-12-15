@@ -201,7 +201,7 @@ jobs:
       - name: Authenticate with AWS
         # Only need for DGX hosts
         if: contains(env.DEVICE_TYPE, 'B200')
-        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708  # v5
         with:
           role-to-assume: arn:aws:iam::308535385114:role/public_ecr_read_only
           role-duration-seconds: 18000
@@ -343,7 +343,7 @@ jobs:
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
         if: env.DEVICE_NAME == 'rocm' || env.DEVICE_NAME == 'hpu' || contains(env.DEVICE_TYPE, 'B200') || contains(matrix.runner, 'gnr')
-        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708  # v5
         with:
           role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
           # The max duration enforced by the server side
