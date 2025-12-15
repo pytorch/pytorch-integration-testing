@@ -144,7 +144,7 @@ jobs:
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
-          bash ./.ci/tritonbench/setup-env.sh
+          bash ./.ci/tritonbench/setup-env.sh --cuda
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
