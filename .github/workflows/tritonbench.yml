@@ -89,7 +89,8 @@ jobs:
         with:
           repository: meta-pytorch/tritonbench
           path: triton-benchmarks/tritonbench
-          ref: ${{ inputs.tritonbench_branch || 'main' }}
+          ref: xz9/non-amd-dind
+          submodules: recursive
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
