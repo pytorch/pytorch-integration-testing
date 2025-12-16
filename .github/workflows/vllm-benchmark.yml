@@ -336,7 +336,7 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1 fbgemm-gpu-genai==1.4.1"
+            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1 fbgemm-gpu-genai==1.4.2"
           fi
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
