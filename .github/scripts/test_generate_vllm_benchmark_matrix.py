@@ -22,7 +22,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -209,7 +209,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -247,7 +247,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -286,7 +286,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -321,7 +321,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -409,7 +409,7 @@ def test_generate_benchmark_matrix():
 
     # Select multiple runners
     models = []
-    runners = ["h100", "spr", "m7g"]
+    runners = ["h100", "spr", "m8g"]
     output = json.dumps(
         generate_benchmark_matrix(BENCHMARK_CONFIG_DIRS, models, runners), indent=2
     )
@@ -419,7 +419,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -624,7 +624,7 @@ def test_generate_benchmark_matrix():
         "meta-llama/meta-llama-3.1-8b-instruct",
         "mistralai/mixtral-8x7b-instruct-v0.1",
     ]
-    runners = ["rocm", "spr", "m7g"]
+    runners = ["rocm", "spr", "m8g"]
     output = json.dumps(
         generate_benchmark_matrix(BENCHMARK_CONFIG_DIRS, models, runners), indent=2
     )
@@ -634,7 +634,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.arm64.m7g.4xlarge",
+      "runner": "linux.arm64.m8g.4xlarge",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
