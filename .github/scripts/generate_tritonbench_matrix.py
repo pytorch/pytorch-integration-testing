@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 # This mapping is needed to find out the platform of the runner
 RUNNER_TO_PLATFORM_MAPPING = {
-    "linux.dgx.b200": "cuda",
+    "linux.dgx.b200.8": "cuda",
 }
 
 # TritonBench benchmarks
