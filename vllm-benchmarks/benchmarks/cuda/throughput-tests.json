@@ -107,7 +107,7 @@
     {
         "test_name": "throughput_deepseek_v3_2_tp8",
         "parameters": {
-            "model": "deepseek-ai/DeepSeek-V3.2-Exp",
+            "model": "deepseek-ai/DeepSeek-V3.2",
             "tensor_parallel_size": 8,
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
