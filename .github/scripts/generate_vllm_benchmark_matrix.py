@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.INFO)
 # while ROCm runner are provided by AMD
 TP_TO_RUNNER_MAPPING = {
     1: [
-        "linux.aws.a100",
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
