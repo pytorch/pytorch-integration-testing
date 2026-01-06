@@ -148,7 +148,7 @@ PLATFORM_SKIPS = {
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
-    "deepseek-ai/DeepSeek-V3.2-Exp": [
+    "deepseek-ai/DeepSeek-V3.2": [
         "linux.aws.a100",
         "linux.aws.h100",
         "linux.24xl.gnr",
