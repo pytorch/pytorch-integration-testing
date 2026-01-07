@@ -151,12 +151,12 @@ def get_git_metadata(repo_dir: str) -> Tuple[str, str]:
         # We couldn't find the branch name
         return repo_name, "main", hexsha, committed_date
 
+
 def get_benchmark_metadata(
     repo_name: str, head_branch: str, head_sha: str, timestamp: int, benchmark_name
 ) -> Dict[str, Any]:
-
     # combine run branch name with the foreign branch name if it's not main
-    local_branch = os.getenv("RUN_LOCAL_BRANCH","")
+    local_branch = os.getenv("RUN_LOCAL_BRANCH", "")
     branch_name = head_branch
     if local_branch and local_branch != "main":
         branch_name = f"{head_branch}({local_branch})"
@@ -354,7 +354,7 @@ def main() -> None:
     metadata = get_benchmark_metadata(
         repo_name, head_branch, head_sha, timestamp, args.benchmark_name
     )
-    runner = get_runner_info(args.device_name, args.device_type)
+    runner = get_runner_info(args.device_name, args.device_type.replace("_", " "))
 
     # Extract and aggregate the benchmark results
     aggregated_results = aggregate(metadata, runner, load(args.benchmark_results))
