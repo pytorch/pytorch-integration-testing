@@ -22,10 +22,6 @@ on:
         required: true
         type: string
         default: h100,b200,rocm
-  pull_request:
-    paths:
-      - .github/workflows/sglang-benchmark.yml
-      - sglang-benchmarks/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
