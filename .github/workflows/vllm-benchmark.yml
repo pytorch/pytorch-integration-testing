@@ -333,8 +333,9 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            # Try fbgemm-gpu-genai-nightly
-            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1 fbgemm-gpu-genai-nightly"
+            # Notes: fbgemm-gpu-genai-nightly + torchao-0.14.1 crashes with this error https://paste.sh/f9O-RpxL#zpyXA2zVG3wKbUbNcG3ob2eI,
+            # none are working with 2.10 yet
+            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1"
           fi
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
