@@ -29,10 +29,6 @@ on:
         # from https://github.com/vllm-project/vllm/pull/26494#issuecomment-3537415441
         # is resolved and merged
         default: h100,rocm,spr,gnr,b200,gaudi3
-  pull_request:
-    paths:
-      - .github/workflows/vllm-benchmark.yml
-      - vllm-benchmarks/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -337,7 +333,8 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1"
+            # Try fbgemm-gpu-genai-nightly
+            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1 fbgemm-gpu-genai-nightly"
           fi
           docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
 
