@@ -25,10 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        # TODO (huydhn): Remove aarch64 CPU benchmark running on m7g until the change
-        # from https://github.com/vllm-project/vllm/pull/26494#issuecomment-3537415441
-        # is resolved and merged
-        default: h100,rocm,spr,gnr,b200,gaudi3
+        default: h100,rocm,spr,gnr,b200,gaudi3,m8g
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -303,13 +300,11 @@ jobs:
         run: |
           set -eux
 
-          ON_ARM64_CPU=0
           ON_CPU=0
 
-          case "$DEVICE_NAME" in
-            cpu)       ON_CPU=1 ;;
-            arm64-cpu) ON_ARM64_CPU=1 ;;
-          esac
+          if [[ "$(uname -m)" == "aarch64" ]] || [[ "$(uname -m)" == "arm64" ]]; then
+            ON_CPU=1
+          fi
 
           container_name=$(docker run \
             ${GPU_FLAG:-} \
@@ -322,7 +317,6 @@ jobs:
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
-            -e ON_ARM64_CPU="${ON_ARM64_CPU}" \
             --ipc=host \
             --tty \
             --detach \
