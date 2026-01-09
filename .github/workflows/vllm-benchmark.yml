@@ -39,13 +39,60 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
+      vllm_commit: ${{ steps.get-vllm-commit.outputs.vllm_commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout vLLM repository
+        uses: actions/checkout@v4
+        with:
+          repository: vllm-project/vllm
+          path: vllm
+          ref: ${{ inputs.vllm_branch || 'main' }}
+          fetch-depth: 100
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Get vLLM commit
+        id: get-vllm-commit
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
+          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
+        run: |
+          set -eux
+
+          # Use the input commit if provided
+          if [[ -n "${HEAD_SHA}" ]]; then
+            echo "Using user-provided vLLM commit: ${HEAD_SHA}"
+            echo "vllm_commit=${HEAD_SHA}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Set Docker image prefix based on branch
+          if [[ "${HEAD_BRANCH}" == "main" ]]; then
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo
+          else
+            DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-test-repo
+          fi
+
+          # Find the latest commit with an available Docker image
+          pushd vllm
+          for i in {0..99}
+          do
+            HEAD_SHA=$(git rev-parse --verify HEAD~${i})
+            DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
+            # Check if Docker image is available
+            if docker manifest inspect "${DOCKER_IMAGE}" > /dev/null 2>&1; then
+              echo "Found vLLM commit with available Docker image: ${HEAD_SHA}"
+              echo "vllm_commit=${HEAD_SHA}" >> $GITHUB_OUTPUT
+              break
+            fi
+          done
+          popd
 
       - name: Set parameters
         id: set-parameters
@@ -217,38 +264,12 @@ jobs:
           set -eux
           docker image prune -a -f || true
 
-      - name: Check for last benchmark commit
-        working-directory: vllm-benchmarks
+      - name: Set vLLM commit
         env:
-          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
-          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
-          MODELS: ${{ matrix.models }}
+          # Use the vLLM commit determined by set-parameters job (same for all matrix jobs)
+          HEAD_SHA: ${{ needs.set-parameters.outputs.vllm_commit }}
         run: |
           set -eux
-
-          if [[ -z "${HEAD_SHA}" ]]; then
-            pushd vllm
-            # Looking back the latest 100 commits is enough
-            for i in {0..99}
-            do
-              # Check if the image is there, if it doesn't then check an older one
-              # because the commit is too recent
-              HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
-              # No Docker image available yet because the commit is too recent
-              if ! docker manifest inspect "${DOCKER_IMAGE}"; then
-                continue
-              fi
-              NOT_EXIST=0
-              S3_PATH="v3/vllm-project/vllm/${HEAD_BRANCH}/${HEAD_SHA}/${DEVICE_TYPE// /_}/benchmark_results_${MODELS//\//_}.json"
-              aws s3api head-object --bucket ossci-benchmarks --key ${S3_PATH} || NOT_EXIST=1
-              if [[ ${NOT_EXIST} == "1" ]]; then
-                echo "Found a vLLM commit ${HEAD_SHA} that hasn't been benchmarked yet"
-                break
-              fi
-            done
-            popd
-          fi
 
           echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
 
