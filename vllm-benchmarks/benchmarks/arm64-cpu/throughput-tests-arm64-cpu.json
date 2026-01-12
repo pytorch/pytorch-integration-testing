@@ -8,24 +8,12 @@
         "parameters": {
             "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
             "tensor_parallel_size": 1,
+            "input-len": 1024,
+            "output-len": 128,
+            "max-model-len": 1152,
             "load_format": "dummy",
             "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200,
-            "backend": "vllm"
-        }
-    },
-    {
-        "test_name": "throughput_llama8B_tp4",
-        "environment_variables": {
-            "VLLM_ALLOW_LONG_MAX_MODEL_LEN": 1,
-            "VLLM_CPU_KVCACHE_SPACE": 40
-        },
-        "parameters": {
-            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-            "tensor_parallel_size": 4,
-            "load_format": "dummy",
-            "dataset": "./ShareGPT_V3_unfiltered_cleaned_split.json",
-            "num_prompts": 200,
+            "num_prompts": 64,
             "backend": "vllm"
         }
     }

@@ -17,8 +17,8 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
-        # "linux.24xl.gnr",  # TODO (huydhn): The runner is down (Jan 7th 2026)
-        # "linux.arm64.m7g.4xlarge",  # TODO (huydhn): This is not working yet
+        # "linux.24xl.gnr", # TODO (huydhn): The runner is down (Jan 7th 2026)
+        "linux.arm64.m8g.4xlarge",
         "linux.dgx.b200",
         "linux.hpu.gaudi3.8",
     ],
@@ -59,7 +59,7 @@ RUNNER_TO_PLATFORM_MAPPING = {
     "linux.rocm.gpu.gfx942.8": "rocm",
     "linux.24xl.spr-metal": "cpu",
     "linux.24xl.gnr": "cpu",
-    # "linux.arm64.m7g.4xlarge": "arm64-cpu",  # TODO (huydhn): This is not working yet
+    "linux.arm64.m8g.4xlarge": "arm64-cpu",
     "linux.hpu.gaudi3.8": "hpu",
 }
 
