@@ -177,7 +177,7 @@ jobs:
             -e DEVICE_NAME \
             -e DEVICE_TYPE \
             -e CONDA_ENV \
-            --cpuset-cpus 10 \
+            --cpuset-cpus 145 \
             --ipc=host \
             --tty \
             --detach \
