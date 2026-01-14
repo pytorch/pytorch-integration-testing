@@ -168,7 +168,7 @@ jobs:
         run: |
           set -eux
 
-          allowed_cores=$(sed -n "s/.*: \([0-9][0-9]*\)-.*/\1/p" $(taskset -pc $$))
+          allowed_core=$(sed -n "s/.*: \([0-9][0-9]*\)-.*/\1/p" $(taskset -pc $$))
           echo "docker allowed core: ${allowed_core}"
           # using `--cpuset-cpus <SINGLE_CPU_CORE>` is critical for stabilizing the performance
           # on this runner (using SPR CPU). This might be related to task migration/Speed Select, etc.
