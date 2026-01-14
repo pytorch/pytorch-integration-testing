@@ -66,6 +66,7 @@ jobs:
     env:
       WORKSPACE_DIR: "/workspace"
       SETUP_SCRIPT: "/workspace/setup-instance.sh"
+      UV_VENV_DIR: "/workspace/uv_venvs"
       CONDA_ENV: "triton-main"
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
       JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
@@ -145,7 +146,7 @@ jobs:
         run: |
           set -eux
           # Use MAX_JOBS=16 to avoid OOM compiling Triton
-          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda
+          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda --triton-main
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
