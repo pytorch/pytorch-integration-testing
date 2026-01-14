@@ -146,8 +146,7 @@ jobs:
         run: |
           set -eux
           # Use MAX_JOBS=16 to avoid OOM compiling Triton
-          # MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda --triton-main
-          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda
+          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda --triton-main
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
