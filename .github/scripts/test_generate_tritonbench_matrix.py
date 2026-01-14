@@ -18,7 +18,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.dgx.b200.8",
+      "runner": "linux.dgx.b200",
       "benchmarks": "nightly"
     }
   ]
