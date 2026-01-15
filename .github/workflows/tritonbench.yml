@@ -69,7 +69,7 @@ jobs:
       UV_VENV_DIR: "/workspace/uv_venvs"
       CONDA_ENV: ${{ matrix.triton_channel }}
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
-      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
+      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-${{ matrix.triton_channel }}--periodic-${{ matrix.benchmarks }}
       RUNNER_TYPE: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     permissions:
@@ -164,7 +164,7 @@ jobs:
           # Run TritonBench on the first available CPU core
           # Single CPU core is needed to stabilize the benchmark results
           first_available_core=$(taskset -pc $$| sed -n 's/.*: \([0-9][0-9]*\).*/\1/p')
-          taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.BENCHMARKS }} --conda-env ${{ env.CONDA_ENV }}
+          taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
           mv .benchmarks results-${{ env.CONDA_ENV }}
 
           # post-process result.json
