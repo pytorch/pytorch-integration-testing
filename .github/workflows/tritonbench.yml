@@ -67,7 +67,7 @@ jobs:
       WORKSPACE_DIR: "/workspace"
       SETUP_SCRIPT: "/workspace/setup-instance.sh"
       UV_VENV_DIR: "/workspace/uv_venvs"
-      CONDA_ENV: "triton-main"
+      CONDA_ENV: ${{ matrix.triton_channel }}
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
       JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-periodic
       RUNNER_TYPE: ${{ matrix.runner }}
