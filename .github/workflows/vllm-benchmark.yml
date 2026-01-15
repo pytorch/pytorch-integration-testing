@@ -327,9 +327,17 @@ jobs:
             "${DOCKER_IMAGE}"
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            docker exec -t "${container_name}" bash -c "pip install torchao==0.14.1 fbgemm-gpu-genai==1.4.1"
+            docker exec -t "${container_name}" bash -c "
+              pip install torchao==0.14.1 fbgemm-gpu-genai==1.4.1
+
+              # A quick mitigation for https://github.com/vllm-project/vllm/issues/32373
+              rm /etc/ld.so.conf.d/00-cuda-compat.conf || true
+              ldconfig
+            "
           fi
-          docker exec -t "${container_name}" bash -c "cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh"
+          docker exec -t "${container_name}" bash -c "
+            cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh
+          "
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
