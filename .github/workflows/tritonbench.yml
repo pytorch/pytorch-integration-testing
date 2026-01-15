@@ -146,7 +146,15 @@ jobs:
         run: |
           set -eux
           # Use MAX_JOBS=16 to avoid OOM compiling Triton
-          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda --triton-main
+          if [ "${CONDA_ENV}" == "triton-main" ]; then
+              CMD_SUFFIX="--triton-main"
+          elif [ "${CONDA_ENV}" == "meta-triton" ]; then
+              CMD_SUFFIX="--meta-triton"
+          else
+              echo "unknown conda env: ${CONDA_ENV}"
+              exit 1
+          fi
+          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda ${CMD_SUFFIX}
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
