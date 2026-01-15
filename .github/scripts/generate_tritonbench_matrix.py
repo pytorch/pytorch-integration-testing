@@ -75,7 +75,7 @@ def parse_args() -> Any:
 
     return parser.parse_args()
 
-def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict[str, Any]:
+def generate_benchmark_matrix(benchmarks: List[str], triton_channels: List[str], runners: List[str]) -> Dict[str, Any]:
     benchmark_matrix: Dict[str, Any] = {
         "include": [],
     }
@@ -89,16 +89,11 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
                 if r.lower() in k:
                     runners.append(k)
 
-
     if not benchmarks:
         benchmarks = TRITONBENCH_BENCHMARKS
-    else:
-        benchmarks = [b.strip().lower() for b in benchmarks.split(",") if b.strip()]
 
     if not triton_channels:
         triton_channels = TRITON_CHANNELS
-    else:
-        triton_channels = [b.strip().lower() for b in triton_channels.split(",") if b.strip()]
 
     # Gather all possible benchmarks
     for runner in runners:
@@ -119,7 +114,8 @@ def main() -> None:
     args = parse_args()
     benchmarks = [b.strip().lower() for b in args.benchmarks.split(",") if b.strip()]
     runners = [r.strip().lower() for r in args.runners.split(",") if r.strip()]
-    benchmark_matrix = generate_benchmark_matrix(benchmarks, runners)
+    triton_channels = [t.strip().lower() for t in args.triton.split(",") if t.strip()]
+    benchmark_matrix = generate_benchmark_matrix(benchmarks, triton_channels, runners)
     print(benchmark_matrix)
     set_output("benchmark_matrix", benchmark_matrix)
 
