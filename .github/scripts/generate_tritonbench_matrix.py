@@ -17,6 +17,12 @@ RUNNER_TO_PLATFORM_MAPPING = {
 }
 
 # TritonBench benchmarks
+TRITON_CHANNELS = set(
+    [
+        "triton-main",
+        "meta-triton"
+    ]
+)
 TRITONBENCH_BENCHMARKS = set(
     [
         "nightly",
@@ -50,8 +56,14 @@ def parse_args() -> Any:
     parser.add_argument(
         "--benchmarks",
         type=str,
-        default="nightly",
+        default=",".join(TRITONBENCH_BENCHMARKS),
         help="the comma-separated list of benchmarks to run. Default to nightly.",
+    )
+    parser.add_argument(
+        "--triton",
+        type=str,
+        default=",".join(TRITON_CHANNELS),
+        help="the comma-separated list of triton channels to run. Default to triton-main,meta-triton. "
     )
     parser.add_argument(
         "--runners",
@@ -79,19 +91,23 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
 
     if not benchmarks:
         benchmarks = TRITONBENCH_BENCHMARKS
+    if not triton_channels:
+        triton_channels = TRITON_CHANNELS
 
     # Gather all possible benchmarks
     for runner in runners:
-        for benchmark in benchmarks:
-            benchmark_matrix["include"].append(
-                {
-                    "runner": runner,
-                    # I opt to return a comma-separated list of models here
-                    # so that we could run multiple models on the same runner
-                    "benchmarks": benchmark,
-                }
-            )
-                
+        for triton_channel in triton_channels:
+            for benchmark in benchmarks:
+                benchmark_matrix["include"].append(
+                    {
+                        "runner": runner,
+                        # I opt to return a comma-separated list of models here
+                        # so that we could run multiple models on the same runner
+                        "triton_channel": triton_channel
+                        "benchmarks": benchmark,
+                    }
+                )
+
     return benchmark_matrix
 
 
