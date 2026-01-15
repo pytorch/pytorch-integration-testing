@@ -89,10 +89,16 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
                 if r.lower() in k:
                     runners.append(k)
 
+
     if not benchmarks:
         benchmarks = TRITONBENCH_BENCHMARKS
+    else:
+        benchmarks = [b.strip().lower() for b in benchmarks.split(",") if b.strip()]
+
     if not triton_channels:
         triton_channels = TRITON_CHANNELS
+    else:
+        triton_channels = [b.strip().lower() for b in triton_channels.split(",") if b.strip()]
 
     # Gather all possible benchmarks
     for runner in runners:
@@ -101,9 +107,7 @@ def generate_benchmark_matrix(benchmarks: List[str], runners: List[str]) -> Dict
                 benchmark_matrix["include"].append(
                     {
                         "runner": runner,
-                        # I opt to return a comma-separated list of models here
-                        # so that we could run multiple models on the same runner
-                        "triton_channel": triton_channel
+                        "triton_channel": triton_channel,
                         "benchmarks": benchmark,
                     }
                 )

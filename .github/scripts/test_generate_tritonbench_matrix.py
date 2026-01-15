@@ -19,6 +19,12 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.dgx.b200",
+      "triton_channel: "triton-main",
+      "benchmarks": "nightly"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "triton_channel: "meta-triton",
       "benchmarks": "nightly"
     }
   ]
