@@ -359,7 +359,7 @@ jobs:
           ls -lah "${BENCHMARK_RESULTS}"
 
           # Fail when there is no result or if the metrics are all zero
-          python3 .github/scripts/upload_benchmark_results.py \
+          python3 .github/scripts/check_benchmark_results.py \
             --benchmark-results "${BENCHMARK_RESULTS}" \
 
       - name: Upload the benchmark results
