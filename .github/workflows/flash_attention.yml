@@ -60,7 +60,7 @@ jobs:
             pushd fa4
             python setup.py install
             pip install -e flash_attn/cute/
-            
+
             echo '<h1>B200' >> /tmp/workspace/fa4_output.txt
             nvidia-smi -q -d POWER | grep 'Current Power Limit' | head -1 | cut  -d : -f 2 >> /tmp/workspace/fa4_output.txt
             echo '</h1>' >> /tmp/workspace/fa4_output.txt
