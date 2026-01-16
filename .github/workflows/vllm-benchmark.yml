@@ -349,6 +349,19 @@ jobs:
           role-duration-seconds: 18000
           aws-region: us-east-1
 
+      - name: Check the benchmark results
+        env:
+          BENCHMARK_RESULTS: vllm-benchmarks/vllm/benchmarks/results
+        run: |
+          set -eux
+
+          sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
+          ls -lah "${BENCHMARK_RESULTS}"
+
+          # Fail when there is no result or if the metrics are all zero
+          python3 .github/scripts/upload_benchmark_results.py \
+            --benchmark-results "${BENCHMARK_RESULTS}" \
+
       - name: Upload the benchmark results
         env:
           BENCHMARK_RESULTS: vllm-benchmarks/vllm/benchmarks/results
@@ -359,9 +372,6 @@ jobs:
           RUN_LOCAL_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
         run: |
           set -eux
-
-          sudo chown -R ${UID} "${BENCHMARK_RESULTS}"
-          ls -lah "${BENCHMARK_RESULTS}"
 
           echo "## workflow info: ${WORKFLOW_RUN_ID} ${RUN_ATTEMPT} ${JOB_ID}"
 
