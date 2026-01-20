@@ -35,10 +35,12 @@ def transform_config_to_eager(config: Dict[str, Any]) -> Dict[str, Any]:
     if "test_name" in result:
         result["test_name"] = result["test_name"] + "_eager"
 
-    # Add compilation_config with mode=0 to disable compilation (eager mode)
+    # Add compilation_config.mode=0 to disable compilation (eager mode)
+    # Using dot notation (compilation_config.mode) instead of nested JSON
+    # to avoid shell quoting issues when json2args converts to CLI args
     for param_key in EAGER_MODE_PARAMETER_KEYS:
         if param_key in result:
-            result[param_key]["compilation_config"] = {"mode": 0}
+            result[param_key]["compilation_config.mode"] = 0
 
     return result
 
