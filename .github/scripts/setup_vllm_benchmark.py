@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+import copy
 import os
 import json
 import glob
 import logging
 from logging import warning
 from argparse import Action, ArgumentParser, Namespace
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,29 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
         "common_parameters",
     ]
 )
+
+# Parameter keys where compilation_config should be added for eager mode
+EAGER_MODE_PARAMETER_KEYS = ["parameters", "server_parameters"]
+
+
+def transform_config_to_eager(config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Transform a benchmark config to eager mode.
+    """
+    result = copy.deepcopy(config)
+
+    # Add _eager suffix to test_name
+    if "test_name" in result:
+        result["test_name"] = result["test_name"] + "_eager"
+
+    # Add compilation_config.mode=0 to disable compilation (eager mode)
+    # Using dot notation (compilation_config.mode) instead of nested JSON
+    # to avoid shell quoting issues when json2args converts to CLI args
+    for param_key in EAGER_MODE_PARAMETER_KEYS:
+        if param_key in result:
+            result[param_key]["compilation_config.mode"] = 0
+
+    return result
 
 
 class ValidateDir(Action):
@@ -68,6 +92,12 @@ def parse_args() -> Any:
         help="device for the runner",
         required=True,
     )
+    parser.add_argument(
+        "--include-eager-mode",
+        action="store_true",
+        default=False,
+        help="also generate eager mode variants of all benchmarks",
+    )
 
     return parser.parse_args()
 
@@ -77,9 +107,10 @@ def setup_benchmark_configs(
     to_benchmark_configs_dir: str,
     models: List[str],
     device: str,
+    include_eager_mode: bool = False,
 ) -> None:
     """
-    Setup the benchmark configs to run on this runner
+    Setup the benchmark configs to run on this runner.
     """
     for file in glob.glob(f"{from_benchmark_configs_dir}/{device}/*.json"):
         filename = os.path.basename(file)
@@ -106,6 +137,9 @@ def setup_benchmark_configs(
                 continue
 
             benchmark_configs.append(config)
+            if include_eager_mode:
+                eager_config = transform_config_to_eager(config)
+                benchmark_configs.append(eager_config)
 
         if benchmark_configs:
             with open(os.path.join(to_benchmark_configs_dir, filename), "w") as f:
@@ -119,6 +153,7 @@ def main() -> None:
         args.to_benchmark_configs_dir,
         args.models.split(","),
         args.device,
+        args.include_eager_mode,
     )
 
 
