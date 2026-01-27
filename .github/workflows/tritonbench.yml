@@ -168,6 +168,7 @@ jobs:
           mv .benchmarks results-${{ env.CONDA_ENV }}
 
           # post-process result.json
+          . "${SETUP_SCRIPT}"
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
             --add-github-env --output ${latest_result_json}
@@ -194,12 +195,14 @@ jobs:
         if:  ${{ env.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN != '' }}
         working-directory: triton-benchmarks/tritonbench
         run: |
+          . "${SETUP_SCRIPT}"
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/upload/scribe.py --json ${latest_result_json}
 
       - name: Rewrite Tritonbench result json to ClickHouse style
         working-directory: triton-benchmarks/tritonbench
         run: |
+          . "${SETUP_SCRIPT}"
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
                 --output clickhouse-results/result-${CONDA_ENV}.json
