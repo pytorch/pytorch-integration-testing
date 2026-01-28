@@ -8,9 +8,10 @@ from generate_tritonbench_matrix import generate_benchmark_matrix
 def test_generate_benchmark_matrix():
     # All combinations, no duplication
     benchmarks = []
+    triton_channels = []
     runners = []
     output = json.dumps(
-        generate_benchmark_matrix(benchmarks, runners), indent=2
+        generate_benchmark_matrix(benchmarks, triton_channels, runners), indent=2
     )
     assert_expected_inline(
         output,
@@ -19,14 +20,34 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.dgx.b200",
-      "triton_channel: "triton-main",
+      "triton_channel": "triton-main",
       "benchmarks": "nightly"
     },
     {
       "runner": "linux.dgx.b200",
-      "triton_channel: "meta-triton",
+      "triton_channel": "meta-triton",
       "benchmarks": "nightly"
     }
   ]
 }""",
     )
+
+    benchmarks = ["bisect"]
+    triton_channels = ["triton-main"]
+    runners = ["b200"]
+    output = json.dumps(
+        generate_benchmark_matrix(benchmarks, triton_channels, runners), indent=2
+    )
+    assert_expected_inline(
+        output,
+        """\
+{
+  "include": [
+    {
+      "runner": "linux.dgx.b200",
+      "triton_channel": "triton-main",
+      "benchmarks": "bisect"
+    }
+  ]
+}""",
+  )

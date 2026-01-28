@@ -1,0 +1,198 @@
+name: TritonBench Bisect
+
+on:
+  workflow_dispatch:
+    tritonbench_branch:
+      description: TritonBench branch (main)
+      required: true
+      type: string
+      default: main
+    runners:
+      description: |
+        Hardware
+      required: true
+      type: choice
+      options:
+        - 'b200'
+    bisect_type:
+      type: choice
+      default: 'performance'
+      options:
+        - 'performance'
+        - 'functional'
+    triton_channel:
+      type: choice
+      default: 'triton-main'
+      options:
+        - 'triton-main'
+        - 'meta-triton'
+      description: 'Triton channel to bisect'
+    repro_cmdline:
+      required: True
+      type: string
+      description: |
+        The command line to reproduce the regression
+    good_commit:
+      required: True
+      type: string
+      description: |
+        Last good commit (no regression)
+    bad_commit:
+      required: True
+      type: string
+      description: |
+        First bad commit (has regression)
+    regression_threshold:
+      type: number
+      default: 10
+      description: |
+        Performance regression threshold in %
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
+  cancel-in-progress: true
+
+
+jobs:
+  set-parameters:
+    runs-on: ubuntu-latest
+    outputs:
+      benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set parameters
+        id: set-parameters
+        shell: bash
+        env:
+          RUNNERS: ${{ inputs.runners || '' }}
+        run: |
+          set -eux
+
+          # The generated matrix is grouped by benchmark and runner
+          python .github/scripts/generate_tritonbench_matrix.py \
+            --runners "${RUNNERS}" --benchmark bisect --triton ${{ inputs.triton_channel }}
+
+  bisect:
+    name: Run TritonBench Bisect
+    needs: set-parameters
+    if: ${{ !github.event.pull_request.head.repo.fork && github.repository_owner == 'pytorch' }}
+    strategy:
+      matrix: ${{ fromJson(needs.set-parameters.outputs.benchmark_matrix) }}
+      fail-fast: false
+    runs-on: ${{ matrix.runner }}
+    env:
+      WORKSPACE_DIR: "/workspace"
+      SETUP_SCRIPT: "/workspace/setup-instance.sh"
+      UV_VENV_DIR: "/workspace/uv_venvs"
+      CONDA_ENV: ${{ matrix.triton_channel }}
+      TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
+      JOB_NAME: tritonbench-${{ matrix.runner }}-bisect-${{ matrix.triton_channel }}
+      RUNNER_TYPE: ${{ matrix.runner }}
+      GOOD_COMMIT: ${{ inputs.good_commit }}
+      BAD_COMMIT: ${{ inputs.bad_commit }}
+      REGRESSION_THRESHOLD: ${{ inputs.regression_threshold }}
+      REPRO_CMDLINE: ${{ inputs.repro_cmdline }}
+      FUNCTIONAL: ${{ inputs.bisect_type == 'functional' && '1' || '0' }}
+    environment: pytorch-x-vllm
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnuma-dev numactl
+      
+      - name: Checkout TritonBench repository
+        uses: actions/checkout@v4
+        with:
+          repository: meta-pytorch/tritonbench
+          path: triton-benchmarks/tritonbench
+          ref: main
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        # Amazon Linux fails on this step
+        continue-on-error: true
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Check if the device is supported
+        shell: bash
+        run: |
+          set -eux
+
+          if command -v nvidia-smi; then
+            DEVICE_NAME=cuda
+            nvidia-smi
+          elif command -v rocm-smi; then
+            DEVICE_NAME=rocm
+            rocm-smi
+          else
+            DEVICE_NAME=cpu
+            lscpu
+          fi
+          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
+
+      - name: Set GPU name and type
+        shell: bash
+        run: |
+          set -eux
+
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+            CUDA_HOME="/usr/local/cuda"
+            echo "CUDA_HOME=$CUDA_HOME" >> $GITHUB_ENV
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
+          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
+            DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
+          fi
+          echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
+
+      - name: Install TritonBench
+        working-directory: triton-benchmarks/tritonbench
+        run: |
+          set -eux
+          # Use MAX_JOBS=16 to avoid OOM compiling Triton
+          if [ "${CONDA_ENV}" == "triton-main" ]; then
+              CMD_SUFFIX="--triton-main"
+          elif [ "${CONDA_ENV}" == "meta-triton" ]; then
+              CMD_SUFFIX="--meta-triton"
+          else
+              echo "unknown conda env: ${CONDA_ENV}"
+              exit 1
+          fi
+          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda ${CMD_SUFFIX}
+
+      - name: Run TritonBench Bisect
+        working-directory: triton-benchmarks/tritonbench
+        run: |
+          set -eux
+
+          # Run TritonBench on the first available CPU core
+          # Single CPU core is needed to stabilize the benchmark results
+          first_available_core=$(taskset -pc $$| sed -n 's/.*: \([0-9][0-9]*\).*/\1/p')
+          taskset -c ${first_available_core} bash .ci/bisect/run.sh
+          mv bisect_logs bisect-results-${{ env.CONDA_ENV }}
+
+      # Keep a copy of the benchmark results on GitHub for reference
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ env.JOB_NAME }}
+          path: triton-benchmarks/tritonbench/bisect-results-${{ env.CONDA_ENV }}
+          retention-days: 30
