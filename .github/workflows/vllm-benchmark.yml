@@ -294,6 +294,7 @@ jobs:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_HOME: /mnt/hf_cache
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
@@ -307,6 +308,12 @@ jobs:
             ON_CPU=1
           fi
 
+          # Just create an empty HF_CACHE dir if it doesn't exist
+          if [[ ! -d "${HF_HOME}" ]]; then
+            export HF_HOME="${RUNNER_TEMP}/hf_cache"
+            mkdir -p "${HF_HOME}"
+          fi
+
           container_name=$(docker run \
             ${GPU_FLAG:-} \
             ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
@@ -315,6 +322,7 @@ jobs:
             -e DEVICE_NAME \
             -e DEVICE_TYPE \
             -e HF_TOKEN \
+            -e HF_HOME \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
@@ -324,6 +332,7 @@ jobs:
             --security-opt seccomp=unconfined \
             --shm-size=4g \
             -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -v "${HF_HOME}:${HF_HOME}" \
             -w /tmp/workspace \
             "${DOCKER_IMAGE}"
           )
