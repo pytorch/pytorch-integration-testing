@@ -5,22 +5,23 @@ on:
     # Run every 12 hours
     - cron: '0 */12 * * *'
   workflow_dispatch:
-    tritonbench_branch:
-      description: TritonBench branch (main)
-      required: true
-      type: string
-      default: main
-    benchmarks:
-      description: |
-        A comma-separated list of benchmarks from tritonbench/benchmarks (optional, default to run nightly)
-      required: false
-      type: string
-    runners:
-      description: |
-        A comma-separated list of runners from .github/scripts/genenerate_tritonbench_matrix.py to run the benchmark (optional, default to run b200)
-      required: true
-      type: string
-      default: b200
+    inputs:
+      tritonbench_branch:
+        description: TritonBench branch (main)
+        required: true
+        type: string
+        default: main
+      benchmarks:
+        description: |
+          A comma-separated list of benchmarks from tritonbench/benchmarks (optional, default to run nightly)
+        required: false
+        type: string
+      runners:
+        description: |
+          A comma-separated list of runners from .github/scripts/genenerate_tritonbench_matrix.py to run the benchmark (optional, default to run b200)
+        required: true
+        type: string
+        default: b200
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -161,6 +162,13 @@ jobs:
         run: |
           set -eux
 
+          . "${SETUP_SCRIPT}"
+
+          # install deps (if there is any)
+          if [ -f benchmarks/${{ matrix.benchmarks }}/requirements.txt ]; then
+            uv pip install -r benchmarks/${{ matrix.benchmarks }}/requirements.txt
+          fi
+
           # Run TritonBench on the first available CPU core
           # Single CPU core is needed to stabilize the benchmark results
           first_available_core=$(taskset -pc $$| sed -n 's/.*: \([0-9][0-9]*\).*/\1/p')
@@ -168,7 +176,6 @@ jobs:
           mv .benchmarks results-${{ env.CONDA_ENV }}
 
           # post-process result.json
-          . "${SETUP_SCRIPT}"
           latest_result_json=$(find ./results-${CONDA_ENV} -name "result.json"  | sort -r | head -n 1)
           python3 ./.ci/test_infra/oss_ci_benchmark_v3.py --json ${latest_result_json} \
             --add-github-env --output ${latest_result_json}

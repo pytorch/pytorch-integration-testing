@@ -26,6 +26,13 @@ TRITON_CHANNELS = set(
 TRITONBENCH_BENCHMARKS = set(
     [
         "nightly",
+        "tlx",
+    ]
+)
+# benchmarks that should only be run on meta-triton channel
+TRITONBENCH_META_TRITON_ONLY_BENCHMARKS = set(
+    [
+        "tlx",
     ]
 )
 
@@ -99,6 +106,10 @@ def generate_benchmark_matrix(benchmarks: List[str], triton_channels: List[str],
     for runner in runners:
         for triton_channel in triton_channels:
             for benchmark in benchmarks:
+                if (not triton_channel == "meta-triton" and 
+                    benchmark in TRITONBENCH_META_TRITON_ONLY_BENCHMARKS
+                ):
+                    continue
                 benchmark_matrix["include"].append(
                     {
                         "runner": runner,
