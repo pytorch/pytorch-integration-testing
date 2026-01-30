@@ -1,1 +1,33 @@
-[]
+[
+    {
+        "test_name": "serving_llama8B_tp1_random_1024_128",
+        "qps_list": [1, 4, 16, "inf"],
+        "server_environment_variables": {
+            "VLLM_RPC_TIMEOUT": 100000,
+            "VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS": 3000,
+            "VLLM_ALLOW_LONG_MAX_MODEL_LEN": 1,
+            "VLLM_ENGINE_ITERATION_TIMEOUT_S": 120,
+            "VLLM_CPU_KVCACHE_SPACE": 20
+        },
+        "server_parameters": {
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "tensor_parallel_size": 1,
+            "dtype": "bfloat16",
+            "distributed_executor_backend": "mp",
+            "trust_remote_code": "",
+            "enable_chunked_prefill": "",
+            "disable_log_stats": "",
+            "disable_log_requests": "",
+            "load_format": "dummy"
+        },
+        "client_parameters": {
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "backend": "vllm",
+            "dataset_name": "random",
+            "random-input-len": 1024,
+            "random-output-len": 128,
+            "ignore-eos": "",
+            "num_prompts": 64
+        }
+    }
+]
