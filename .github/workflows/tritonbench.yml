@@ -91,7 +91,7 @@ jobs:
         with:
           repository: meta-pytorch/tritonbench
           path: triton-benchmarks/tritonbench
-          ref: main
+          ref: ${{ inputs.tritonbench_branch }}
           submodules: recursive
           fetch-depth: 0
 
@@ -172,7 +172,11 @@ jobs:
           # Run TritonBench on the first available CPU core
           # Single CPU core is needed to stabilize the benchmark results
           first_available_core=$(taskset -pc $$| sed -n 's/.*: \([0-9][0-9]*\).*/\1/p')
-          taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
+          if [ ${{ matrix.benchmarks }} == "tlx" ]; then
+              bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
+          else
+              taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
+          fi
           mv .benchmarks results-${{ env.CONDA_ENV }}
 
           # post-process result.json
