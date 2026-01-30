@@ -91,7 +91,7 @@ jobs:
         with:
           repository: meta-pytorch/tritonbench
           path: triton-benchmarks/tritonbench
-          ref: main
+          ref: ${{ inputs.tritonbench_branch }}
           submodules: recursive
           fetch-depth: 0
 
