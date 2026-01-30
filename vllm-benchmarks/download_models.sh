@@ -11,7 +11,6 @@ export HF_HOME=/mnt/hf_cache
 # List of HuggingFace models to download
 MODELS=(
     "deepseek-ai/DeepSeek-R1"
-    "deepseek-ai/DeepSeek-V3.1"
     "deepseek-ai/DeepSeek-V3.2"
     "facebook/opt-125m"
     "google/gemma-3-27b-it"
@@ -19,8 +18,6 @@ MODELS=(
     "meta-llama/Llama-3.1-8B-Instruct"
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
     "meta-llama/Llama-4-Scout-17B-16E-Instruct"
-    "meta-llama/Meta-Llama-3.1-70B-Instruct"
-    "meta-llama/Meta-Llama-3.1-8B-Instruct"
     "mistralai/Mixtral-8x7B-Instruct-v0.1"
     "openai/gpt-oss-120b"
     "openai/gpt-oss-20b"
