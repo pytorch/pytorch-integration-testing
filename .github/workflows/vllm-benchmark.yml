@@ -295,6 +295,7 @@ jobs:
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HOME: /mnt/hf_cache
+          TRANSFORMERS_OFFLINE: 1
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
@@ -312,6 +313,10 @@ jobs:
           if [[ ! -d "${HF_HOME}" ]]; then
             export HF_HOME="${RUNNER_TEMP}/hf_cache"
             mkdir -p "${HF_HOME}"
+
+            # When there is no cache directory, e.g. benchmark, the job has no
+            # way but to reach out to HF if needed
+            export TRANSFORMERS_OFFLINE=0
           fi
 
           container_name=$(docker run \
@@ -323,6 +328,7 @@ jobs:
             -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e HF_HOME \
+            -e TRANSFORMERS_OFFLINE \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
             -e ON_CPU="${ON_CPU}" \
