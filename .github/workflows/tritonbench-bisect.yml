@@ -2,51 +2,52 @@ name: TritonBench Bisect
 
 on:
   workflow_dispatch:
-    tritonbench_branch:
-      description: TritonBench branch (main)
-      required: true
-      type: string
-      default: main
-    runners:
-      description: |
-        Hardware
-      required: true
-      type: choice
-      options:
-        - 'b200'
-    bisect_type:
-      type: choice
-      default: 'performance'
-      options:
-        - 'performance'
-        - 'functional'
-    triton_channel:
-      type: choice
-      default: 'triton-main'
-      options:
-        - 'triton-main'
-        - 'meta-triton'
-      description: 'Triton channel to bisect'
-    repro_cmdline:
-      required: True
-      type: string
-      description: |
-        The command line to reproduce the regression
-    good_commit:
-      required: True
-      type: string
-      description: |
-        Last good commit (no regression)
-    bad_commit:
-      required: True
-      type: string
-      description: |
-        First bad commit (has regression)
-    regression_threshold:
-      type: number
-      default: 10
-      description: |
-        Performance regression threshold in %
+    inputs:
+      tritonbench_branch:
+        description: TritonBench branch (main)
+        required: true
+        type: string
+        default: main
+      runners:
+        description: |
+          Hardware
+        required: true
+        type: choice
+        options:
+          - 'b200'
+      bisect_type:
+        type: choice
+        default: 'performance'
+        options:
+          - 'performance'
+          - 'functional'
+      triton_channel:
+        type: choice
+        default: 'triton-main'
+        options:
+          - 'triton-main'
+          - 'meta-triton'
+        description: 'Triton channel to bisect'
+      repro_cmdline:
+        required: True
+        type: string
+        description: |
+          The command line to reproduce the regression
+      good_commit:
+        required: True
+        type: string
+        description: |
+          Last good commit (no regression)
+      bad_commit:
+        required: True
+        type: string
+        description: |
+          First bad commit (has regression)
+      regression_threshold:
+        type: number
+        default: 10
+        description: |
+          Performance regression threshold in %
 
 
 concurrency:

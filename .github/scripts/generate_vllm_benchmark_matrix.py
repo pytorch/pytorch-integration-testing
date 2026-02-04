@@ -17,7 +17,7 @@ TP_TO_RUNNER_MAPPING = {
         "linux.aws.h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
-        # "linux.24xl.gnr", # TODO (huydhn): The runner is down (Jan 7th 2026)
+        "linux.24xl.gnr",
         "linux.arm64.m8g.4xlarge",
         "linux.dgx.b200",
         "linux.hpu.gaudi3.8",
@@ -27,7 +27,7 @@ TP_TO_RUNNER_MAPPING = {
     2: [
         "linux.aws.h100.4",
         "linux.rocm.gpu.gfx942.2",
-        # "linux.24xl.gnr",  # TODO (huydhn): The runner is down (Jan 7th 2026)
+        "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
         "linux.dgx.b200.8",
     ],
