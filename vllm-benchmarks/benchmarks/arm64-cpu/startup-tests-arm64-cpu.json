@@ -1,0 +1,14 @@
+[
+    {
+        "test_name": "startup_llama8B_tp1",
+        "environment_variables": {
+            "VLLM_ALLOW_LONG_MAX_MODEL_LEN": 1,
+            "VLLM_CPU_KVCACHE_SPACE": 20
+        },
+        "parameters": {
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "tensor_parallel_size": 1,
+            "load_format": "dummy"
+        }
+    }
+]
