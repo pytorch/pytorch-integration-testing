@@ -305,7 +305,7 @@ jobs:
 
           ON_CPU=0
 
-          if [[ "$(uname -m)" == "aarch64" ]] || [[ "$(uname -m)" == "arm64" ]]; then
+          if [[ "${DEVICE_NAME}" == "cpu" ]] || [[ "${DEVICE_NAME}" == "arm64-cpu" ]]; then
             ON_CPU=1
           fi
 
