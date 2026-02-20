@@ -36,6 +36,13 @@ def parse_args() -> Any:
         help="the directory with the benchmark results",
     )
 
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        default=False,
+        help="exit with code 1 when all benchmark results are zeroed",
+    )
+
     return parser.parse_args()
 
 
@@ -74,7 +81,7 @@ def read_benchmark_results(filepath: str) -> List[Dict[str, Any]]:
     return results
 
 
-def check_benchmark_results(benchmark_results_dir: str) -> Dict[str, List]:
+def check_benchmark_results(benchmark_results_dir: str, strict: bool = False) -> Dict[str, List]:
     all_results = {}
 
     for file in glob.glob(f"{benchmark_results_dir}/*.json"):
@@ -106,6 +113,8 @@ def check_benchmark_results(benchmark_results_dir: str) -> Dict[str, List]:
         # fail the benchmark job accordingly instead of uploading 0 to the database
         if all(v == 0 for v in values):
             warning(f"All PyTorch benchmark results in {file} are zeroed")
+            if strict:
+                sys.exit(1)
             continue
 
         info(f"Loading benchmark results from {file}")
@@ -118,7 +127,7 @@ def main() -> None:
     args = parse_args()
 
     # Extract and aggregate the benchmark results
-    if not check_benchmark_results(args.benchmark_results):
+    if not check_benchmark_results(args.benchmark_results, strict=args.strict):
         warning(f"Find no benchmark results in {args.benchmark_results}")
         sys.exit(1)
 
