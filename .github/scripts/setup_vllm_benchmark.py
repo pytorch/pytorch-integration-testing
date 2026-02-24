@@ -41,6 +41,9 @@ def transform_config_to_eager(config: Dict[str, Any]) -> Dict[str, Any]:
     for param_key in EAGER_MODE_PARAMETER_KEYS:
         if param_key in result:
             result[param_key]["compilation_config.mode"] = 0
+            # Set cudagraph_mode to FULL so that we can have an eager
+            # baseline with reasonable performance
+            result[param_key]["compilation_config.cudagraph_mode"] = 2
 
     return result
 
