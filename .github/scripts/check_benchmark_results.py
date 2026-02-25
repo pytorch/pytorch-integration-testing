@@ -112,9 +112,14 @@ def check_benchmark_results(benchmark_results_dir: str, strict: bool = False) ->
         # returns the value of 0 even when it fails. We need to check for this and
         # fail the benchmark job accordingly instead of uploading 0 to the database
         if all(v == 0 for v in values):
-            warning(f"All PyTorch benchmark results in {file} are zeroed")
-            if strict:
-                sys.exit(1)
+            # Compilation time is expected to be 0 in eager mode, so allow it
+            lower_filename = filename.lower()
+            if "eager" in lower_filename and "compilation" in lower_filename:
+                info(f"Accepting zeroed compilation results in eager mode for {file}")
+            else:
+                warning(f"All PyTorch benchmark results in {file} are zeroed")
+                if strict:
+                    sys.exit(1)
             continue
 
         info(f"Loading benchmark results from {file}")
