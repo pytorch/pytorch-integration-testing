@@ -40,7 +40,10 @@ def transform_config_to_eager(config: Dict[str, Any]) -> Dict[str, Any]:
     # to avoid shell quoting issues when json2args converts to CLI args
     for param_key in EAGER_MODE_PARAMETER_KEYS:
         if param_key in result:
-            result[param_key]["compilation_config.mode"] = 0
+            result[param_key]["compilation-config.mode"] = 0
+            # Set cudagraph_mode to FULL so that we can have an eager
+            # baseline with reasonable performance
+            result[param_key]["compilation-config.cudagraph_mode"] = 2
 
     return result
 

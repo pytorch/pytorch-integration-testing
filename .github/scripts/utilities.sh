@@ -5,16 +5,20 @@
 
 json2args() {
     # transforms the JSON string to command line args, and '_' is replaced to '-'
+    # only in the arg name (before the first '.'), preserving sub-field names after '.'
     # example:
     # input: { "model": "meta-llama/Llama-2-7b-chat-hf", "tensor_parallel_size": 1 }
     # output: --model meta-llama/Llama-2-7b-chat-hf --tensor-parallel-size 1
+    # input: { "compilation-config.cudagraph_mode": 2 }
+    # output: --compilation-config.cudagraph_mode 2
     local json_string=$1
     local args=$(
         echo "$json_string" | jq -r '
         to_entries |
         map(
-            if .value == "" then "--" + (.key | gsub("_"; "-"))
-            else "--" + (.key | gsub("_"; "-")) + " " + (.value | tostring)
+            (.key | split(".") | .[0] |= gsub("_"; "-") | join(".")) as $arg |
+            if .value == "" then "--" + $arg
+            else "--" + $arg + " " + (.value | tostring)
             end
         ) |
         join(" ")
