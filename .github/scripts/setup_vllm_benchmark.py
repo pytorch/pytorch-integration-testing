@@ -21,29 +21,33 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
     ]
 )
 
-# Parameter keys where compilation_config should be added for eager mode
-EAGER_MODE_PARAMETER_KEYS = ["parameters", "server_parameters"]
+# Parameter keys where compilation_config overrides are applied
+COMPILATION_CONFIG_PARAMETER_KEYS = ["parameters", "server_parameters"]
+
+# Eager mode: disable compilation with FULL cudagraph
+EAGER_COMPILATION_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
 
 
-def transform_config_to_eager(config: Dict[str, Any]) -> Dict[str, Any]:
+def apply_compilation_config(
+    config: Dict[str, Any],
+    compilation_config: Dict[str, Any],
+    test_name_suffix: str = "",
+) -> Dict[str, Any]:
     """
-    Transform a benchmark config to eager mode.
+    Apply compilation config overrides to a benchmark config.
+
+    Uses dot notation (compilation-config.<key>) instead of nested JSON
+    to avoid shell quoting issues when json2args converts to CLI args.
     """
     result = copy.deepcopy(config)
 
-    # Add _eager suffix to test_name
-    if "test_name" in result:
-        result["test_name"] = result["test_name"] + "_eager"
+    if test_name_suffix and "test_name" in result:
+        result["test_name"] = result["test_name"] + test_name_suffix
 
-    # Add compilation_config.mode=0 to disable compilation (eager mode)
-    # Using dot notation (compilation_config.mode) instead of nested JSON
-    # to avoid shell quoting issues when json2args converts to CLI args
-    for param_key in EAGER_MODE_PARAMETER_KEYS:
+    for param_key in COMPILATION_CONFIG_PARAMETER_KEYS:
         if param_key in result:
-            result[param_key]["compilation-config.mode"] = 0
-            # Set cudagraph_mode to FULL so that we can have an eager
-            # baseline with reasonable performance
-            result[param_key]["compilation-config.cudagraph_mode"] = 2
+            for key, value in compilation_config.items():
+                result[param_key][f"compilation-config.{key}"] = value
 
     return result
 
@@ -101,6 +105,12 @@ def parse_args() -> Any:
         default=False,
         help="also generate eager mode variants of all benchmarks",
     )
+    parser.add_argument(
+        "--compilation-config",
+        type=str,
+        default="",
+        help="JSON string of compilation config overrides applied to all benchmarks",
+    )
 
     return parser.parse_args()
 
@@ -110,6 +120,7 @@ def setup_benchmark_configs(
     to_benchmark_configs_dir: str,
     models: List[str],
     device: str,
+    compilation_config: Optional[Dict[str, Any]] = None,
     include_eager_mode: bool = False,
 ) -> None:
     """
@@ -139,9 +150,14 @@ def setup_benchmark_configs(
             if model not in models:
                 continue
 
+            if compilation_config:
+                config = apply_compilation_config(config, compilation_config)
+
             benchmark_configs.append(config)
             if include_eager_mode:
-                eager_config = transform_config_to_eager(config)
+                eager_config = apply_compilation_config(
+                    config, EAGER_COMPILATION_CONFIG, "_eager"
+                )
                 benchmark_configs.append(eager_config)
 
         if benchmark_configs:
@@ -151,11 +167,15 @@ def setup_benchmark_configs(
 
 def main() -> None:
     args = parse_args()
+    compilation_config = (
+        json.loads(args.compilation_config) if args.compilation_config else None
+    )
     setup_benchmark_configs(
         args.from_benchmark_configs_dir,
         args.to_benchmark_configs_dir,
         args.models.split(","),
         args.device,
+        compilation_config,
         args.include_eager_mode,
     )
 
