@@ -19,10 +19,10 @@ jobs:
     runs-on: linux.dgx.b200.8
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout Flash Attention repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Dao-AILab/flash-attention
           path: fa4
