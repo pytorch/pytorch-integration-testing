@@ -47,8 +47,11 @@ def apply_compilation_config(
 
     for param_key in COMPILATION_CONFIG_PARAMETER_KEYS:
         if param_key in result:
-            result[param_key]["compilation-config"] = json.dumps(
-                compilation_config, separators=(",", ":")
+            # Wrap in single quotes so the JSON survives shell eval/
+            # brace expansion when json2args output is used in bash -c
+            # or eval commands in vllm's benchmark scripts.
+            result[param_key]["compilation-config"] = (
+                "'" + json.dumps(compilation_config, separators=(",", ":")) + "'"
             )
 
     return result
