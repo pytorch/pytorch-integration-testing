@@ -36,8 +36,9 @@ def apply_compilation_config(
     """
     Apply compilation config overrides to a benchmark config.
 
-    Uses dot notation (compilation-config.<key>) instead of nested JSON
-    to avoid shell quoting issues when json2args converts to CLI args.
+    Uses a single "compilation-config" key with a JSON string value so that
+    vllm's upstream json2args (which replaces all underscores with hyphens)
+    does not mangle field names like cudagraph_mode.
     """
     result = copy.deepcopy(config)
 
@@ -46,8 +47,12 @@ def apply_compilation_config(
 
     for param_key in COMPILATION_CONFIG_PARAMETER_KEYS:
         if param_key in result:
-            for key, value in compilation_config.items():
-                result[param_key][f"compilation-config.{key}"] = value
+            # Wrap in single quotes so the JSON survives shell eval/
+            # brace expansion when json2args output is used in bash -c
+            # or eval commands in vllm's benchmark scripts.
+            result[param_key]["compilation-config"] = (
+                "'" + json.dumps(compilation_config, separators=(",", ":")) + "'"
+            )
 
     return result
 
