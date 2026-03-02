@@ -48,7 +48,7 @@ def apply_compilation_config(
     for param_key in COMPILATION_CONFIG_PARAMETER_KEYS:
         if param_key in result:
             result[param_key]["compilation-config"] = json.dumps(
-                compilation_config
+                compilation_config, separators=(",", ":")
             )
 
     return result
