@@ -274,14 +274,6 @@ jobs:
           pushd vllm-benchmarks/vllm
           git checkout "${HEAD_SHA}"
           rm .buildkite/performance-benchmarks/tests/*.json || true
-
-          # Patch vllm's json2args to only replace '_' with '-' in the arg name
-          # (before the first '.'), preserving sub-field names after '.' so that
-          # dotted keys like compilation-config.cudagraph_mode are not mangled.
-          # TODO: Fix in the vllm upstream, but that will take a while to get in.
-          sed -i 's#(.key | gsub("_"; "-"))#(.key | split(".") | .[0] |= gsub("_"; "-") | join("."))#g' \
-            .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh \
-            .buildkite/performance-benchmarks/scripts/launch-server.sh
           popd
 
           # Set the list of benchmarks we want to cover in this runner
