@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright (c) Facebook, Inc. and its affiliates.
+
 set -e
 
 echo "Installing huggingface_hub and hf_xet..."
