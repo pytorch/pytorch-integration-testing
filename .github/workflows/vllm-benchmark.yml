@@ -295,6 +295,7 @@ jobs:
           SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HOME: /mnt/hf_cache
+          FLASHINFER_WORKSPACE_BASE: /mnt/hf_cache
           # TODO: Set to 0 for testing, revert before landing
           TRANSFORMERS_OFFLINE: 0
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
@@ -313,6 +314,7 @@ jobs:
           # Just create an empty HF_CACHE dir if it doesn't exist
           if [[ ! -d "${HF_HOME}" ]]; then
             export HF_HOME="${RUNNER_TEMP}/hf_cache"
+            export FLASHINFER_WORKSPACE_BASE="${HF_HOME}"
             mkdir -p "${HF_HOME}"
 
             # When there is no cache directory, e.g. benchmark, the job has no
@@ -329,6 +331,7 @@ jobs:
             -e DEVICE_TYPE \
             -e HF_TOKEN \
             -e HF_HOME \
+            -e FLASHINFER_WORKSPACE_BASE \
             -e TRANSFORMERS_OFFLINE \
             -e ENGINE_VERSION \
             -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
