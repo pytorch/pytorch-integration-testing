@@ -26,7 +26,7 @@ COMPILATION_CONFIG_PARAMETER_KEYS = ["parameters", "server_parameters"]
 
 # Eager mode: disable compilation with FULL cudagraph. This doesn't use torch.compile at all,
 # but unfortunately cudagraph_mode=FULL doesn't work for all models.
-BASIC_EAGER_COMPILATION_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
+BASIC_EAGER_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
 
 # This one uses torch.compile with the eager backend. It will be used as our
 # dashboard baseline.
