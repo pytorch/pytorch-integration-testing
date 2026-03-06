@@ -4,7 +4,6 @@
         "server_parameters": {
             "model": "facebook/opt-125m",
             "swap_space": 16,
-            "disable_log_requests": "",
             "host": "::",
             "port": 8000,
             "dtype": "float16"
