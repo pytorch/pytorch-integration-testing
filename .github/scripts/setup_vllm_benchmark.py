@@ -24,8 +24,13 @@ VLLM_BENCHMARK_CONFIGS_PARAMETER = set(
 # Parameter keys where compilation_config overrides are applied
 COMPILATION_CONFIG_PARAMETER_KEYS = ["parameters", "server_parameters"]
 
-# Eager mode: disable compilation with FULL cudagraph
-EAGER_COMPILATION_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
+# Eager mode: disable compilation with FULL cudagraph. This doesn't use torch.compile at all,
+# but unfortunately cudagraph_mode=FULL doesn't work for all models.
+BASIC_EAGER_COMPILATION_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
+
+# This one uses torch.compile with the eager backend. It will be used as our
+# dashboard baseline.
+EAGER_COMPILATION_CONFIG = {"backend": "eager"}
 
 
 def apply_compilation_config(
