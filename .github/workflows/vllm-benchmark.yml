@@ -296,8 +296,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HOME: /mnt/hf_cache
           FLASHINFER_WORKSPACE_BASE: /mnt/hf_cache
-          # TODO: Set to 0 for testing, revert before landing
-          TRANSFORMERS_OFFLINE: 0
+          TRANSFORMERS_OFFLINE: 1
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
@@ -348,7 +347,7 @@ jobs:
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             docker exec -t "${container_name}" bash -c "
-              pip install torchao==0.17.0.dev20260305+cu130 fbgemm_gpu_genai==2026.3.4+cu130 --extra-index-url https://download.pytorch.org/whl/nightly
+              pip install torchao==0.16.0 fbgemm-gpu-genai==1.5.0
 
               # A quick mitigation for https://github.com/vllm-project/vllm/issues/32373
               rm /etc/ld.so.conf.d/cuda-compat.conf || true
