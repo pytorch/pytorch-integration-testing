@@ -217,6 +217,9 @@ jobs:
         if: env.DEVICE_NAME == 'hpu' || contains(matrix.runner, 'gnr')
         run: |
           set -eux
+          # Remove all stopped containers first so their referenced images
+          # become eligible for pruning
+          docker container prune -f || true
           docker image prune -a -f || true
 
       - name: Check for last benchmark commit
