@@ -345,7 +345,7 @@ jobs:
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             docker exec -t "${container_name}" bash -c "
-              pip install torchao==0.17.0.dev20260305+cu130 fbgemm_gpu_genai==2026.3.4+cu130 --extra-index-url https://download.pytorch.org/whl/nightly
+              pip install torchao==0.15.0 fbgemm_gpu_genai==1.5.0 --extra-index-url https://download.pytorch.org/whl/cu130
 
               # A quick mitigation for https://github.com/vllm-project/vllm/issues/32373
               rm /etc/ld.so.conf.d/cuda-compat.conf || true
