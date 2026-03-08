@@ -25,7 +25,7 @@ on:
           A comma-separated list of runners from .github/scripts/generate_vllm_benchmark_matrix.py to run the benchmark (optional, default to run everything)
         required: true
         type: string
-        default: h100,rocm,spr,gnr,b200,gaudi3,m8g
+        default: rocm,spr,gnr,gaudi3,m8g
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
