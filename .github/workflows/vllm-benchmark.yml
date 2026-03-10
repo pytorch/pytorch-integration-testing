@@ -30,7 +30,7 @@ on:
         description: Run with HuggingFace offline mode (set TRANSFORMERS_OFFLINE=1)
         required: false
         type: boolean
-        default: true
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
