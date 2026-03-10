@@ -26,6 +26,11 @@ on:
         required: true
         type: string
         default: rocm,spr,gnr,gaudi3,m8g
+      hf_offline:
+        description: Run with HuggingFace offline mode (set TRANSFORMERS_OFFLINE=1)
+        required: false
+        type: boolean
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -296,7 +301,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HOME: /mnt/hf_cache
           FLASHINFER_WORKSPACE_BASE: /mnt/hf_cache
-          TRANSFORMERS_OFFLINE: 1
+          TRANSFORMERS_OFFLINE: ${{ github.event_name == 'workflow_dispatch' && inputs.hf_offline == false && '0' || '1' }}
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
