@@ -293,10 +293,10 @@ jobs:
         env:
           SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
           SCCACHE_REGION: us-east-1
+          FLASHINFER_WORKSPACE_BASE: /mnt/hf_cache
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HOME: /mnt/hf_cache
-          FLASHINFER_WORKSPACE_BASE: /mnt/hf_cache
-          TRANSFORMERS_OFFLINE: 1
+          TRANSFORMERS_OFFLINE: 0
           DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           # vLLM-related environment variables
           ENGINE_VERSION: v1
@@ -347,7 +347,8 @@ jobs:
           )
           if [[ "${DEVICE_NAME}" == "cuda" ]]; then
             docker exec -t "${container_name}" bash -c "
-              pip install torchao==0.16.0 fbgemm-gpu-genai==1.5.0
+              # Put fbgemm-gpu-genai back once it has a version working with 2.11
+              pip install torchao==0.15.0 --extra-index-url https://download.pytorch.org/whl/cu130
 
               # A quick mitigation for https://github.com/vllm-project/vllm/issues/32373
               rm /etc/ld.so.conf.d/cuda-compat.conf || true
