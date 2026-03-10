@@ -10,7 +10,6 @@
         "server_parameters": {
             "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
             "tensor_parallel_size": 2,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy"
         },
@@ -33,7 +32,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -54,7 +52,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -76,7 +73,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -98,7 +94,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -120,7 +115,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 11264
@@ -142,7 +136,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
             "tensor_parallel_size": 4,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 31744
@@ -167,7 +160,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -188,7 +180,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -210,7 +201,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -232,7 +222,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -254,7 +243,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 11264
@@ -276,7 +264,6 @@
         "server_parameters": {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 31744
@@ -298,7 +285,6 @@
         "server_parameters": {
             "model": "google/gemma-3-27b-it",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -319,7 +305,6 @@
         "server_parameters": {
             "model": "google/gemma-3-4b-it",
             "tensor_parallel_size": 1,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -341,7 +326,6 @@
         "server_parameters": {
             "model": "Qwen/Qwen3-30B-A3B",
             "tensor_parallel_size": 8,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -363,7 +347,6 @@
         "server_parameters": {
             "model": "Qwen/Qwen3-8B",
             "tensor_parallel_size": 1,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 8192
@@ -388,7 +371,6 @@
         "server_parameters": {
             "model": "facebook/opt-125m",
             "tensor_parallel_size": 1,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 2048
@@ -412,7 +394,6 @@
         "server_parameters": {
             "model": "facebook/opt-125m",
             "tensor_parallel_size": 1,
-            "swap_space": 16,
             "disable_log_stats": "",
             "load_format": "dummy",
             "max_model_len": 2048
