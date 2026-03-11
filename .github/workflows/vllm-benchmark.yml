@@ -54,7 +54,7 @@ jobs:
         shell: bash
         env:
           MODELS: ${{ inputs.models || '' }}
-          RUNNERS: ${{ inputs.runners || '' }}
+          RUNNERS: ${{ inputs.runners || 'rocm,spr,gnr,gaudi3,m8g' }}
         run: |
           set -eux
 
