@@ -32,6 +32,12 @@ BASIC_EAGER_CONFIG = {"mode": "NONE", "cudagraph_mode": "FULL"}
 # dashboard baseline.
 EAGER_COMPILATION_CONFIG = {"backend": "eager"}
 
+# Piecewise cudagraph mode with inductor graph partition enabled
+INDUCTOR_GRAPH_PARTITION_COMPILATION_CONFIG = {
+    "cudagraph_mode": "PIECEWISE",
+    "use_inductor_graph_partition": True,
+}
+
 
 def apply_compilation_config(
     config: Dict[str, Any],
@@ -116,6 +122,12 @@ def parse_args() -> Any:
         help="also generate eager mode variants of all benchmarks",
     )
     parser.add_argument(
+        "--include-inductor-graph-partition",
+        action="store_true",
+        default=False,
+        help="also generate inductor graph partition variants of all benchmarks",
+    )
+    parser.add_argument(
         "--compilation-config",
         type=str,
         default="",
@@ -132,6 +144,7 @@ def setup_benchmark_configs(
     device: str,
     compilation_config: Optional[Dict[str, Any]] = None,
     include_eager_mode: bool = False,
+    include_inductor_graph_partition: bool = False,
 ) -> None:
     """
     Setup the benchmark configs to run on this runner.
@@ -169,6 +182,11 @@ def setup_benchmark_configs(
                     config, EAGER_COMPILATION_CONFIG, "_eager"
                 )
                 benchmark_configs.append(eager_config)
+            if include_inductor_graph_partition:
+                inductor_graph_partition_config = apply_compilation_config(
+                    config, INDUCTOR_GRAPH_PARTITION_COMPILATION_CONFIG, "_inductor_graph_partition"
+                )
+                benchmark_configs.append(inductor_graph_partition_config)
 
         if benchmark_configs:
             with open(os.path.join(to_benchmark_configs_dir, filename), "w") as f:
@@ -187,6 +205,7 @@ def main() -> None:
         args.device,
         compilation_config,
         args.include_eager_mode,
+        args.include_inductor_graph_partition,
     )
 
 
