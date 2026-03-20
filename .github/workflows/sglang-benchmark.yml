@@ -34,9 +34,9 @@ jobs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -72,7 +72,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install system dependencies
         shell: bash
@@ -81,14 +81,14 @@ jobs:
           sudo apt-get install -y libnuma-dev numactl
 
       - name: Checkout SGLang repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: sgl-project/sglang
           path: sglang-benchmarks/sglang
           ref: ${{ inputs.sglang_branch || 'main' }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         # Amazon Linux fails on this step
         continue-on-error: true
         with:
@@ -323,7 +323,7 @@ jobs:
           echo "SANITIZED_MODELS=$SANITIZED_MODELS" >> $GITHUB_ENV
 
       # Keep a copy of the benchmark results on GitHub for reference
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: sglang-benchmark-results-${{ env.SANITIZED_DEVICE_TYPE }}-${{ env.SANITIZED_MODELS }}
