@@ -22,6 +22,16 @@ on:
         required: true
         type: string
         default: b200
+      triton_channel:
+        description: |
+          Triton channel to run: all (default, runs both triton-main and meta-triton), triton-main, or meta-triton
+        required: false
+        type: choice
+        default: all
+        options:
+          - all
+          - triton-main
+          - meta-triton
       benchmark_parameters:
         description: Extra parameters to pass to run-benchmark.sh (optional)
         required: false
@@ -52,13 +62,21 @@ jobs:
         env:
           BENCHMARKS: ${{ inputs.benchmarks || '' }}
           RUNNERS: ${{ inputs.runners || '' }}
+          TRITON_CHANNEL: ${{ inputs.triton_channel || 'all' }}
         run: |
           set -eux
+
+          if [ "${TRITON_CHANNEL}" == "all" ]; then
+            TRITON="triton-main,meta-triton"
+          else
+            TRITON="${TRITON_CHANNEL}"
+          fi
 
           # The generated matrix is grouped by benchmark and runner
           python .github/scripts/generate_tritonbench_matrix.py \
             --benchmarks "${BENCHMARKS}" \
-            --runners "${RUNNERS}"
+            --runners "${RUNNERS}" \
+            --triton "${TRITON}"
 
 
   benchmarks:
