@@ -22,6 +22,11 @@ on:
         required: true
         type: string
         default: b200
+      benchmark_parameters:
+        description: Extra parameters to pass to run-benchmark.sh (optional)
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -173,9 +178,9 @@ jobs:
           # Single CPU core is needed to stabilize the benchmark results
           first_available_core=$(taskset -pc $$| sed -n 's/.*: \([0-9][0-9]*\).*/\1/p')
           if [ ${{ matrix.benchmarks }} == "tlx" ]; then
-              bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
+              bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }} ${{ inputs.benchmark_parameters }}
           else
-              taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }}
+              taskset -c ${first_available_core} bash .ci/tritonbench/run-benchmark.sh ${{ matrix.benchmarks }} --conda-env ${{ env.CONDA_ENV }} ${{ inputs.benchmark_parameters }}
           fi
           mv .benchmarks results-${{ env.CONDA_ENV }}
 
