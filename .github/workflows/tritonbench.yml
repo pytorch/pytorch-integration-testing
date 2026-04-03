@@ -32,6 +32,16 @@ on:
           - all
           - triton-main
           - meta-triton
+      triton_repo:
+        description: Triton repo to build from (optional)
+        required: false
+        type: string
+        default: ''
+      triton_commit:
+        description: Triton commit or ref to build from (optional)
+        required: false
+        type: string
+        default: ''
       benchmark_parameters:
         description: Extra parameters to pass to run-benchmark.sh (optional)
         required: false
@@ -169,16 +179,42 @@ jobs:
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
-          # Use MAX_JOBS=16 to avoid OOM compiling Triton
-          if [ "${CONDA_ENV}" == "triton-main" ]; then
-              CMD_SUFFIX="--triton-main"
+          bash ./.ci/tritonbench/setup-env.sh --cuda
+
+      - name: Compile Triton
+        working-directory: triton-benchmarks/tritonbench
+        env:
+          INPUT_TRITON_REPO: ${{ inputs.triton_repo || '' }}
+          INPUT_TRITON_COMMIT: ${{ inputs.triton_commit || '' }}
+        run: |
+          set -eux
+
+          if [ -n "${INPUT_TRITON_REPO}" ]; then
+              TRITON_REPO="${INPUT_TRITON_REPO}"
+          elif [ "${CONDA_ENV}" == "triton-main" ]; then
+              TRITON_REPO="triton-lang/triton"
           elif [ "${CONDA_ENV}" == "meta-triton" ]; then
-              CMD_SUFFIX="--meta-triton"
+              TRITON_REPO="facebookexperimental/triton"
           else
               echo "unknown conda env: ${CONDA_ENV}"
               exit 1
           fi
-          MAX_JOBS=16 bash ./.ci/tritonbench/setup-env.sh --cuda ${CMD_SUFFIX}
+
+          if [ -n "${INPUT_TRITON_COMMIT}" ]; then
+              TRITON_COMMIT="${INPUT_TRITON_COMMIT}"
+              NIGHTLY_FLAG=""
+          else
+              TRITON_COMMIT="main"
+              NIGHTLY_FLAG="--nightly"
+          fi
+
+          MAX_JOBS=16 bash ./.ci/triton/install.sh \
+              --conda-env "${CONDA_ENV}" \
+              --repo "${TRITON_REPO}" \
+              --commit "${TRITON_COMMIT}" \
+              --side single \
+              --install-dir "${WORKSPACE_DIR}/${CONDA_ENV}" \
+              ${NIGHTLY_FLAG}
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
