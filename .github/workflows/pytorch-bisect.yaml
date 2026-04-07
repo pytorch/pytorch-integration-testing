@@ -25,6 +25,7 @@ on:
         default: linux.dgx.b200
         options:
           - linux.dgx.b200
+          - linux.aws.h100
       command_arguments:
         description: Command arguments
         required: true
@@ -51,6 +52,9 @@ jobs:
       PYTORCH_REPO: https://github.com/pytorch/pytorch.git
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
       REPRO_CMDLINE: ${{ inputs.command_arguments }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
