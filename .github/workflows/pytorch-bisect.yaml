@@ -1,0 +1,46 @@
+name: PyTorch Bisect
+
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark:
+        description: Benchmark to bisect
+        required: true
+        type: choice
+        default: inductor
+        options:
+          - inductor
+      type:
+        description: Bisect type
+        required: true
+        type: choice
+        default: performance
+        options:
+          - functional
+          - performance
+      runner:
+        description: Hardware runner
+        required: true
+        type: choice
+        default: b200
+        options:
+          - b200
+      command_arguments:
+        description: Command arguments
+        required: true
+        type: string
+        default: ""
+
+jobs:
+  bisect:
+    name: Run PyTorch Bisect
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Show selected inputs
+        shell: bash
+        run: |
+          set -eux
+          echo "benchmark=${{ inputs.benchmark }}"
+          echo "type=${{ inputs.type }}"
+          echo "runner=${{ inputs.runner }}"
+          echo "command_arguments=${{ inputs.command_arguments }}"
