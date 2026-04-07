@@ -22,25 +22,40 @@ on:
         description: Hardware runner
         required: true
         type: choice
-        default: b200
+        default: linux.dgx.b200
         options:
-          - b200
+          - linux.dgx.b200
       command_arguments:
         description: Command arguments
         required: true
         type: string
         default: ""
+      good_commit:
+        description: Last known good PyTorch commit
+        required: true
+        type: string
+      bad_commit:
+        description: First known bad PyTorch commit
+        required: true
+        type: string
 
 jobs:
   bisect:
     name: Run PyTorch Bisect
     runs-on: ${{ inputs.runner }}
+    env:
+      WORKSPACE_DIR: ${{ github.workspace }}
+      GOOD_COMMIT: ${{ inputs.good_commit }}
+      BAD_COMMIT: ${{ inputs.bad_commit }}
+      PYTORCH_SRC_DIR: ${{ github.workspace }}/pytorch
+      PYTORCH_REPO: https://github.com/pytorch/pytorch.git
+      FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
+      REPRO_CMDLINE: ${{ inputs.command_arguments }}
     steps:
-      - name: Show selected inputs
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run PyTorch bisect
         shell: bash
         run: |
-          set -eux
-          echo "benchmark=${{ inputs.benchmark }}"
-          echo "type=${{ inputs.type }}"
-          echo "runner=${{ inputs.runner }}"
-          echo "command_arguments=${{ inputs.command_arguments }}"
+          bash .github/scripts/bisect/run.sh
