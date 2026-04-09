@@ -26,11 +26,10 @@ on:
         options:
           - linux.dgx.b200
           - linux.aws.h100
-      command_arguments:
-        description: Command arguments
+      repro_cmdline:
+        description: The command line to reproduce
         required: true
         type: string
-        default: ""
       good_commit:
         description: Last known good PyTorch commit
         required: true
@@ -39,6 +38,11 @@ on:
         description: First known bad PyTorch commit
         required: true
         type: string
+      regression_threshold:
+        type: number
+        default: 10
+        description: |
+          Performance regression threshold in %
 
 jobs:
   bisect:
@@ -48,6 +52,7 @@ jobs:
       WORKSPACE_DIR: ${{ github.workspace }}
       GOOD_COMMIT: ${{ inputs.good_commit }}
       BAD_COMMIT: ${{ inputs.bad_commit }}
+      REGRESSION_THRESHOLD: ${{ inputs.regression_threshold }}
       PYTORCH_REPO: pytorch/pytorch
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
       REPRO_CMDLINE: ${{ inputs.command_arguments }}
