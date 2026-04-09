@@ -31,21 +31,6 @@ if [[ ! -d "${PYTORCH_SRC_DIR}/.git" ]]; then
   git clone --recursive "${PYTORCH_REPO}" "${PYTORCH_SRC_DIR}"
 fi
 
-cd "${PYTORCH_SRC_DIR}"
-
-git fetch --all --tags --prune
-git rev-parse --verify "${GOOD_COMMIT}^{commit}" >/dev/null
-git rev-parse --verify "${BAD_COMMIT}^{commit}" >/dev/null
-git checkout --detach "${BAD_COMMIT}" >/dev/null 2>&1 || git checkout --detach "${BAD_COMMIT}"
-
-cleanup() {
-  git bisect reset >/dev/null 2>&1 || true
-  [[ -n "${bisect_test_script:-}" ]] && rm -f "${bisect_test_script}"
-}
-
-trap cleanup EXIT
-
-git bisect reset >/dev/null 2>&1 || true
 mkdir -p "${LOG_DIR}"
 
 bisect_test_script="$(mktemp "${WORKSPACE_DIR}/bisect-test-XXXXXX.sh")"

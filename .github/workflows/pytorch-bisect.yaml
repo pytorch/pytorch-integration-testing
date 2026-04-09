@@ -59,6 +59,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout tritonparse
+        uses: actions/checkout@v4
+        with:
+          repository: pytorch-labs/tritonparse
+          path: tritonparse
+          ref: xz9/add-torch-bisect
+
+      - name: Install tritonparse
+        shell: bash
+        run: |
+          pip install -e tritonparse
+
       - name: Run PyTorch bisect
         shell: bash
         run: |
