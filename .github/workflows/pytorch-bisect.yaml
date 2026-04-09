@@ -93,9 +93,14 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install tritonparse
+      - name: Install conda environment
         shell: bash
         run: |
+          set -eux
+          conda create -y -n torch-bisect python=3.12
+          echo "CONDA_ENV=torch-bisect" >> $GITHUB_ENV
+          echo "CONDA_DIR=$CONDA_PREFIX" >> $GITHUB_ENV
+          conda activate torch-bisect
           echo "PYTORCH_SRC_DIR=$(realpath torch-benchmarks/pytorch)" >> $GITHUB_ENV
           echo "VISION_SRC_DIR=$(realpath torch-benchmarks/torchvision)" >> $GITHUB_ENV
           pip install -e torch-benchmarks/tritonparse
@@ -103,6 +108,7 @@ jobs:
       - name: Run PyTorch bisect
         shell: bash
         run: |
+          conda activate "${CONDA_ENV}"
           bash .github/scripts/bisect/run.sh
 
       - uses: actions/upload-artifact@v4

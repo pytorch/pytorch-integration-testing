@@ -31,7 +31,7 @@ REPRO_CMDLINE = os.environ.get("REPRO_CMDLINE", None)
 # baseline log file
 BASELINE_LOG = os.environ.get("BASELINE_LOG", None)
 # pytorch root dir
-TORCH_SRC_DIR = os.environ["TORCH_SRC_DIR"]
+TORCH_SRC_DIR = os.environ["PYTORCH_SRC_DIR"]
 
 
 def get_baseline(baseline_log) -> float:
