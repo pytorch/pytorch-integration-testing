@@ -70,7 +70,7 @@ elif [ ${PREFLIGHT_RC} -ne 1 ] && [ ${FUNCTIONAL} -ne 1 ]; then
 fi
 
 # kick off the bisect!
-BASELINE_LOG="${BASELINE_LOG}" PER_COMMIT_LOG=1 USE_UV=1 \
+BASELINE_LOG="${BASELINE_LOG}" USE_UV=0 \
 tritonparseoss bisect \
   --no-tui \
   --target torch \
