@@ -48,10 +48,10 @@ jobs:
       WORKSPACE_DIR: ${{ github.workspace }}
       GOOD_COMMIT: ${{ inputs.good_commit }}
       BAD_COMMIT: ${{ inputs.bad_commit }}
-      PYTORCH_SRC_DIR: ${{ github.workspace }}/pytorch
-      PYTORCH_REPO: https://github.com/pytorch/pytorch.git
+      PYTORCH_REPO: pytorch/pytorch
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
       REPRO_CMDLINE: ${{ inputs.command_arguments }}
+      CUDA_HOME: ${{ github.workspace }}/torch-benchmarks/cuda
     permissions:
       id-token: write
       contents: read
@@ -63,13 +63,37 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pytorch-labs/tritonparse
-          path: tritonparse
+          path: torch-benchmarks/tritonparse
           ref: xz9/add-torch-bisect
+          fetch-depth: 0
+
+      - name: Checkout PyTorch
+        uses: actions/checkout@v4
+        with:
+          repository: pytorch/pytorch
+          path: torch-benchmarks/pytorch
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Checkout torchvision
+        uses: actions/checkout@v4
+        with:
+          repository: pytorch/vision
+          path: torch-benchmarks/torchvision
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        continue-on-error: true
+        with:
+          python-version: '3.12'
+          cache: 'pip'
 
       - name: Install tritonparse
         shell: bash
         run: |
-          pip install -e tritonparse
+          echo "PYTORCH_SRC_DIR=$(realpath torch-benchmarks/pytorch)" >> $GITHUB_ENV
+          echo "VISION_SRC_DIR=$(realpath torch-benchmarks/torchvision)" >> $GITHUB_ENV
+          pip install -e torch-benchmarks/tritonparse
 
       - name: Run PyTorch bisect
         shell: bash
