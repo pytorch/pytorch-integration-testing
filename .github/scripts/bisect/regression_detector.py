@@ -1,86 +1,98 @@
-#!/usr/bin/env python3
+"""
+PyTorch Regression Detector
+Used toghether with TritonParse bisector for automatic bisection.
+
+Envs to control the behavior:
+
+- FUNCTIONAL: Detect performance or functional regression.
+- REPRO_CMDLINE: The repro command line to run.
+- BASELINE_LOG: The baseline log file to compare with.
+- REGRESSION_THRESHOLD: The regression threshold, default to 10%.
+
+Example usage:
+
+REPRO_CMDLINE="python benchmarks/dynamo/timm_models.py --performance --amp --training --cudagraphs --only inception_v3 --inductor" \
+BASELINE_LOG="$PWD/bisect_logs/baseline.log" REGRESSION_THRESHOLD="0.1" \
+tritonparseoss bisect --triton-dir $HOME/local/pytorch --test-script $PWD/.ci/bisect/regression_detector.py \
+--good 34cdf49 --bad 9d49044
+
+"""
 
 import os
-import re
 import subprocess
-import sys
+from pathlib import Path
+
+# the default regression threshold is 10%
+REGRESSION_THRESHOLD = float(os.environ.get("REGRESSION_THRESHOLD", 10.0)) / 100.0
+# functional or performance regression
+FUNCTIONAL = bool(int(os.environ["FUNCTIONAL"]))
+# repro command line
+REPRO_CMDLINE = os.environ.get("REPRO_CMDLINE", None)
+# baseline log file
+BASELINE_LOG = os.environ.get("BASELINE_LOG", None)
+# pytorch root dir
+TORCH_SRC_DIR = os.environ["TORCH_SRC_DIR"]
 
 
-GOOD_EXIT = 0
-BAD_EXIT = 1
-SKIP_EXIT = 125
-
-STATUS_PATTERN = re.compile(r"PYTORCH_BISECT_STATUS=(good|bad|skip)")
-
-
-def getenv(name: str) -> str:
-    value = os.getenv(name, "").strip()
-    if not value:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    return value
+def get_baseline(baseline_log) -> float:
+    with open(baseline_log, "r") as f:
+        last_line = f.readlines()[-1].strip()
+    if last_line.endswith("x"):
+        last_line = last_line[:-1]
+    return float(last_line)
 
 
-def resolve_status(exit_code: int, output: str) -> int:
-    match = STATUS_PATTERN.search(output)
-    if match:
-        status = match.group(1)
-        if status == "good":
-            return GOOD_EXIT
-        if status == "bad":
-            return BAD_EXIT
-        return SKIP_EXIT
-
-    if exit_code == SKIP_EXIT:
-        return SKIP_EXIT
-    if exit_code == 0:
-        return GOOD_EXIT
-    return BAD_EXIT
-
-
-def main() -> int:
-    pytorch_src_dir = getenv("PYTORCH_SRC_DIR")
-    repro_cmdline = getenv("REPRO_CMDLINE")
-    mode = "functional" if os.getenv("FUNCTIONAL", "0") == "1" else "performance"
-
-    head_commit = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"],
-        cwd=pytorch_src_dir,
-        text=True,
-    ).strip()
-    print(f"[bisect] evaluating commit {head_commit} in {mode} mode", flush=True)
-    print(f"[bisect] command: {repro_cmdline}", flush=True)
-
-    subprocess.run(
-        ["git", "submodule", "sync", "--recursive"],
-        cwd=pytorch_src_dir,
-        check=True,
-    )
-    subprocess.run(
-        ["git", "submodule", "update", "--init", "--recursive"],
-        cwd=pytorch_src_dir,
-        check=True,
-    )
-
-    completed = subprocess.run(
-        repro_cmdline,
-        cwd=pytorch_src_dir,
-        shell=True,
-        text=True,
-        capture_output=True,
-        env=os.environ.copy(),
-    )
-
-    if completed.stdout:
-        print(completed.stdout, end="")
-    if completed.stderr:
-        print(completed.stderr, end="", file=sys.stderr)
-
-    return resolve_status(completed.returncode, f"{completed.stdout}\n{completed.stderr}")
+def get_current_value(stdout_lines) -> float:
+    last_line = stdout_lines[-1].strip()
+    if last_line.endswith("x"):
+        last_line = last_line[:-1]
+    return float(last_line)
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except RuntimeError as exc:
-        print(str(exc), file=sys.stderr)
-        raise SystemExit(BAD_EXIT)
+    assert REPRO_CMDLINE is not None, "REPRO_CMDLINE is not set."
+    cmdline = REPRO_CMDLINE.split()
+
+    # functional regression
+    if FUNCTIONAL:
+        try:
+            subprocess.check_call(cmdline, cwd=TORCH_SRC_DIR)
+        except subprocess.CalledProcessError as e:
+            print(f"cmd line {cmdline} failed: {e}")
+            exit(e.returncode)
+        exit(0)
+
+    assert BASELINE_LOG and os.path.exists(BASELINE_LOG), (
+        f"BASELINE_LOG is not set or to a non-exist location: {BASELINE_LOG}."
+    )
+    baseline_signal = get_baseline(BASELINE_LOG)
+    p = subprocess.Popen(cmdline, cwd=TORCH_SRC_DIR, stdout=subprocess.PIPE, stderr=None)
+    assert p.stdout is not None
+    stdout_lines = []
+    for line in p.stdout:
+        decoded_line = line.decode("utf-8").strip()
+        print(decoded_line)
+        stdout_lines.append(decoded_line)
+    rc = p.wait()
+    # if subprocess failed, exit with the return code
+    if not rc == 0:
+        exit(rc)
+    # otherwise, check for the perf regression or accuracy regression
+    current_value = get_current_value(stdout_lines)
+    if current_value == 0 and "accuracy" in REPRO_CMDLINE:
+        print("Accuracy test failed, exit with 1.")
+        exit(1)
+    smaller_value = min(baseline_signal, current_value)
+    larger_value = max(baseline_signal, current_value)
+    assert smaller_value > 0, "smaller_value should be positive, got zero."
+    ratio = (larger_value - smaller_value) / smaller_value * 100
+    if larger_value > smaller_value * (1 + REGRESSION_THRESHOLD):
+        print(
+            f"Regression detected: current value {current_value}, {larger_value} / {smaller_value} - 1 == {ratio}% , threshold {REGRESSION_THRESHOLD * 100}%)"
+        )
+        exit(1)
+    else:
+        print(
+            f"No regression detected: current value {current_value}, {larger_value} / {smaller_value} - 1 == {ratio}%, threshold {REGRESSION_THRESHOLD * 100}%)"
+        )
+        exit(0)
