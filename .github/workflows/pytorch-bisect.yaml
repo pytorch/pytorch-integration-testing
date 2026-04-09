@@ -103,6 +103,7 @@ jobs:
           conda activate torch-bisect
           echo "PYTORCH_SRC_DIR=$(realpath torch-benchmarks/pytorch)" >> $GITHUB_ENV
           echo "VISION_SRC_DIR=$(realpath torch-benchmarks/torchvision)" >> $GITHUB_ENV
+          pip install uv
           pip install -e torch-benchmarks/tritonparse
 
       - name: Run PyTorch bisect
