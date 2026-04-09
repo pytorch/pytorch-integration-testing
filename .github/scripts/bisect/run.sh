@@ -73,7 +73,8 @@ fi
 BASELINE_LOG="${BASELINE_LOG}" PER_COMMIT_LOG=1 USE_UV=1 \
 tritonparseoss bisect \
   --no-tui \
-  --triton-dir "${PYTORCH_SRC_DIR}" \
+  --target torch \
+  --torch-dir "${PYTORCH_SRC_DIR}" \
   --test-script "${DETECTOR}" \
   --good "${GOOD_COMMIT}" \
   --bad "${BAD_COMMIT}" \
