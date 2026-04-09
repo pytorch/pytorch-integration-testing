@@ -2,3 +2,4 @@ output/
 *.log
 *.xml
 vllm-benchmarks/commit
+__pycache__/
