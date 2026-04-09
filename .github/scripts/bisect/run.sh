@@ -3,7 +3,7 @@
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly DETECTOR="${SCRIPT_DIR}/regression_detector.py"
+readonly DETECTOR="${WORKSPACE_DIR}/.ci/bisect/regression_detector.py"
 
 required_envs=(
   WORKSPACE_DIR
@@ -12,6 +12,7 @@ required_envs=(
   PYTORCH_SRC_DIR
   PYTORCH_REPO
   VISION_SRC_DIR
+  CUDA_HOME
   FUNCTIONAL
   REPRO_CMDLINE
 )
@@ -23,30 +24,58 @@ for env_name in "${required_envs[@]}"; do
   fi
 done
 
+checkout_pytorch_commit() {
+  local repo_dir="$1"
+  local commit="$2"
+  cd "${repo_dir}"
+  git reset --hard origin/main
+  git checkout --detach "${commit}"
+  git submodule sync --recursive
+  git submodule update --init --recursive
+  cd -
+}
+
 readonly LOG_DIR="${WORKSPACE_DIR}/bisect_logs"
-
-mkdir -p "${WORKSPACE_DIR}"
-
-if [[ ! -d "${PYTORCH_SRC_DIR}/.git" ]]; then
-  mkdir -p "$(dirname "${PYTORCH_SRC_DIR}")"
-  git clone --recursive "${PYTORCH_REPO}" "${PYTORCH_SRC_DIR}"
-fi
 
 mkdir -p "${LOG_DIR}"
 
-bisect_test_script="$(mktemp "${WORKSPACE_DIR}/bisect-test-XXXXXX.sh")"
-cat > "${bisect_test_script}" <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
-exec python3 "${DETECTOR}"
-EOF
-chmod +x "${bisect_test_script}"
+# step 1: setup pytorch build environment
+tritonparse_dir=$(dirname $(python -c "import tritonparse; print(tritonparse.__file__)"))
+bash ${tritonparse_dir}/bisect/scripts/prepare_build_pytorch.sh
 
-tritonparse bisect \
+# step 2: build and run the good commit (baseline)
+BASELINE_LOG="${LOG_DIR}/baseline.log"
+checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${GOOD_COMMIT}"
+bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
+eval ${REPRO_CMDLINE} 2>&1 | tee "${BASELINE_LOG}"
+
+# step 3: build and run the bad commit
+checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${BAD_COMMIT}"
+bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
+# allow the regression detector to exit with error code
+set +e
+BASELINE_LOG="${BASELINE_LOG}" python ./.ci/bisect/regression_detector.py
+PREFLIGHT_RC=$?
+set -e
+
+# if no regression, exit early and report error: this shouldn't happen
+if [ ${PREFLIGHT_RC} -eq 0 ]; then
+    echo "ERROR: No regression detected on bad commit (${BAD_COMMIT}) relative to good commit (${GOOD_COMMIT})."
+    echo "The regression detector exited with 0, meaning the bad commit behaves the same as the good commit."
+    echo "Please verify that your good_commit and bad_commit are correct, or adjust the REGRESSION_THRESHOLD (currently ${REGRESSION_THRESHOLD}%)."
+    exit 1
+elif [ ${PREFLIGHT_RC} -ne 1 ] && [ ${FUNCTIONAL} -ne 1 ]; then
+    echo "WARNING: Pre-flight regression check exited with unexpected code ${PREFLIGHT_RC}."
+    echo "This may indicate a build or environment issue. Proceeding with bisect anyway."
+fi
+
+# kick off the bisect!
+BASELINE_LOG="${BASELINE_LOG}" PER_COMMIT_LOG=1 USE_UV=1 \
+tritonparseoss bisect \
   --no-tui \
   --triton-dir "${PYTORCH_SRC_DIR}" \
-  --test-script "${bisect_test_script}" \
+  --test-script "${DETECTOR}" \
   --good "${GOOD_COMMIT}" \
   --bad "${BAD_COMMIT}" \
   --log-dir "${LOG_DIR}" \
-  --build-command true
+  --per-commit-log
