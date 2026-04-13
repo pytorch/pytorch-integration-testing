@@ -87,12 +87,6 @@ jobs:
           path: torch-benchmarks/torchvision
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        continue-on-error: true
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
       - name: Install uv environment
         uses: pytorch/test-infra/.github/actions/setup-uv@main
 
@@ -100,6 +94,9 @@ jobs:
         shell: bash
         run: |
           set -eux
+          uv venv "${GITHUB_WORKSPACE}/torch-benchmarks/venv"
+          export VIRTUAL_ENV="${GITHUB_WORKSPACE}/torch-benchmarks/venv"
+          echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
           echo "PYTORCH_SRC_DIR=$(realpath torch-benchmarks/pytorch)" >> $GITHUB_ENV
           echo "VISION_SRC_DIR=$(realpath torch-benchmarks/torchvision)" >> $GITHUB_ENV
           uv pip install -e torch-benchmarks/tritonparse
