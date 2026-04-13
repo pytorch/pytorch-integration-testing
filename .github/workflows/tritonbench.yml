@@ -173,7 +173,7 @@ jobs:
         working-directory: triton-benchmarks/tritonbench
         run: |
           set -eux
-          pip install -r .ci/upload/requirements.txt
+          pip install --group ci
 
       - name: Install TritonBench
         working-directory: triton-benchmarks/tritonbench
