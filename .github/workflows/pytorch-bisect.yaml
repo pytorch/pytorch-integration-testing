@@ -49,6 +49,7 @@ jobs:
     name: Run PyTorch Bisect
     runs-on: ${{ inputs.runner }}
     env:
+      USE_UV: '1'
       WORKSPACE_DIR: ${{ github.workspace }}
       GOOD_COMMIT: ${{ inputs.good_commit }}
       BAD_COMMIT: ${{ inputs.bad_commit }}
