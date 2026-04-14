@@ -69,7 +69,7 @@ jobs:
         with:
           repository: pytorch-labs/tritonparse
           path: torch-benchmarks/tritonparse
-          ref: main
+          ref: xz9/fix-bisect
           fetch-depth: 0
 
       - name: Checkout PyTorch
