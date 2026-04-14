@@ -47,6 +47,7 @@ bash ${tritonparse_dir}/bisect/scripts/prepare_build_pytorch.sh
 BASELINE_LOG="${LOG_DIR}/baseline.log"
 checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${GOOD_COMMIT}"
 bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
+cd ${PYTORCH_SRC_DIR}
 eval ${REPRO_CMDLINE} 2>&1 | tee "${BASELINE_LOG}"
 
 # step 3: build and run the bad commit
