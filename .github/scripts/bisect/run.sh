@@ -24,7 +24,7 @@ for env_name in "${required_envs[@]}"; do
   fi
 done
 
-if [ ! -e ${DETECTOR} ]; do
+if [ ! -e ${DETECTOR} ]; then
     echo "Missing detector script: ${DETECTOR}."
     exit 1
 fi
