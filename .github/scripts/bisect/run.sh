@@ -15,6 +15,7 @@ required_envs=(
   CUDA_HOME
   FUNCTIONAL
   REPRO_CMDLINE
+  USE_UV
 )
 
 for env_name in "${required_envs[@]}"; do
@@ -76,7 +77,7 @@ elif [ ${PREFLIGHT_RC} -ne 1 ] && [ ${FUNCTIONAL} -ne 1 ]; then
 fi
 
 # kick off the bisect!
-BASELINE_LOG="${BASELINE_LOG}" USE_UV=0 \
+BASELINE_LOG="${BASELINE_LOG}" USE_UV="${USE_UV}" \
 tritonparseoss bisect \
   --no-tui \
   --target torch \
