@@ -82,6 +82,13 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Checkout torchbench
+        uses: actions/checkout@v4
+        with:
+          repository: pytorch/benchmark
+          path: torch-benchmarks/benchmark
+          fetch-depth: 0
+
       - name: Checkout torchvision
         uses: actions/checkout@v4
         with:
