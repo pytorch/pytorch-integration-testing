@@ -3,7 +3,7 @@
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly DETECTOR="${WORKSPACE_DIR}/.ci/bisect/regression_detector.py"
+readonly DETECTOR="${WORKSPACE_DIR}/.github/scripts/bisect/regression_detector.py"
 
 required_envs=(
   WORKSPACE_DIR
