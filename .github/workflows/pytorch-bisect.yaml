@@ -58,6 +58,7 @@ jobs:
       PYTORCH_REPO: pytorch/pytorch
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
       CUDA_HOME: ${{ github.workspace }}/torch-benchmarks/cuda
+      CUDA_VERSION: "13.0"
     permissions:
       id-token: write
       contents: read
