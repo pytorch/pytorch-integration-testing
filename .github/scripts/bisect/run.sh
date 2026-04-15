@@ -24,6 +24,11 @@ for env_name in "${required_envs[@]}"; do
   fi
 done
 
+if [ ! -e ${DETECTOR} ]; do
+    echo "Missing detector script: ${DETECTOR}."
+    exit 1
+fi
+
 checkout_pytorch_commit() {
   local repo_dir="$1"
   local commit="$2"
@@ -55,7 +60,7 @@ checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${BAD_COMMIT}"
 bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
 # allow the regression detector to exit with error code
 set +e
-BASELINE_LOG="${BASELINE_LOG}" python ./.ci/bisect/regression_detector.py
+BASELINE_LOG="${BASELINE_LOG}" python "${DETECTOR}"
 PREFLIGHT_RC=$?
 set -e
 
