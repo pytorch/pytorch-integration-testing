@@ -49,14 +49,16 @@ jobs:
     name: Run PyTorch Bisect
     runs-on: ${{ inputs.runner }}
     env:
+      USE_UV: '1'
       WORKSPACE_DIR: ${{ github.workspace }}
       GOOD_COMMIT: ${{ inputs.good_commit }}
       BAD_COMMIT: ${{ inputs.bad_commit }}
+      REPRO_CMDLINE: ${{ inputs.repro_cmdline }}
       REGRESSION_THRESHOLD: ${{ inputs.regression_threshold }}
       PYTORCH_REPO: pytorch/pytorch
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
-      REPRO_CMDLINE: ${{ inputs.command_arguments }}
       CUDA_HOME: ${{ github.workspace }}/torch-benchmarks/cuda
+      CUDA_VERSION: "13.0"
     permissions:
       id-token: write
       contents: read
@@ -69,7 +71,7 @@ jobs:
         with:
           repository: pytorch-labs/tritonparse
           path: torch-benchmarks/tritonparse
-          ref: xz9/add-torch-bisect
+          ref: xz9/fix-bisect
           fetch-depth: 0
 
       - name: Checkout PyTorch
@@ -78,6 +80,13 @@ jobs:
           repository: pytorch/pytorch
           path: torch-benchmarks/pytorch
           submodules: recursive
+          fetch-depth: 0
+
+      - name: Checkout torchbench
+        uses: actions/checkout@v4
+        with:
+          repository: pytorch/benchmark
+          path: torch-benchmarks/benchmark
           fetch-depth: 0
 
       - name: Checkout torchvision

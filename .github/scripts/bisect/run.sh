@@ -3,7 +3,7 @@
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly DETECTOR="${WORKSPACE_DIR}/.ci/bisect/regression_detector.py"
+readonly DETECTOR="${WORKSPACE_DIR}/.github/scripts/bisect/regression_detector.py"
 
 required_envs=(
   WORKSPACE_DIR
@@ -15,6 +15,7 @@ required_envs=(
   CUDA_HOME
   FUNCTIONAL
   REPRO_CMDLINE
+  USE_UV
 )
 
 for env_name in "${required_envs[@]}"; do
@@ -23,6 +24,11 @@ for env_name in "${required_envs[@]}"; do
     exit 1
   fi
 done
+
+if [ ! -e ${DETECTOR} ]; then
+    echo "Missing detector script: ${DETECTOR}."
+    exit 1
+fi
 
 checkout_pytorch_commit() {
   local repo_dir="$1"
@@ -47,6 +53,7 @@ bash ${tritonparse_dir}/bisect/scripts/prepare_build_pytorch.sh
 BASELINE_LOG="${LOG_DIR}/baseline.log"
 checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${GOOD_COMMIT}"
 bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
+cd ${PYTORCH_SRC_DIR}
 eval ${REPRO_CMDLINE} 2>&1 | tee "${BASELINE_LOG}"
 
 # step 3: build and run the bad commit
@@ -54,7 +61,7 @@ checkout_pytorch_commit "${PYTORCH_SRC_DIR}" "${BAD_COMMIT}"
 bash ${tritonparse_dir}/bisect/scripts/build_pytorch.sh
 # allow the regression detector to exit with error code
 set +e
-BASELINE_LOG="${BASELINE_LOG}" python ./.ci/bisect/regression_detector.py
+BASELINE_LOG="${BASELINE_LOG}" python "${DETECTOR}"
 PREFLIGHT_RC=$?
 set -e
 
@@ -70,7 +77,7 @@ elif [ ${PREFLIGHT_RC} -ne 1 ] && [ ${FUNCTIONAL} -ne 1 ]; then
 fi
 
 # kick off the bisect!
-BASELINE_LOG="${BASELINE_LOG}" USE_UV=0 \
+BASELINE_LOG="${BASELINE_LOG}" USE_UV="${USE_UV}" \
 tritonparseoss bisect \
   --no-tui \
   --target torch \
