@@ -217,6 +217,9 @@ jobs:
         if: env.DEVICE_NAME == 'hpu' || contains(matrix.runner, 'gnr')
         run: |
           set -eux
+          # Remove all stopped containers first so their referenced images
+          # become eligible for pruning
+          docker container prune -f || true
           docker image prune -a -f || true
 
       - name: Check for last benchmark commit
@@ -281,14 +284,21 @@ jobs:
           rm .buildkite/performance-benchmarks/tests/*.json || true
           popd
 
+          # HPU uses lazy mode (PT_HPU_LAZY_MODE=1), so the eager/compile
+          # mode distinction doesn't apply - skip eager mode and inductor
+          # graph partition variants for HPU.
+          EXTRA_FLAGS="--include-eager-mode --include-inductor-graph-partition"
+          if [[ "${DEVICE_NAME}" == "hpu" ]]; then
+            EXTRA_FLAGS=""
+          fi
+
           # Set the list of benchmarks we want to cover in this runner
           python3 .github/scripts/setup_vllm_benchmark.py \
             --from-benchmark-configs-dir vllm-benchmarks/benchmarks \
             --to-benchmark-configs-dir vllm-benchmarks/vllm/.buildkite/performance-benchmarks/tests \
             --models "${MODELS}" \
             --device "${DEVICE_NAME}" \
-            --include-eager-mode \
-            --include-inductor-graph-partition
+            ${EXTRA_FLAGS}
 
           pushd vllm-benchmarks/vllm
           ls -lah .buildkite/performance-benchmarks/tests
@@ -363,6 +373,20 @@ jobs:
           docker exec -t "${container_name}" bash -c "
             cd vllm-benchmarks/vllm && bash .buildkite/performance-benchmarks/scripts/run-performance-benchmarks.sh
           "
+
+      - name: Remove HPU compilation time results
+        if: env.DEVICE_NAME == 'hpu'
+        env:
+          BENCHMARK_RESULTS: vllm-benchmarks/vllm/benchmarks/results
+        run: |
+          set -eux
+          # HPU uses lazy mode (PT_HPU_LAZY_MODE=1) which forces
+          # CompilationMode.NONE, so compilation_time is always 0.
+          # Remove these files to prevent false failures in strict check.
+          sudo chown -R ${UID} "${BENCHMARK_RESULTS}" || true
+          rm -f "${BENCHMARK_RESULTS}"/*compilation*.json || true
+          echo "Remaining benchmark results:"
+          ls -lah "${BENCHMARK_RESULTS}" || true
 
       - name: Authenticate with AWS
         # AWS CUDA runners already have access to the bucket via its runner IAM role
