@@ -1,4 +1,4 @@
-GitPython==3.1.44
+GitPython==3.1.47
 datasets==3.3.0
 psutil==7.0.0
 pynvml==12.0.0
