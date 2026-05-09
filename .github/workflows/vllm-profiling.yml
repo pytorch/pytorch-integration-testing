@@ -29,9 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
   profiling:
@@ -51,17 +51,17 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout vLLM repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: vllm-project/vllm
           path: vllm-profiling/vllm
           ref: ${{ inputs.vllm_branch || 'main' }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         continue-on-error: true
         with:
           python-version: '3.12'
@@ -236,7 +236,7 @@ jobs:
           path: vllm-profiling/profiling-results
           if-no-files-found: warn
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: profiling-results--${{ env.DEVICE_TYPE }}
           path: vllm-profiling/profiling-results
