@@ -17,6 +17,8 @@ jobs:
   benchmark-flash-attn:
     name: Flash Attention CuTe DSL Benchmark
     runs-on: linux.dgx.b200.8
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
