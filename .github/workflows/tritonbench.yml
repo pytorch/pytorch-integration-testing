@@ -135,7 +135,7 @@ jobs:
           path: triton-benchmarks/triton
           ref: ${{ inputs.triton_commit || 'main' }}
           submodules: recursive
-          fetch-depth: 0
+          fetch-depth: 100
 
       - uses: actions/setup-python@v5
         # Amazon Linux fails on this step
