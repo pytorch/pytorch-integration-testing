@@ -128,6 +128,15 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Checkout Triton
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.triton_repo || 'triton-lang/triton' }}
+          path: triton-benchmarks/triton
+          ref: ${{ inputs.triton_commit || 'main' }}
+          submodules: recursive
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         # Amazon Linux fails on this step
         continue-on-error: true
@@ -175,46 +184,21 @@ jobs:
           set -eux
           pip install --group ci
 
-      - name: Install TritonBench
-        working-directory: triton-benchmarks/tritonbench
-        run: |
-          set -eux
-          bash ./.ci/tritonbench/setup-env.sh --cuda
-
-      - name: Compile Triton
+      - name: Install TritonBench and Build Triton
         working-directory: triton-benchmarks/tritonbench
         env:
-          INPUT_TRITON_REPO: ${{ inputs.triton_repo || '' }}
-          INPUT_TRITON_COMMIT: ${{ inputs.triton_commit || '' }}
+          MAX_JOBS: 16
         run: |
           set -eux
 
-          if [ -n "${INPUT_TRITON_REPO}" ]; then
-              TRITON_REPO="${INPUT_TRITON_REPO}"
-          elif [ "${CONDA_ENV}" == "triton-main" ]; then
-              TRITON_REPO="triton-lang/triton"
-          elif [ "${CONDA_ENV}" == "meta-triton" ]; then
-              TRITON_REPO="facebookexperimental/triton"
-          else
-              echo "unknown conda env: ${CONDA_ENV}"
-              exit 1
-          fi
+          # If running in nightly environment
+          # Check out the "nightly" commit
+          bash ./.ci/triton/install.sh \
+          --install-dir ${GITHUB_WORKSPACE}/triton-benchmarks/triton \
+          --checkout nightly
 
-          if [ -n "${INPUT_TRITON_COMMIT}" ]; then
-              TRITON_COMMIT="${INPUT_TRITON_COMMIT}"
-              NIGHTLY_FLAG=""
-          else
-              TRITON_COMMIT="main"
-              NIGHTLY_FLAG="--nightly"
-          fi
-
-          MAX_JOBS=16 bash ./.ci/triton/install.sh \
-              --conda-env "${CONDA_ENV}" \
-              --repo "${TRITON_REPO}" \
-              --commit "${TRITON_COMMIT}" \
-              --side single \
-              --install-dir "${WORKSPACE_DIR}/${CONDA_ENV}" \
-              ${NIGHTLY_FLAG}
+          bash ./.ci/tritonbench/setup-env.sh --cuda \
+              --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
