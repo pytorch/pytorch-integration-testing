@@ -201,8 +201,19 @@ jobs:
                   "1"
           fi
 
+          CMD_SUFFIX=""
+          if [ "${CONDA_ENV}" == "triton-main" ]; then
+              CMD_SUFFIX="--triton-main"
+          elif [ "${CONDA_ENV}" == "meta-triton" ]; then
+              CMD_SUFFIX="--meta-triton"
+          else
+              echo "unknown conda env: ${CONDA_ENV}"
+              exit 1
+          fi
+
           bash ./.ci/tritonbench/setup-env.sh --cuda \
-              --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
+              --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton \
+              ${CMD_SUFFIX}
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
