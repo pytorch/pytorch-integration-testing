@@ -131,7 +131,7 @@ jobs:
       - name: Checkout Triton
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.triton_repo || 'triton-lang/triton' }}
+          repository: ${{ inputs.triton_repo || (matrix.triton_channel == 'meta-triton' && 'facebookexperimental/triton' || 'triton-lang/triton') }}
           path: triton-benchmarks/triton
           ref: ${{ inputs.triton_commit || 'main' }}
           submodules: recursive
