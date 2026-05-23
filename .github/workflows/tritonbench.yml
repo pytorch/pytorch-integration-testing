@@ -103,7 +103,7 @@ jobs:
       UV_VENV_DIR: "/workspace/uv_venvs"
       CONDA_ENV: ${{ matrix.triton_channel }}
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
-      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-${{ matrix.triton_channel }}--periodic-${{ matrix.benchmarks }}
+      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-${{ matrix.triton_channel }}-periodic-${{ matrix.benchmarks }}
       RUNNER_TYPE: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     permissions:
@@ -193,9 +193,13 @@ jobs:
 
           # If running in nightly environment
           # Check out the "nightly" commit
-          bash ./.ci/triton/install.sh \
-          --install-dir ${GITHUB_WORKSPACE}/triton-benchmarks/triton \
-          --checkout nightly
+          if [ -z ${{ inputs.triton_repo }} ] && \
+             [ -z ${{ inputs.triton_commit }} ]; then
+              . ./.ci/triton/triton_install_utils.sh
+              checkout_triton main \
+                  "${GITHUB_WORKSPACE}/triton-benchmarks/triton" \
+                  "1"
+          fi
 
           bash ./.ci/tritonbench/setup-env.sh --cuda \
               --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
