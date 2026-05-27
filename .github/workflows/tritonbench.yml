@@ -103,7 +103,7 @@ jobs:
       UV_VENV_DIR: "/workspace/uv_venvs"
       CONDA_ENV: ${{ matrix.triton_channel }}
       TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN: ${{ secrets.TRITONBENCH_SCRIBE_GRAPHQL_ACCESS_TOKEN }}
-      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-${{ matrix.triton_channel }}--periodic-${{ matrix.benchmarks }}
+      JOB_NAME: tritonbench-${{ matrix.runner }}-benchmark-${{ matrix.triton_channel }}-periodic-${{ matrix.benchmarks }}
       RUNNER_TYPE: ${{ matrix.runner }}
     environment: pytorch-x-vllm
     permissions:
@@ -127,6 +127,14 @@ jobs:
           ref: ${{ inputs.tritonbench_branch }}
           submodules: recursive
           fetch-depth: 0
+
+      - name: Checkout Triton
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.triton_repo || (matrix.triton_channel == 'meta-triton' && 'facebookexperimental/triton' || 'triton-lang/triton') }}
+          path: triton-benchmarks/triton
+          ref: ${{ inputs.triton_commit || 'main' }}
+          submodules: recursive
 
       - uses: actions/setup-python@v5
         # Amazon Linux fails on this step
@@ -175,46 +183,25 @@ jobs:
           set -eux
           pip install --group ci
 
-      - name: Install TritonBench
-        working-directory: triton-benchmarks/tritonbench
-        run: |
-          set -eux
-          bash ./.ci/tritonbench/setup-env.sh --cuda
-
-      - name: Compile Triton
+      - name: Install TritonBench and Build Triton
         working-directory: triton-benchmarks/tritonbench
         env:
-          INPUT_TRITON_REPO: ${{ inputs.triton_repo || '' }}
-          INPUT_TRITON_COMMIT: ${{ inputs.triton_commit || '' }}
+          MAX_JOBS: 16
         run: |
           set -eux
 
-          if [ -n "${INPUT_TRITON_REPO}" ]; then
-              TRITON_REPO="${INPUT_TRITON_REPO}"
-          elif [ "${CONDA_ENV}" == "triton-main" ]; then
-              TRITON_REPO="triton-lang/triton"
-          elif [ "${CONDA_ENV}" == "meta-triton" ]; then
-              TRITON_REPO="facebookexperimental/triton"
-          else
-              echo "unknown conda env: ${CONDA_ENV}"
-              exit 1
+          # If running in nightly environment
+          # Check out the "nightly" commit
+          if [ -z ${{ inputs.triton_repo }} ] && \
+             [ -z ${{ inputs.triton_commit }} ]; then
+              . ./.ci/triton/triton_install_utils.sh
+              checkout_triton main \
+                  "${GITHUB_WORKSPACE}/triton-benchmarks/triton" \
+                  "1"
           fi
 
-          if [ -n "${INPUT_TRITON_COMMIT}" ]; then
-              TRITON_COMMIT="${INPUT_TRITON_COMMIT}"
-              NIGHTLY_FLAG=""
-          else
-              TRITON_COMMIT="main"
-              NIGHTLY_FLAG="--nightly"
-          fi
-
-          MAX_JOBS=16 bash ./.ci/triton/install.sh \
-              --conda-env "${CONDA_ENV}" \
-              --repo "${TRITON_REPO}" \
-              --commit "${TRITON_COMMIT}" \
-              --side single \
-              --install-dir "${WORKSPACE_DIR}/${CONDA_ENV}" \
-              ${NIGHTLY_FLAG}
+          bash ./.ci/tritonbench/setup-env.sh --cuda \
+              --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
