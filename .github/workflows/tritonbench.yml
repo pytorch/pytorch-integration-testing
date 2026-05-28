@@ -196,8 +196,8 @@ jobs:
           bash ./.ci/tritonbench/setup-env.sh --cuda \
               --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
 
-          deactivate
           . "${SETUP_SCRIPT}"
+          . "${UV_VENV_DIR}/${CONDA_ENV}/bin/activate"
           $HOME/.local/bin/uv pip install --group ci
 
       - name: Run TritonBench
