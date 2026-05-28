@@ -197,7 +197,7 @@ jobs:
               --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
 
           . "${SETUP_SCRIPT}"
-          uv pip install --group ci
+          pip install --group ci
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
