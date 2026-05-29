@@ -30,19 +30,19 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
@@ -54,19 +54,19 @@ def test_generate_benchmark_matrix():
       "models": "google/gemma-3-27b-it"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "qwen/qwen3-8b"
     },
     {
@@ -78,7 +78,7 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "openai/gpt-oss-20b"
     },
     {
@@ -86,7 +86,7 @@ def test_generate_benchmark_matrix():
       "models": "openai/gpt-oss-20b"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "openai/gpt-oss-120b"
     },
     {
@@ -94,11 +94,11 @@ def test_generate_benchmark_matrix():
       "models": "openai/gpt-oss-120b"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "facebook/opt-125m"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "facebook/opt-125m"
     },
     {
@@ -118,11 +118,11 @@ def test_generate_benchmark_matrix():
       "models": "deepseek-ai/deepseek-r1"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
@@ -130,11 +130,11 @@ def test_generate_benchmark_matrix():
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
@@ -142,11 +142,11 @@ def test_generate_benchmark_matrix():
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
@@ -154,11 +154,11 @@ def test_generate_benchmark_matrix():
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-int4"
     },
     {
@@ -213,11 +213,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -251,11 +251,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -290,11 +290,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -325,11 +325,11 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.a100",
+      "runner": "mt-l-x86iavx512-11-125-a100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
@@ -356,51 +356,51 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "openai/gpt-oss-20b"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "openai/gpt-oss-120b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "facebook/opt-125m"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
@@ -423,51 +423,51 @@ def test_generate_benchmark_matrix():
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "openai/gpt-oss-20b"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "openai/gpt-oss-120b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "facebook/opt-125m"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
@@ -486,51 +486,51 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "openai/gpt-oss-20b"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "openai/gpt-oss-120b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "facebook/opt-125m"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
@@ -549,51 +549,51 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "meta-llama/meta-llama-3.1-70b-instruct"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "mistralai/mixtral-8x7b-instruct-v0.1"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "google/gemma-3-4b-it"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "qwen/qwen3-8b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "openai/gpt-oss-20b"
     },
     {
-      "runner": "linux.aws.h100.4",
+      "runner": "mt-l-x86iamx-88-900-h100-4",
       "models": "openai/gpt-oss-120b"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "facebook/opt-125m"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-12b-it-int4"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-fp8"
     },
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "pytorch/gemma-3-27b-it-int4"
     }
   ]
@@ -612,7 +612,7 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
-      "runner": "linux.aws.h100",
+      "runner": "mt-l-x86iamx-22-225-h100",
       "models": "meta-llama/meta-llama-3.1-8b-instruct"
     }
   ]

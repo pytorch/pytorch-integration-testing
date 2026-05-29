@@ -25,7 +25,7 @@ on:
         default: linux.dgx.b200
         options:
           - linux.dgx.b200
-          - linux.aws.h100
+          - mt-l-x86iamx-22-225-h100
       repro_cmdline:
         description: The command line to reproduce
         required: true

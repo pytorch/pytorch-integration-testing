@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 # while ROCm runner are provided by AMD
 TP_TO_RUNNER_MAPPING = {
     1: [
-        "linux.aws.h100",
+        "mt-l-x86iamx-22-225-h100",
         "linux.rocm.gpu.gfx942.1",
         "linux.24xl.spr-metal",
         "linux.24xl.gnr",
@@ -25,20 +25,20 @@ TP_TO_RUNNER_MAPPING = {
     # NB: There is no 2xH100 runner at the momement, so let's use the next one
     # in the list here which is 4xH100
     2: [
-        "linux.aws.h100.4",
+        "mt-l-x86iamx-88-900-h100-4",
         "linux.rocm.gpu.gfx942.2",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
         "linux.dgx.b200.8",
     ],
     4: [
-        "linux.aws.h100.4",
+        "mt-l-x86iamx-88-900-h100-4",
         "linux.rocm.gpu.gfx942.4",
         "linux.hpu.gaudi3.8",
         "linux.dgx.b200.8",
     ],
     8: [
-        "linux.aws.h100.8",
+        "mt-l-bx86iamx-176-1800-h100-8",
         "linux.rocm.gpu.gfx942.8",
         "linux.dgx.b200.8",
         "linux.hpu.gaudi3.8",
@@ -47,10 +47,10 @@ TP_TO_RUNNER_MAPPING = {
 
 # This mapping is needed to find out the platform of the runner
 RUNNER_TO_PLATFORM_MAPPING = {
-    "linux.aws.a100": "cuda",
-    "linux.aws.h100": "cuda",
-    "linux.aws.h100.4": "cuda",
-    "linux.aws.h100.8": "cuda",
+    "mt-l-x86iavx512-11-125-a100": "cuda",
+    "mt-l-x86iamx-22-225-h100": "cuda",
+    "mt-l-x86iamx-88-900-h100-4": "cuda",
+    "mt-l-bx86iamx-176-1800-h100-8": "cuda",
     "linux.dgx.b200": "cuda",
     "linux.dgx.b200.8": "cuda",
     "linux.rocm.gpu.gfx942.1": "rocm",
@@ -102,61 +102,61 @@ PLATFORM_SKIPS = {
     ],
     # Run some bigger models on B200 to share the load
     "Qwen/Qwen3-30B-A3B": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "google/gemma-3-27b-it": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.rocm.gpu.gfx942",  # TODO (huydhn): Fail on ROCm
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.rocm.gpu.gfx942",  # TODO: Fail on ROCm
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.rocm.gpu.gfx942",  # TODO (huydhn): Hang on ROCm
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     # Run gpt-oss on both H100 and B200
     "openai/gpt-oss-20b": [
-        "linux.aws.a100",
+        "a100",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "openai/gpt-oss-120b": [
-        "linux.aws.a100",
+        "a100",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     # Deepseek can only run on B200
     "deepseek-ai/DeepSeek-V3.1": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "deepseek-ai/DeepSeek-V3.2": [
-        "linux.aws.a100",
-        "linux.aws.h100",
+        "a100",
+        "h100",
         "linux.24xl.gnr",
         "linux.hpu.gaudi3.8",
     ],
     "deepseek-ai/DeepSeek-R1": [
-        "linux.aws.a100",
+        "a100",
         "linux.24xl.gnr",
-        "linux.aws.h100",
+        "h100",
         "linux.hpu.gaudi3.8",
     ],
 }
