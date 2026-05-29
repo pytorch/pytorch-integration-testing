@@ -48,6 +48,10 @@ jobs:
   bisect:
     name: Run PyTorch Bisect
     runs-on: ${{ inputs.runner }}
+    # mt- runners are ephemeral OSDC pods with no host CUDA toolchain, so build
+    # PyTorch inside a CUDA devel container. linux.dgx.b200 is a DGX host and
+    # keeps the bare-host path (fromJSON('null') => no container).
+    container: ${{ startsWith(inputs.runner, 'mt-') && fromJSON('{"image":"pytorch/pytorch:2.12.0-cuda13.0-cudnn9-devel","options":"--gpus all"}') || fromJSON('null') }}
     env:
       USE_UV: '1'
       WORKSPACE_DIR: ${{ github.workspace }}
@@ -57,12 +61,18 @@ jobs:
       REGRESSION_THRESHOLD: ${{ inputs.regression_threshold }}
       PYTORCH_REPO: pytorch/pytorch
       FUNCTIONAL: ${{ inputs.type == 'functional' && '1' || '0' }}
-      CUDA_HOME: ${{ github.workspace }}/torch-benchmarks/cuda
+      # Inside the OSDC CUDA devel container CUDA lives at /usr/local/cuda; on the
+      # bare-host b200 path keep the workspace-local toolchain. run.sh requires
+      # CUDA_HOME to be non-empty.
+      CUDA_HOME: ${{ startsWith(inputs.runner, 'mt-') && '/usr/local/cuda' || format('{0}/torch-benchmarks/cuda', github.workspace) }}
       CUDA_VERSION: "13.0"
     permissions:
       id-token: write
       contents: read
     steps:
+      - name: Configure git safe.directory
+        run: git config --global --add safe.directory '*' || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
