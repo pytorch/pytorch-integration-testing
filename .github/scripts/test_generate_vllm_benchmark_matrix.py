@@ -23,175 +23,163 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.24xl.gnr",
-      "models": "meta-llama/llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/llama-3.1-8b-instruct",
+      "device-name": "cpu"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "qwen/qwen3-30b-a3b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "google/gemma-3-27b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "google/gemma-3-4b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "qwen/qwen3-8b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "linux.dgx.b200.8",
+      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "linux.dgx.b200",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200.8",
-      "models": "qwen/qwen3-30b-a3b"
-    },
-    {
-      "runner": "linux.dgx.b200.8",
-      "models": "google/gemma-3-27b-it"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "google/gemma-3-4b-it"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "google/gemma-3-4b-it"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "qwen/qwen3-8b"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "qwen/qwen3-8b"
-    },
-    {
-      "runner": "linux.dgx.b200.8",
-      "models": "meta-llama/llama-4-scout-17b-16e-instruct"
-    },
-    {
-      "runner": "linux.dgx.b200.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "openai/gpt-oss-20b"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200",
-      "models": "openai/gpt-oss-20b"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "openai/gpt-oss-120b"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200.8",
-      "models": "openai/gpt-oss-120b"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "facebook/opt-125m"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "facebook/opt-125m"
-    },
-    {
-      "runner": "linux.dgx.b200",
-      "models": "facebook/opt-125m"
+      "models": "deepseek-ai/deepseek-v3.2",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200.8",
-      "models": "deepseek-ai/deepseek-v3.1"
-    },
-    {
-      "runner": "linux.dgx.b200.8",
-      "models": "deepseek-ai/deepseek-v3.2-exp"
-    },
-    {
-      "runner": "linux.dgx.b200.8",
-      "models": "deepseek-ai/deepseek-r1"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
+      "models": "deepseek-ai/deepseek-r1",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200",
-      "models": "pytorch/gemma-3-12b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "pytorch/gemma-3-12b-it-int4"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-int4"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200",
-      "models": "pytorch/gemma-3-12b-it-int4"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200",
-      "models": "pytorch/gemma-3-27b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.dgx.b200",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "hpu"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
+      "models": "meta-llama/meta-llama-3.1-70b-instruct",
+      "device-name": "hpu"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "hpu"
     },
     {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "runner": "linux.hpu.gaudi3.8",
+      "models": "qwen/qwen-3-8b",
+      "device-name": "hpu"
     },
     {
       "runner": "linux.rocm.gpu.gfx942.2",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "rocm"
     },
     {
       "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "qwen/qwen3-8b"
+      "models": "qwen/qwen3-8b",
+      "device-name": "rocm"
     },
     {
       "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "facebook/opt-125m"
+      "models": "facebook/opt-125m",
+      "device-name": "rocm"
     }
   ]
 }""",
@@ -210,23 +198,13 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "hpu"
     }
   ]
 }""",
@@ -248,27 +226,18 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.dgx.b200.8",
-      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+      "models": "meta-llama/llama-4-maverick-17b-128e-instruct-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "hpu"
     }
   ]
 }""",
@@ -287,23 +256,13 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "hpu"
     }
   ]
 }""",
@@ -322,23 +281,13 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iavx512-11-125-a100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.hpu.gaudi3.8",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "hpu"
     }
   ]
 }""",
@@ -356,52 +305,54 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "mt-l-x86iamx-88-900-h100-4",
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "cuda"
+    },
+    {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "google/gemma-3-4b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "qwen/qwen3-8b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "google/gemma-3-4b-it"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "qwen/qwen3-8b"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "openai/gpt-oss-20b"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "openai/gpt-oss-120b"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "facebook/opt-125m"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-int4"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     }
   ]
 }""",
@@ -420,55 +371,58 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "google/gemma-3-4b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "qwen/qwen3-8b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "google/gemma-3-4b-it"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "qwen/qwen3-8b"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "openai/gpt-oss-20b"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "openai/gpt-oss-120b"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "facebook/opt-125m"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-int4"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     }
   ]
 }""",
@@ -486,52 +440,54 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "mt-l-x86iamx-88-900-h100-4",
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "cuda"
+    },
+    {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "google/gemma-3-4b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "qwen/qwen3-8b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "google/gemma-3-4b-it"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "qwen/qwen3-8b"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "openai/gpt-oss-20b"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "openai/gpt-oss-120b"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "facebook/opt-125m"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-int4"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     }
   ]
 }""",
@@ -549,52 +505,54 @@ def test_generate_benchmark_matrix():
 {
   "include": [
     {
+      "runner": "mt-l-x86iamx-88-900-h100-4",
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "cuda"
+    },
+    {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "google/gemma-3-4b-it",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "qwen/qwen3-8b",
+      "device-name": "cuda"
+    },
+    {
+      "runner": "mt-l-x86iamx-22-225-h100",
+      "models": "openai/gpt-oss-20b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "meta-llama/meta-llama-3.1-70b-instruct"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "openai/gpt-oss-120b",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "google/gemma-3-4b-it"
+      "models": "facebook/opt-125m",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "qwen/qwen3-8b"
+      "models": "pytorch/gemma-3-12b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "openai/gpt-oss-20b"
-    },
-    {
-      "runner": "mt-l-x86iamx-88-900-h100-4",
-      "models": "openai/gpt-oss-120b"
+      "models": "pytorch/gemma-3-12b-it-int4",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "facebook/opt-125m"
+      "models": "pytorch/gemma-3-27b-it-fp8",
+      "device-name": "cuda"
     },
     {
       "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-12b-it-int4"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-fp8"
-    },
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "pytorch/gemma-3-27b-it-int4"
+      "models": "pytorch/gemma-3-27b-it-int4",
+      "device-name": "cuda"
     }
   ]
 }""",
@@ -610,12 +568,7 @@ def test_generate_benchmark_matrix():
         output,
         """\
 {
-  "include": [
-    {
-      "runner": "mt-l-x86iamx-22-225-h100",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    }
-  ]
+  "include": []
 }""",
     )
 
@@ -635,15 +588,13 @@ def test_generate_benchmark_matrix():
   "include": [
     {
       "runner": "linux.arm64.m8g.4xlarge",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    },
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
+      "models": "meta-llama/meta-llama-3.1-8b-instruct",
+      "device-name": "arm64-cpu"
     },
     {
       "runner": "linux.rocm.gpu.gfx942.2",
-      "models": "mistralai/mixtral-8x7b-instruct-v0.1"
+      "models": "mistralai/mixtral-8x7b-instruct-v0.1",
+      "device-name": "rocm"
     }
   ]
 }""",
@@ -659,12 +610,7 @@ def test_generate_benchmark_matrix():
         output,
         """\
 {
-  "include": [
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    }
-  ]
+  "include": []
 }""",
     )
 
@@ -678,11 +624,6 @@ def test_generate_benchmark_matrix():
         output,
         """\
 {
-  "include": [
-    {
-      "runner": "linux.rocm.gpu.gfx942.1",
-      "models": "meta-llama/meta-llama-3.1-8b-instruct"
-    }
-  ]
+  "include": []
 }""",
     )

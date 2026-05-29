@@ -1,5 +1,6 @@
 output/
 *.log
 *.xml
+*.bak
 vllm-benchmarks/commit
 __pycache__/

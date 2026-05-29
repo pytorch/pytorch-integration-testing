@@ -314,6 +314,10 @@ def generate_benchmark_matrix(
                             # I opt to return a comma-separated list of models here
                             # so that we could run multiple models on the same runner
                             "models": model,
+                            # Emit the device so the workflow can resolve the
+                            # container image up front instead of probing the
+                            # hardware at runtime (OSDC pods run in a container).
+                            "device-name": RUNNER_TO_PLATFORM_MAPPING[runner],
                         }
                     )
 
