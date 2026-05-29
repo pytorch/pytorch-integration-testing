@@ -12,7 +12,9 @@ print_configuration() {
 }
 
 setup_workspace() {
-    WORKSPACE_DIR="/tmp/workspace"
+    # On OSDC/ARC the job runs inside a container and the repo is checked out at
+    # $GITHUB_WORKSPACE rather than the old docker-run bind mount at /tmp/workspace.
+    WORKSPACE_DIR="${GITHUB_WORKSPACE:-/tmp/workspace}"
     cd "${WORKSPACE_DIR}"
 
     echo "Creating profiling directory: ${VLLM_TORCH_PROFILER_DIR}"
