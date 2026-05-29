@@ -176,13 +176,6 @@ jobs:
           fi
           echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        shell: bash
-        working-directory: triton-benchmarks/tritonbench
-        run: |
-          set -eux
-          pip install --group ci
-
       - name: Install TritonBench and Build Triton
         working-directory: triton-benchmarks/tritonbench
         env:
@@ -202,6 +195,10 @@ jobs:
 
           bash ./.ci/tritonbench/setup-env.sh --cuda \
               --custom-triton ${GITHUB_WORKSPACE}/triton-benchmarks/triton
+
+          . "${SETUP_SCRIPT}"
+          . "${UV_VENV_DIR}/${CONDA_ENV}/bin/activate"
+          $HOME/.local/bin/uv pip install --group ci
 
       - name: Run TritonBench
         working-directory: triton-benchmarks/tritonbench
