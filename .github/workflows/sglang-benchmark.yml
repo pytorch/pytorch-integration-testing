@@ -29,10 +29,6 @@ concurrency:
 
 jobs:
   set-parameters:
-    # ubuntu-latest has docker + jq + python available, which we need to resolve
-    # the SGLang container image (docker manifest inspect) up front and enrich the
-    # matrix. The benchmark job itself runs inside a container on ephemeral OSDC/ARC
-    # pods that have NO docker daemon, so all image resolution must happen here.
     runs-on: ubuntu-latest
     outputs:
       benchmark_matrix: ${{ steps.set-parameters.outputs.benchmark_matrix }}
@@ -47,17 +43,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      # The SGLang images are tagged by git tag (lmsysorg/sglang:<tag>[suffix]), so
-      # we need the upstream repo's tags + commit history to resolve a tag to a
-      # commit SHA (used as --head-sha when uploading results).
-      - name: Checkout SGLang repository
-        uses: actions/checkout@v4
-        with:
-          repository: sgl-project/sglang
-          path: sglang
-          ref: ${{ inputs.sglang_branch || 'main' }}
-          fetch-depth: 0
-
       - name: Set parameters
         id: set-parameters
         shell: bash
@@ -67,140 +52,11 @@ jobs:
         run: |
           set -eux
 
-          # The generated matrix is grouped by model and runner. Each include
-          # entry has {runner, models, device-name}.
+          # The generated matrix is grouped by model and runner
           python .github/scripts/generate_vllm_benchmark_matrix.py \
             --benchmark-configs-dir sglang-benchmarks/benchmarks \
             --models "${MODELS}" \
             --runners "${RUNNERS}"
-
-          # generate_vllm_benchmark_matrix.py writes benchmark_matrix=<value> to
-          # GITHUB_OUTPUT, where <value> is a Python dict repr (single quotes),
-          # not strict JSON. Pull that line back out and let Python parse it with
-          # ast.literal_eval below. We will overwrite that output with the
-          # enriched matrix.
-          grep '^benchmark_matrix=' "${GITHUB_OUTPUT}" | tail -n1 | cut -d= -f2- > /tmp/base_matrix.txt
-          cat /tmp/base_matrix.txt
-
-          # Resolve the newest SGLang git tag that has a published image for a
-          # given suffix, and emit "<image>\t<commit-sha>". Scans tags newest
-          # first by creatordate and stops at the first one whose image exists.
-          resolve_image() {
-            local suffix="$1"
-            local selected_image=""
-            local head_sha=""
-            for tag in $(git -C sglang for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags); do
-              local candidate="lmsysorg/sglang:${tag}${suffix}"
-              if docker manifest inspect "${candidate}" >/dev/null 2>&1; then
-                selected_image="${candidate}"
-                head_sha=$(git -C sglang rev-list -n 1 "${tag}")
-                break
-              fi
-            done
-            # Fallback to the floating latest tag if no published tagged image is found.
-            if [[ -z "${selected_image}" ]]; then
-              selected_image="lmsysorg/sglang:latest${suffix}"
-              head_sha=$(git -C sglang rev-parse HEAD)
-            fi
-            printf '%s\t%s\n' "${selected_image}" "${head_sha}"
-          }
-
-          # Container options replicate the original `docker run` flags. The
-          # original SGLang cuda run used --shm-size=32g, so we reuse 32g for all
-          # devices here.
-          #
-          # NOTE: the rocm options are best-effort - there is no verified evidence
-          # they are exactly what the OSDC rocm pods need.
-          # NOTE: --shm-size=32g may be capped/ignored on ARC pods depending on the
-          # pod spec; it is passed for parity with the previous docker run.
-          CUDA_OPTS="--gpus all --ipc=host --shm-size=32g --security-opt seccomp=unconfined"
-          ROCM_OPTS="--device=/dev/kfd --device=/dev/dri --group-add video --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --ipc=host --shm-size=32g"
-
-          # Resolve images once per suffix to avoid repeated manifest scans.
-          CUDA_RESULT=$(resolve_image "")
-          CUDA_IMAGE=$(echo "${CUDA_RESULT}" | cut -f1)
-          CUDA_SHA=$(echo "${CUDA_RESULT}" | cut -f2)
-
-          B200_RESULT=$(resolve_image "-cu128-b200")
-          B200_IMAGE=$(echo "${B200_RESULT}" | cut -f1)
-          B200_SHA=$(echo "${B200_RESULT}" | cut -f2)
-
-          ROCM_RESULT=$(resolve_image "-rocm630-mi30x")
-          ROCM_IMAGE=$(echo "${ROCM_RESULT}" | cut -f1)
-          ROCM_SHA=$(echo "${ROCM_RESULT}" | cut -f2)
-
-          # Enrich every matrix entry with container-image, container-options and
-          # head-sha (the resolved tag's commit). B200 vs non-B200 both have
-          # device-name == cuda, so we distinguish via the runner string (it
-          # contains 'b200'/'dgx' for the DGX B200 runners) when choosing the
-          # image suffix.
-          #
-          # NOTE / SIMPLIFICATION: the previous per-model S3 head-object
-          # "already benchmarked" dedup is intentionally dropped here - it needs
-          # the runtime GPU device-type which is not known before the container
-          # starts (and the container is the thing that owns the device).
-          export CUDA_IMAGE CUDA_SHA CUDA_OPTS
-          export B200_IMAGE B200_SHA
-          export ROCM_IMAGE ROCM_SHA ROCM_OPTS
-          # The heredoc body is indented to satisfy the YAML block scalar, so
-          # strip that fixed leading indentation before handing it to python3
-          # (otherwise python sees an "unexpected indent" at module level).
-          ENRICHED=$(sed 's/^          //' <<'PY' | python3 -
-          import ast, json, os
-
-          with open("/tmp/base_matrix.txt") as f:
-              # The generator emits a Python dict repr (single quotes), so parse
-              # it with literal_eval rather than json.load.
-              matrix = ast.literal_eval(f.read().strip())
-
-          cuda_image = os.environ["CUDA_IMAGE"]
-          cuda_sha = os.environ["CUDA_SHA"]
-          cuda_opts = os.environ["CUDA_OPTS"]
-          b200_image = os.environ["B200_IMAGE"]
-          b200_sha = os.environ["B200_SHA"]
-          rocm_image = os.environ["ROCM_IMAGE"]
-          rocm_sha = os.environ["ROCM_SHA"]
-          rocm_opts = os.environ["ROCM_OPTS"]
-
-          import sys
-
-          supported = []
-          for entry in matrix.get("include", []):
-              device = entry.get("device-name")
-              runner = (entry.get("runner") or "").lower()
-              if device == "cuda":
-                  is_b200 = "b200" in runner or "dgx" in runner
-                  if is_b200:
-                      entry["container-image"] = b200_image
-                      entry["head-sha"] = b200_sha
-                  else:
-                      entry["container-image"] = cuda_image
-                      entry["head-sha"] = cuda_sha
-                  entry["container-options"] = cuda_opts
-              elif device == "rocm":
-                  entry["container-image"] = rocm_image
-                  entry["head-sha"] = rocm_sha
-                  entry["container-options"] = rocm_opts
-              else:
-                  # SGLang benchmarks only support cuda/rocm. Skip any other
-                  # device (e.g. the cpu/hpu/arm64 entries the generator emits on
-                  # a scheduled, no-runners run) instead of failing the whole
-                  # matrix the way a hard error here would.
-                  print(
-                      f"Skipping unsupported device-name '{device}' on runner '{runner}'",
-                      file=sys.stderr,
-                  )
-                  continue
-              supported.append(entry)
-
-          matrix["include"] = supported
-          print(json.dumps(matrix, separators=(",", ":")))
-          PY
-          )
-
-          echo "Enriched matrix: ${ENRICHED}"
-          # Overwrite the base matrix output with the enriched single-line JSON.
-          echo "benchmark_matrix=${ENRICHED}" >> "${GITHUB_OUTPUT}"
 
   benchmarks:
     name: Run SGLang benchmarks
@@ -214,45 +70,15 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    # The GPU/accelerator is injected by the runner pod / host container runtime.
-    container:
-      image: ${{ matrix.container-image }}
-      options: ${{ matrix.container-options }}
-    env:
-      # device-name now comes from the matrix instead of probing the hardware.
-      DEVICE_NAME: ${{ matrix.device-name }}
-      # The resolved tag's commit, used as --head-sha when uploading results.
-      HEAD_SHA: ${{ matrix.head-sha }}
     steps:
-      - name: Ensure git is available and trust the workspace
-        shell: bash
-        run: |
-          set -eux
-
-          # The in-container checkout is root-owned, so mark every directory as
-          # a safe git directory. Also install git if the base image lacks it.
-          if ! command -v git >/dev/null 2>&1; then
-            if command -v apt-get >/dev/null 2>&1; then
-              apt-get update && apt-get install -y git
-            elif command -v dnf >/dev/null 2>&1; then
-              dnf install -y git
-            elif command -v yum >/dev/null 2>&1; then
-              yum install -y git
-            fi
-          fi
-          git config --global --add safe.directory '*'
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install system dependencies
-        # SGLang requires libnuma-dev + numactl. This now runs in-container as
-        # root (no sudo).
         shell: bash
         run: |
-          set -eux
-          apt-get update
-          apt-get install -y libnuma-dev numactl
+          sudo apt-get update
+          sudo apt-get install -y libnuma-dev numactl
 
       - name: Checkout SGLang repository
         uses: actions/checkout@v4
@@ -275,12 +101,24 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # The "Check if the device is supported" probe is removed - DEVICE_NAME now
-      # comes from the matrix (set at job env level above).
+      - name: Check if the device is supported
+        shell: bash
+        run: |
+          set -eux
+
+          if command -v nvidia-smi; then
+            DEVICE_NAME=cuda
+            nvidia-smi
+          elif command -v rocm-smi; then
+            DEVICE_NAME=rocm
+            rocm-smi
+          else
+            DEVICE_NAME=cpu
+            lscpu
+          fi
+          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
 
       - name: Set GPU name and type
-        # Still needed: DEVICE_TYPE is derived at runtime inside the device image
-        # (nvidia-smi/rocminfo) and is used for S3 paths / upload.
         working-directory: sglang-benchmarks
         shell: bash
         run: |
@@ -310,13 +148,78 @@ jobs:
               --extra-index-url https://download.pytorch.org/whl/cu128
           fi
 
-      # Removed host-only steps that don't apply when running in-container:
-      #   - "Setup CUDA GPU_FLAG for docker run" (no docker run wrapper anymore)
-      #   - "Setup ROCm" host action
-      #   - b200 public_ecr_read_only ECR auth + login (the container image is a
-      #     public image pulled by the runner; no auth needed)
-      #   - "Select SGLang Docker image" (image resolution moved to set-parameters)
-      #   - "Clean up unused Docker images"
+      - name: Setup CUDA GPU_FLAG for docker run
+        if: env.DEVICE_NAME == 'cuda'
+        run: |
+          echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
+
+      - name: Setup ROCm
+        if: env.DEVICE_NAME == 'rocm'
+        uses: pytorch/pytorch/./.github/actions/setup-rocm@main
+
+      - name: Authenticate with AWS
+        # Only need for DGX hosts
+        if: contains(env.DEVICE_TYPE, 'B200')
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::308535385114:role/public_ecr_read_only
+          role-duration-seconds: 18000
+          aws-region: us-east-1
+
+      - name: Login to public.ecr.aws
+        # Only need for DGX hosts
+        if: contains(env.DEVICE_TYPE, 'B200')
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+        with:
+          registry-type: public
+
+      - name: Select SGLang Docker image
+        working-directory: sglang-benchmarks/sglang
+        shell: bash
+        run: |
+          set -eux
+
+          # Determine image suffix based on device
+          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
+            if [[ "${DEVICE_TYPE}" == *"B200"* ]]; then
+              IMAGE_SUFFIX="-cu128-b200"
+            else
+              IMAGE_SUFFIX=""
+            fi
+          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
+            IMAGE_SUFFIX="-rocm630-mi30x"
+          else
+            echo "SGLang benchmarks require either CUDA or ROCm devices."
+            exit 1
+          fi
+
+          # Find the newest tag with available Docker image
+          SELECTED_TAG=""
+          for tag in $(git for-each-ref --sort=-creatordate --format '%(refname:short)' refs/tags); do
+            candidate_image="lmsysorg/sglang:${tag}${IMAGE_SUFFIX}"
+            echo "Checking: $candidate_image"
+
+            if docker manifest inspect "$candidate_image" >/dev/null 2>&1; then
+              SELECTED_TAG="$tag"
+              DOCKER_IMAGE="$candidate_image"
+              HEAD_SHA=$(git rev-list -n 1 "$tag")
+              echo "Found available image: $candidate_image"
+              break
+            fi
+          done
+
+          # Fallback to latest if no tagged version found
+          if [[ -z "$SELECTED_TAG" ]]; then
+            echo "No tagged images found, using latest"
+            DOCKER_IMAGE="lmsysorg/sglang:latest${IMAGE_SUFFIX}"
+            HEAD_SHA=$(git rev-parse HEAD)
+            SELECTED_TAG="latest"
+          fi
+
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> "$GITHUB_ENV"
+          echo "HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+          echo "LATEST_TAG=$SELECTED_TAG" >> "$GITHUB_ENV"
+          echo "Using: $DOCKER_IMAGE (tag: $SELECTED_TAG)"
 
       - name: Setup benchmark tests
         env:
@@ -339,28 +242,33 @@ jobs:
           find sglang-benchmarks/benchmarks/tests -type f -exec cat {} \; || echo "No test files to display"
 
       - name: Run SGLang benchmark
-        working-directory: sglang-benchmarks/benchmarks
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           SAVE_TO_PYTORCH_BENCHMARK_FORMAT: 1
         run: |
           set -eux
 
-          # Run the workload natively inside the container instead of via
-          # docker run/docker exec.
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            pip install torchao==0.16.0 fbgemm-gpu-genai==1.5.0
+          container_name=$(docker run \
+            ${GPU_FLAG:-} \
+            -e HF_TOKEN \
+            -e DEVICE_NAME \
+            -e DEVICE_TYPE \
+            -e SAVE_TO_PYTORCH_BENCHMARK_FORMAT \
+            --ipc=host \
+            --tty \
+            --detach \
+            --security-opt seccomp=unconfined \
+            --shm-size=32g \
+            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
+            -w /tmp/workspace \
+            "${DOCKER_IMAGE}"
+          )
 
-            # A quick mitigation for cuda-compat conflicts.
-            rm /etc/ld.so.conf.d/cuda-compat.conf || true
-            ldconfig
-          fi
-
-          bash ../../.github/scripts/run-sglang-performance-benchmarks.sh
+          docker exec -t "${container_name}" bash -c "cd sglang-benchmarks/benchmarks && bash ../../.github/scripts/run-sglang-performance-benchmarks.sh"
 
       - name: Authenticate with AWS
-        # ALL devices now need OIDC: in an ephemeral pod there is no host instance
-        # role to fall back on, so we always assume the upload role.
+        # AWS CUDA runners already have access to the bucket via its runner IAM role
+        if: env.DEVICE_NAME == 'rocm' || contains(env.DEVICE_TYPE, 'B200')
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
@@ -380,7 +288,7 @@ jobs:
         run: |
           set -eux
 
-          chown -R ${UID} "${BENCHMARK_RESULTS}" || true
+          sudo chown -R ${UID} "${BENCHMARK_RESULTS}" || true
           ls -lah "${BENCHMARK_RESULTS}" || echo "Results directory not found"
 
           echo "## workflow info: ${WORKFLOW_RUN_ID} ${RUN_ATTEMPT} ${JOB_ID}"
@@ -398,7 +306,7 @@ jobs:
             echo "### Files Generated:" >> $GITHUB_STEP_SUMMARY
             find "${BENCHMARK_RESULTS}" -type f -name "*.json" -exec echo "- {}" \; >> $GITHUB_STEP_SUMMARY || echo "- No JSON files found" >> $GITHUB_STEP_SUMMARY
           else
-            echo "No benchmark results found in ${BENCHMARK_RESULTS}" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ No benchmark results found in ${BENCHMARK_RESULTS}" >> $GITHUB_STEP_SUMMARY
           fi
 
           python3 .github/scripts/upload_benchmark_results.py \
