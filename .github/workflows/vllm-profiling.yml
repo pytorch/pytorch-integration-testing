@@ -25,96 +25,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  set-parameters:
+  # OSDC/ARC runners are ephemeral pods with no Docker daemon, so the vLLM CI
+  # image is run via the job-level container: key (see the profiling job) and
+  # must be resolved up front. docker manifest inspect needs a daemon, so do it
+  # here on a GitHub-hosted runner and pass the resolved image down.
+  resolve-image:
+    name: Resolve vLLM CI image
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-  profiling:
-    name: Run vLLM profiling
-    needs: set-parameters
     if: ${{ !github.event.pull_request.head.repo.fork && github.repository_owner == 'pytorch' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runs-on: linux.aws.a100
-            device-name: cuda
-    runs-on: ${{ matrix.runs-on }}
-    environment: pytorch-x-vllm
-    permissions:
-      id-token: write
-      contents: read
+    outputs:
+      docker-image: ${{ steps.resolve.outputs.docker-image }}
+      head-sha: ${{ steps.resolve.outputs.head-sha }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Checkout vLLM repository
         uses: actions/checkout@v4
         with:
           repository: vllm-project/vllm
-          path: vllm-profiling/vllm
+          path: vllm
           ref: ${{ inputs.vllm_branch || 'main' }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        continue-on-error: true
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Check if the device is supported
-        shell: bash
-        run: |
-          set -eux
-
-          if command -v nvidia-smi; then
-            DEVICE_NAME=cuda
-            nvidia-smi
-          elif command -v rocm-smi; then
-            DEVICE_NAME=rocm
-            rocm-smi
-          else
-            DEVICE_NAME=cpu
-            lscpu
-          fi
-          echo "DEVICE_NAME=$DEVICE_NAME" >> $GITHUB_ENV
-
-      - name: Set GPU name and type
-        shell: bash
-        run: |
-          set -eux
-
-          if [[ "${DEVICE_NAME}" == "cuda" ]]; then
-            DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
-          elif [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DEVICE_TYPE=$(rocminfo | grep "Marketing Name" | tail -n1 | awk -F':' '{print $2}' | xargs)
-          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DEVICE_TYPE=$(lscpu | grep 'Model name' | cut -f 2 -d ":" | awk '{$1=$1}1' | cut -f 2 -d " ")
-          fi
-          echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        shell: bash
-        run: |
-          set -eux
-
-          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            pip install -r .github/scripts/requirements.txt \
-              --extra-index-url https://download.pytorch.org/whl/rocm6.3
-          else
-            pip install -r .github/scripts/requirements.txt \
-              --extra-index-url https://download.pytorch.org/whl/cu128
-          fi
-
-      - name: Set Docker registry
-        shell: bash
+      - name: Resolve the latest available vLLM CI image
+        id: resolve
+        working-directory: vllm
         env:
           HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
+          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
         run: |
           set -eux
 
@@ -124,29 +60,10 @@ jobs:
             DOCKER_IMAGE_PREFIX=public.ecr.aws/q9t5s3a7/vllm-ci-test-repo
           fi
 
-          DOCKER_IMAGE_SUFFIX=""
-          if [[ "${DEVICE_NAME}" == "rocm" ]]; then
-            DOCKER_IMAGE_PREFIX=docker.io/rocm/vllm-ci
-          elif [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            DOCKER_IMAGE_SUFFIX=-cpu
-          fi
-          echo "DOCKER_IMAGE_PREFIX=$DOCKER_IMAGE_PREFIX" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE_SUFFIX=$DOCKER_IMAGE_SUFFIX" >> $GITHUB_ENV
-
-      - name: Check for last commit
-        working-directory: vllm-profiling/vllm
-        env:
-          HEAD_BRANCH: ${{ inputs.vllm_branch || 'main' }}
-          HEAD_SHA: ${{ inputs.vllm_commit || '' }}
-        run: |
-          set -eux
-
           if [[ -z "${HEAD_SHA}" ]]; then
-            for i in {0..99}
-            do
+            for i in {0..99}; do
               HEAD_SHA=$(git rev-parse --verify HEAD~${i})
-              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}${DOCKER_IMAGE_SUFFIX}"
-
+              DOCKER_IMAGE="${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}"
               # Docker image available for this commit, then exit
               if docker manifest inspect "${DOCKER_IMAGE}"; then
                 break
@@ -154,68 +71,75 @@ jobs:
             done
           fi
 
-          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          echo "docker-image=${DOCKER_IMAGE_PREFIX}:${HEAD_SHA}" >> "${GITHUB_OUTPUT}"
+          echo "head-sha=${HEAD_SHA}" >> "${GITHUB_OUTPUT}"
           echo "### Run profiling on [${HEAD_SHA}](https://github.com/vllm-project/vllm/commit/${HEAD_SHA})" >> "${GITHUB_STEP_SUMMARY}"
 
-      - name: Setup CUDA GPU_FLAG for docker run
-        if: env.DEVICE_NAME == 'cuda'
-        run: |
-          echo "GPU_FLAG=--gpus all -e NVIDIA_DRIVER_CAPABILITIES=all" >> "${GITHUB_ENV}"
+  profiling:
+    name: Run vLLM profiling
+    needs: resolve-image
+    if: ${{ !github.event.pull_request.head.repo.fork && github.repository_owner == 'pytorch' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runs-on: mt-l-x86iavx512-11-125-a100
+            device-name: cuda
+    runs-on: ${{ matrix.runs-on }}
+    environment: pytorch-x-vllm
+    permissions:
+      id-token: write
+      contents: read
+    # OSDC/ARC runners run the workload inside this container; the GPU is exposed
+    # by the runner pod, the same pattern as pytorch/pytorch _linux-test.yml
+    # (test-osdc) and pytorch/helion.
+    container:
+      image: ${{ needs.resolve-image.outputs.docker-image }}
+      options: --gpus all
+    steps:
+      - name: GPU health check
+        run: nvidia-smi || true
 
-      - name: Setup ROCm
-        if: env.DEVICE_NAME == 'rocm'
-        uses: pytorch/pytorch/./.github/actions/setup-rocm@main
-
-      - name: Setup SCCACHE_SERVER_PORT environment for docker run when on container
+      - name: Install git
         run: |
-          echo "SCCACHE_SERVER_PORT_DOCKER_FLAG=-e SCCACHE_SERVER_PORT=$((RUNNER_UID + 4226))" >> "${GITHUB_ENV}"
+          # The vLLM CI image may not ship git, which actions/checkout needs
+          (command -v git || (apt-get update && apt-get install -y git)) || true
+          git config --global --add safe.directory '*' || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set GPU name and type
+        shell: bash
+        run: |
+          set -eux
+          DEVICE_TYPE=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | awk '{print $2}')
+          echo "DEVICE_NAME=cuda" >> $GITHUB_ENV
+          echo "DEVICE_TYPE=$DEVICE_TYPE" >> $GITHUB_ENV
 
       - name: Run vLLM profiling
         env:
-          SCCACHE_BUCKET: ossci-compiler-cache-circleci-v2
-          SCCACHE_REGION: us-east-1
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE_PREFIX }}:${{ env.HEAD_SHA }}${{ env.DOCKER_IMAGE_SUFFIX }}
           VLLM_USE_MODELSCOPE: false
-          VLLM_TORCH_PROFILER_DIR: /tmp/workspace/vllm-profiling/profiling-results
+          VLLM_TORCH_PROFILER_DIR: ${{ github.workspace }}/vllm-profiling/profiling-results
           CUDA_VISIBLE_DEVICES: 0
           VLLM_USE_V1: 1
-
+          S3_HEAD_SHA: ${{ needs.resolve-image.outputs.head-sha }}
+          S3_GITHUB_RUN_ID: ${{ github.run_id }}
+          S3_GITHUB_JOB: ${{ github.job }}
         run: |
           set -eux
+          cd vllm-profiling && bash ../.github/scripts/run_vllm_profiling.sh
 
-          if [[ "${DEVICE_NAME}" == "cpu" ]]; then
-            ON_CPU=1
-          else
-            ON_CPU=0
-          fi
-
-          container_name=$(docker run \
-            ${GPU_FLAG:-} \
-            ${SCCACHE_SERVER_PORT_DOCKER_FLAG:-} \
-            -e SCCACHE_BUCKET \
-            -e SCCACHE_REGION \
-            -e DEVICE_NAME \
-            -e DEVICE_TYPE \
-            -e HF_TOKEN \
-            -e VLLM_USE_MODELSCOPE \
-            -e VLLM_TORCH_PROFILER_DIR \
-            -e CUDA_VISIBLE_DEVICES \
-            -e VLLM_USE_V1 \
-            -e ON_CPU="${ON_CPU}" \
-            -e S3_HEAD_SHA="${HEAD_SHA}" \
-            -e S3_GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
-            -e S3_GITHUB_JOB="${GITHUB_JOB}" \
-            --ipc=host \
-            --tty \
-            --detach \
-            --security-opt seccomp=unconfined \
-            --shm-size=4g \
-            -v "${GITHUB_WORKSPACE}:/tmp/workspace" \
-            -w /tmp/workspace \
-            "${DOCKER_IMAGE}"
-          )
-          docker exec -t "${container_name}" bash -c "cd vllm-profiling && bash ../.github/scripts/run_vllm_profiling.sh"
+      - name: Authenticate with AWS for the S3 upload
+        # Ephemeral OSDC pods do not carry a host IAM role, so assume the upload
+        # role explicitly via OIDC (id-token: write is set above).
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::308535385114:role/gha_workflow_upload-benchmark-results
+          # The max duration enforced by the server side
+          role-duration-seconds: 18000
+          aws-region: us-east-1
 
       - name: Prepare S3 upload metadata
         id: prepare_s3_upload
