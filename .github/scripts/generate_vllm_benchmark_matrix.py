@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 
 logging.basicConfig(level=logging.INFO)
-# Those are H100 runners from https://github.com/meta-pytorch/pytorch-gha-infra/blob/main/multi-tenant/inventory/manual_inventory
+# Those are H100 runners from https://github.com/metainternal/pytorch-gha-infra/blob/main/multi-tenant/inventory/manual_inventory
 # while ROCm runner are provided by AMD
 TP_TO_RUNNER_MAPPING = {
     1: [
