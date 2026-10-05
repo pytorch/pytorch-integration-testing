@@ -1,0 +1,14 @@
+model_name: "Qwen/Qwen3-30B-A3B"
+tasks:
+- name: "gsm8k"
+  device: b200
+  tp: 8
+  # Adopted from vLLM lm-eval-harness, set the value to 0 if there is no baseline
+  metrics:
+    - name: "exact_match,strict-match"
+      value: 0
+    - name: "exact_match,flexible-extract"
+      value: 0
+limit: 1000
+num_fewshot: 5
+trust_remote_code: True

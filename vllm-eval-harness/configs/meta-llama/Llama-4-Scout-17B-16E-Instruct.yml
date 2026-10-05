@@ -1,0 +1,14 @@
+model_name: "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+tasks:
+- name: "gsm8k"
+  device: b200
+  tp: 4
+  # Adopted from vLLM lm-eval-harness, set the value to 0 if there is no baseline
+  metrics:
+    - name: "exact_match,strict-match"
+      value: 0
+    - name: "exact_match,flexible-extract"
+      value: 0
+limit: 1000
+num_fewshot: 5
+trust_remote_code: True
